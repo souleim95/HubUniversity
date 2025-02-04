@@ -10,7 +10,7 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Vous pouvez aussi insérer des données de test ici si besoin :
+-- Test utilisateur ajouté
 INSERT INTO users (name, email) VALUES 
   ('Alice Dupont', 'alice.dupont@example.com'),
   ('Bob Martin', 'bob.martin@example.com');
