@@ -52,6 +52,30 @@ app.get("/users", async (req, res) => {
     }
 });
 
+// Route pour ajouter un nouvel utilisateur
+app.post("/users", async (req, res) => {
+    const { name, email, password } = req.body;
+    
+    // Vérifier que tous les champs nécessaires sont présents
+    if (!name || !email || !password) {
+        return res.status(400).json({ error: "Les champs name, email et password sont obligatoires." });
+    }
+
+    try {
+        // Insérer l'utilisateur dans la table "users"
+        const result = await pool.query(
+            "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *",
+            [name, email, password]
+        );
+
+        // Retourner l'utilisateur créé (ou au moins quelques informations)
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        console.error("Erreur lors de l'ajout d'un utilisateur :", err);
+        res.status(500).json({ error: "Erreur interne du serveur." });
+    }
+});
+
 // Démarrage du serveur
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`✅ Serveur backend sur http://localhost:${PORT}`));
