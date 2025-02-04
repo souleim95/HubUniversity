@@ -1,4 +1,5 @@
 require('dotenv').config();
+console.log("🔍 DATABASE_URL:", process.env.DATABASE_URL);
 const express = require('express');
 const cors = require('cors');
 const { Server } = require("socket.io");
@@ -24,7 +25,14 @@ server.listen(PORT, () => console.log(`✅ Serveur backend sur http://localhost:
 
 
 const { Pool } = require("pg");
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const pool = new Pool({
+    user: "postgres",
+    host: "localhost",
+    database: "projet_universite",
+    password: "",  
+    port: 5432
+});
+
 
 app.get("/users", async (req, res) => {
     const { rows } = await pool.query("SELECT * FROM users");
