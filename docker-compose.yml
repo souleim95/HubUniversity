@@ -1,0 +1,12 @@
+services:
+  db:
+    image: postgres:17
+    container_name: projet_universite_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_DB: projet_universite
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql

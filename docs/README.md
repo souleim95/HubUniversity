@@ -1,1 +1,1 @@
-# Plateforme-intelligente-performante-et-responsive
+# ReadMe principale à synthétiser lorsque tout l'architecture sera clair

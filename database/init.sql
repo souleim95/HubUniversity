@@ -1,8 +1,4 @@
--- database/init.sql
-CREATE DATABASE projet_universite;
-
-\c projet_universite
-
+-- Assurez-vous d'être bien dans la base définie par POSTGRES_DB
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -10,7 +6,8 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Test utilisateur ajouté
+-- Ajout de quelques utilisateurs pour tester
 INSERT INTO users (name, email) VALUES 
   ('Alice Dupont', 'alice.dupont@example.com'),
   ('Bob Martin', 'bob.martin@example.com');
+
