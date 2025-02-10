@@ -1,0 +1,47 @@
+header{
+    background-color: whitesmoke;
+    width: 102%;
+    margin: -1%;
+    position: relative;
+    border-bottom: solid rgb(15, 110, 173) 3px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    text-align: center;
+}
+
+.welcomeChoices {
+    display: flex;
+    flex-direction: column;
+    width: 8vw;
+    height: fit-content;
+    gap: 0.25vw;
+    font-size: 1vw;
+    margin-top: 0.4vw;
+    position: left;
+    left: 30.7%;
+    border-right: solid rgb(15, 110, 173) 3px;
+    padding-right: 0.85%;
+}
+
+.welcomeChoices a {
+    text-decoration: none;
+    color: rgb(15, 110, 173);
+    font-size: 1.2vw;
+    cursor: pointer;
+    font-weight: 600;
+    background-color: whitesmoke;
+    border: none;
+    left: 1vw;
+}
+
+.welcomeChoices a:hover {
+    color: rgb(49, 137, 196);
+}
+
+
+#welcomeChoice {
+    position: relative;
+    width: fit-content;
+}
+
