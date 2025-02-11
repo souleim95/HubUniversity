@@ -12,18 +12,66 @@
 <body>
 
     <header>
+
         <div class="welcomeChoices">
-            <a href="cy.html" id="welcomeChoice">Accueil</a></li>
-            <a href="https://cytech.cyu.fr" target="_blank" id="welcomeChoice">CyTech</a>
-            <a href="https://cyu.fr" target="_blank" id="welcomeChoice">CYU</a>
+            <a href="cy.html" id="welcomeChoice">
+                <img src="../source/HubCyLogo.png" alt="HubCY">
+            </a>
         </div>
+
+        <nav class="nav-links">
+            <!-- Section qui pourrait expliquer les objets qu'on a etc... sous forme d'une grosse bulle ou une page à voir -->
+            <a href="about.html">À propos</a>
+
+            <div id="btnConnect">
+                <a href="connexion.html" id="connect">
+                    <button type="button">Connexion</button>
+                </a>
+            </div>
+        </nav>
+
     </header>
 
-    <div class="title">
-        
-        <h1>Hub CY</h1>
-    
-    </div>
+    <!-- IA -->
+    <main>
+        <!-- Section Présentation -->
+        <section id="presentation" class="hero-section">
+            <div class="hero-content">
+                <h1>Bienvenue sur HubCY</h1>
+                <p>Découvrez l'école connectée de demain</p>
+                <div class="hero-image">
+                    <!-- Ajouter une image ou animation ici -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Section Plan Interactif -->
+        <section id="quick-access" class="campus-map">
+            <h2>Campus Connecté</h2>
+            <div class="map-container">
+                <!-- Insérer la carte interactive ici -->
+            </div>
+            <div class="events-list">
+                <h3>Événements à venir</h3>
+                <!-- Liste des événements -->
+            </div>
+        </section>
+
+        <!-- Section Inscription -->
+        <section id="register" class="signup-section">
+            <h2>Rejoignez-nous</h2>
+            <form class="signup-form">
+                <input type="text" placeholder="Nom complet" required>
+                <input type="email" placeholder="Email académique" required>
+                <select required>
+                    <option value="">Sélectionnez votre rôle</option>
+                    <option value="student">Étudiant</option>
+                    <option value="teacher">Enseignant</option>
+                </select>
+                <button type="submit" class="signup-button">Créer un compte</button>
+            </form>
+        </section>
+    </main>
 
     <footer>
         <div class="names">
@@ -35,8 +83,14 @@
 
         </div>
     
+        <!-- Faudrait qu'on voit ce qu'on peut mettre ici -->
+
         <a target="_blank" href="https://cytech.cyu.fr">
             <img id="cylogo" src="../source/cytech.png" alt="">
+        </a> 
+
+        <a target="_blank" href="https://www.cyu.fr">
+            <img id="cyulogo" src="../source/cyu.png" alt="">
         </a>
     </footer>
     

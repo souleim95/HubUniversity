@@ -1,27 +1,24 @@
-header{
+header {
     background-color: whitesmoke;
-    width: 102%;
-    margin: -1%;
-    position: relative;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
     border-bottom: solid rgb(15, 110, 173) 3px;
     display: flex;
-    flex-direction: row;
     justify-content: space-between;
-    text-align: center;
+    align-items: center;
+    padding: 0.5vw 2vw;
 }
 
 .welcomeChoices {
     display: flex;
-    flex-direction: column;
-    width: 8vw;
-    height: fit-content;
-    gap: 0.25vw;
-    font-size: 1vw;
-    margin-top: 0.4vw;
-    position: left;
-    left: 30.7%;
+    align-items: center;
     border-right: solid rgb(15, 110, 173) 3px;
+    margin: 0; 
     padding-right: 0.85%;
+    width: auto;
 }
 
 .welcomeChoices a {
@@ -39,9 +36,51 @@ header{
     color: rgb(49, 137, 196);
 }
 
-
-#welcomeChoice {
-    position: relative;
-    width: fit-content;
+#welcomeChoice img {
+    height: 4.5vw;
+    margin-top: 0.2vw;
+    margin-right: 1.4vw;
+    margin-left: 0.1vw;
+    transition: transform 0.3s ease;
 }
 
+#welcomeChoice img:hover {
+    transform: scale(1.1); 
+}
+
+#btnConnect {
+    margin-right: 2.5vw;
+}
+
+#btnConnect button {
+    padding: 0.8vw 1.5vw;
+    background-color: rgb(15, 110, 173);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-size: 1vw;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+#btnConnect button:hover {
+    background-color: rgb(49, 137, 196);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+#btnConnect button:active {
+    transform: translateY(0px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.nav-links a{
+    transition: transform 0.3s ease;
+}
+
+.nav-links a:hover{
+    color: rgb(49, 137, 196);
+    transform: scale(1.1); 
+}

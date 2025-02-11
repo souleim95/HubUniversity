@@ -2,13 +2,13 @@ footer {
     background-color: whitesmoke;
     width: 101%;
     margin: -1%;
-    position: absolute;
-    top: 110%;
+    position: relative;
     border-top: solid rgb(15, 110, 173) 3px;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     text-align: center;
+    padding: 1vw 0; 
 }
 
 .names {
@@ -23,6 +23,7 @@ footer {
     left: 30.7%;
     border-right: solid rgb(15, 110, 173) 3px;
     padding-right: 0.85%;
+    margin-left: 2vw; 
 }
 
 #nametext {
@@ -37,21 +38,30 @@ footer {
     cursor: pointer;
     font-weight: 600;
     background-color: whitesmoke;
+    transition: transform 0.3s ease;
     border: none;
     left: 1vw;
 }
 
 .names a:hover {
     color: rgb(49, 137, 196);
+    transform: scale(1.1);
 }
 
 #cylogo {
-    height: 5vw;
-    margin-top: 0.4vw;
-    margin-right: 2.5vw;
+    height: 4vw;
+    margin-top: 0.8vw;
+    margin-left: 68vw;
+    transition: transform 0.3s ease;
 }
 
-#logoheader {
-    width: 10vw;
-    height: auto;
+#cyulogo {
+    height: 3.5vw;
+    margin-top: 1vw;
+    margin-right: 1.5vw;
+    transition: transform 0.3s ease;
+}
+
+#cylogo:hover, #cyulogo:hover {
+    transform: scale(1.1);
 }
