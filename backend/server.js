@@ -24,8 +24,9 @@ app.use(express.json());
 // Connexion à PostgreSQL
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false, // Pour les connexions cloud
+    ssl: false, // Désactive le SSL
 });
+
 
 // Vérification de la connexion PostgreSQL
 pool.connect()
