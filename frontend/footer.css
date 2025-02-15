@@ -8,7 +8,7 @@ footer {
     flex-direction: row;
     justify-content: space-between;
     text-align: center;
-    padding: 1vw 0; 
+    padding: 1vh 0;
 }
 
 .names {
@@ -16,14 +16,42 @@ footer {
     flex-direction: column;
     width: 8vw;
     height: fit-content;
-    gap: 0.25vw;
+    gap: 0.25vh;
     font-size: 1vw;
-    margin-top: 0.2vw;
+    margin-top: 0.2vh;
     position: left;
     left: 30.7%;
     border-right: solid rgb(15, 110, 173) 3px;
     padding-right: 0.85%;
-    margin-left: 2vw; 
+    margin-left: 2vw;
+}
+
+.about {
+    position: absolute;
+    width: 66vw;
+    height: 6.8vh;
+    margin-left: 12vw;
+    top: 0.4vh;
+}
+
+.about h6 {
+    position: absolute;
+    bottom: 0.1vh;
+    left: 0.2vw;
+    color: rgb(15, 110, 173);
+    text-transform: uppercase;
+    transition: transform 0.3s ease;
+}
+.about h6:hover {
+    color: rgb(49, 137, 196);
+    transform: scale(1.1);
+}
+
+.about p {
+    font-size: 80%;
+    position: absolute;
+    top: 0.8vw;
+    color: rgb(15, 110, 173);
 }
 
 #nametext {
@@ -49,14 +77,14 @@ footer {
 }
 
 #cylogo {
-    height: 4vw;
+    height: 8.1vh;
     margin-top: 0.8vw;
     margin-left: 68vw;
     transition: transform 0.3s ease;
 }
 
 #cyulogo {
-    height: 3.5vw;
+    height: 7.5vh;
     margin-top: 1vw;
     margin-right: 1.5vw;
     transition: transform 0.3s ease;
@@ -65,3 +93,4 @@ footer {
 #cylogo:hover, #cyulogo:hover {
     transform: scale(1.1);
 }
+
