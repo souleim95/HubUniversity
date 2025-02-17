@@ -55,6 +55,8 @@ export const About = styled.div`
   top: 0.4vh;
 
   h6 {
+    cursor: pointer;
+    font-size: 0.8vw;
     position: absolute;
     bottom: 0.3vh;
     left: 0.2vw;
@@ -69,7 +71,7 @@ export const About = styled.div`
   }
 
   p {
-    font-size: 80%;
+    font-size: 85%;
     position: absolute;
     top: 0.8vw;
     color: rgb(15, 110, 173);
@@ -78,11 +80,10 @@ export const About = styled.div`
 
 export const Logo = styled.img`
   height: ${props => props.type === 'cytech' ? '8.1vh' : '7.5vh'};
-  margin-top: ${props => props.type === 'cytech' ? '0.8vw' : '1vw'};
-  margin-left: ${props => props.type === 'cytech' ? '68vw' : '0'};
+  margin-top: ${props => props.type === 'cytech' ? '0.3vw' : '0.4vw'};
+  margin-left: ${props => props.type === 'cytech' ? '67vw' : '0'};
   margin-right: ${props => props.type === 'cyu' ? '1.5vw' : '0'};
   transition: transform 0.3s ease;
-  top: 1.5vw;
 
   &:hover {
     transform: scale(1.1);

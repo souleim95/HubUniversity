@@ -3,9 +3,11 @@ import {
   HeaderContainer, 
   WelcomeChoices, 
   NavLinks,
-  ConnectButton 
+  ConnectButton,
+  SearchContainer
 } from '../styles/HeaderStyles';
 import hubCyLogo from '../assets/HubCyLogo.png';
+import MagnifyGlass from '../assets/magnifyGlass.png';
 
 const Header = () => {
   return (
@@ -24,6 +26,13 @@ const Header = () => {
           </a>
         </div>
       </NavLinks>
+
+    <SearchContainer>
+      <a href="/">
+      <img src={MagnifyGlass} alt="Magnifying Glass" />
+      </a>
+    </SearchContainer>
+
     </HeaderContainer>
   );
 };

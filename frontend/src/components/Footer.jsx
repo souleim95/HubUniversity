@@ -27,7 +27,7 @@ const Footer = () => {
           gestion administrative quotidienne.
         </p>
       </About>
-
+      
       <a href="https://cytech.cyu.fr" target="_blank" rel="noopener noreferrer">
         <Logo src={cytechLogo} alt="CY Tech" type="cytech" />
       </a>

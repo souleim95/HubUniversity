@@ -88,3 +88,20 @@ export const ConnectButton = styled.button`
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
   }
 `; 
+
+export const SearchContainer = styled.div`
+  margin-right: 2vw;
+
+  img {
+    height: 4.5vw;
+    margin-top: 0.2vw;
+    margin-right: 10vw;
+    margin-left: 0.1vw;
+    align-items: center;
+    transition: transform 0.3s ease;
+
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+`;
