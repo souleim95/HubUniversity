@@ -1,3 +1,17 @@
+/*
+ * Composant Footer - Le pied de page du site
+ * 
+ * Ce footer contient 4 parties principales :
+ * - Les noms des membres de l'équipe (avec des mailto pour nous contacter)
+ * - Une section "About" qui explique le projet
+ * - Les logos cliquables de CY Tech et CYU qui renvoient vers leurs sites officiels
+ * 
+ * À noter:
+ * - Les styles sont importés depuis un fichier séparé (FooterStyles.js)
+ * - Les logos sont importés depuis le dossier assets
+ * - On utilise les composants styled au lieu d'un fichier CSS classique
+ */
+
 import React from 'react';
 import { 
   FooterContainer, 

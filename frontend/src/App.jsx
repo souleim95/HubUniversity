@@ -1,3 +1,17 @@
+/*
+ * Composant App - Le composant racine de notre application
+ * 
+ * Ce fichier est le point central de notre site web. Il fait deux choses importantes:
+ * - Il définit le style global (polices, marges, etc.) pour toute l'application
+ * - Il assemble tous les composants principaux dans leur ordre d'affichage
+ * 
+ * Structure:
+ * - GlobalStyle: définit les polices (Poppins pour le texte, Playfair pour les titres)
+ * - Le conteneur principal avec Header en haut, Footer en bas, et les trois sections 
+ *   principales (HeroSection, CampusMap, SignupForm) dans la balise <main>
+ *
+ */
+
 import React from 'react';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
@@ -33,7 +47,7 @@ const GlobalStyle = createGlobalStyle`
   }
 `;
 
-function App() {
+export default function App() {
   return (
     <>
       <GlobalStyle />
@@ -49,5 +63,3 @@ function App() {
     </>
   );
 }
-
-export default App; 

@@ -1,3 +1,20 @@
+/*
+ * Composant SignupForm - Formulaire d'inscription des utilisateurs
+ * 
+ * Ce formulaire permet aux étudiants et enseignants de s'inscrire sur la plateforme.
+ * C'est une version simple avec:
+ * - Champ pour le nom complet
+ * - Champ pour l'email académique
+ * - Sélecteur de rôle (étudiant ou enseignant)
+ * - Bouton d'envoi
+ * 
+ * À faire:
+ * - Il manque la gestion du formulaire (pas de state ni de handleSubmit)
+ * - Pas de validation des emails académiques
+ * - À connecter avec le backend pour l'enregistrement réel des utilisateurs
+ * 
+ */
+
 import React from 'react';
 import styled from 'styled-components';
 
