@@ -1,3 +1,13 @@
+/*
+ * Composant HeroSection - Bannière principale avec vidéo en arrière-plan
+ * 
+ * C'est la première chose que les utilisateurs voient en arrivant sur le site.
+ * Il se compose de:
+ * - Une vidéo en arrière-plan qui tourne en boucle (welcome.mp4)
+ * - Un texte de bienvenue centré sur fond semi-transparent
+ * 
+ */
+
 import React from 'react';
 import styled from 'styled-components';
 import welcomeVideo from '../assets/welcome.mp4';

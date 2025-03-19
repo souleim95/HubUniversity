@@ -9,7 +9,6 @@ export const HeaderContainer = styled.header`
   z-index: 1000;
   border-bottom: solid rgb(15, 110, 173) 3px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
   padding: 0.5vh 2vw;
 `;
@@ -47,9 +46,10 @@ export const WelcomeChoices = styled.div`
 `;
 
 export const NavLinks = styled.nav`
+  z-index: 999;
   display: flex;
   align-items: center;
-  gap: 2vw;
+  margin-left: 75vw;
 
   a {
     text-decoration: none;
@@ -62,9 +62,14 @@ export const NavLinks = styled.nav`
       transform: scale(1.1);
     }
   }
+
+  div  a{
+    padding: 0.4vw 1vw;
+  }
 `;
 
 export const ConnectButton = styled.button`
+  z-index: 998;
   padding: 0.8vw 1.5vw;
   background-color: rgb(15, 110, 173);
   color: white;
@@ -75,7 +80,8 @@ export const ConnectButton = styled.button`
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  margin-right: 2.5vw;
+  margin-right: 30vw;
+
 
   &:hover {
     background-color: rgb(49, 137, 196);
@@ -90,15 +96,17 @@ export const ConnectButton = styled.button`
 `; 
 
 export const SearchContainer = styled.div`
-  margin-right: 2vw;
+  z-index: 1002;
+  margin-left: -29.5vw;
+  display: flex;
+  cursor: pointer;
 
-  img {
+  svg {
     height: 4.5vw;
     margin-top: 0.2vw;
-    margin-right: 10vw;
-    margin-left: 0.1vw;
     align-items: center;
     transition: transform 0.3s ease;
+    color: rgb(49, 137, 196);
 
     &:hover {
       transform: scale(1.1);
