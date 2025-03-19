@@ -6,9 +6,9 @@ if (!process.env.DATABASE_URL) {
     process.exit(1); // Arrête le serveur immédiatement
 }
 
-
 const express = require('express');
 const cors = require('cors');
+const path = require('path'); // Pour gérer les chemins vers les fichiers statiques
 const { Server } = require("socket.io");
 const http = require("http");
 const { Pool } = require("pg");
@@ -27,23 +27,20 @@ const pool = new Pool({
     ssl: false, // Désactive le SSL
 });
 
-
 // Vérification de la connexion PostgreSQL
 pool.connect()
     .then(() => console.log("✅ Connexion PostgreSQL réussie"))
     .catch(err => console.error("❌ Erreur de connexion à PostgreSQL :", err));
 
-// Route Test
-app.get("/", (req, res) => res.send("Backend is running 🚀"));
+// -------------------------
+// Routes API (backend)
+// -------------------------
 
-// WebSockets (ex: notifications incidents)
-io.on("connection", (socket) => {
-    console.log("Nouvel utilisateur connecté 🔗");
-    socket.on("disconnect", () => console.log("Utilisateur déconnecté ❌"));
-});
+// Route de test de l'API
+app.get("/api", (req, res) => res.send("Backend API is running 🚀"));
 
 // Route pour récupérer les utilisateurs
-app.get("/users", async (req, res) => {
+app.get("/api/users", async (req, res) => {
     try {
         const { rows } = await pool.query("SELECT * FROM users");
         res.json(rows);
@@ -54,7 +51,7 @@ app.get("/users", async (req, res) => {
 });
 
 // Route pour ajouter un nouvel utilisateur
-app.post("/users", async (req, res) => {
+app.post("/api/users", async (req, res) => {
     const { name, email, password } = req.body;
     
     // Vérifier que tous les champs nécessaires sont présents
@@ -68,8 +65,6 @@ app.post("/users", async (req, res) => {
             "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *",
             [name, email, password]
         );
-
-        // Retourner l'utilisateur créé (ou au moins quelques informations)
         res.status(201).json(result.rows[0]);
     } catch (err) {
         console.error("Erreur lors de l'ajout d'un utilisateur :", err);
@@ -77,6 +72,28 @@ app.post("/users", async (req, res) => {
     }
 });
 
+// -------------------------
+// WebSockets
+// -------------------------
+io.on("connection", (socket) => {
+    console.log("Nouvel utilisateur connecté 🔗");
+    socket.on("disconnect", () => console.log("Utilisateur déconnecté ❌"));
+});
+
+// -------------------------
+// Servir le frontend
+// -------------------------
+
+// Sert les fichiers statiques du dossier 'build' (qui contient votre frontend)
+app.use(express.static(path.join(__dirname, 'build')));
+
+// Pour toute route non gérée par les routes API, renvoie le fichier index.html du build
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
+
+// -------------------------
 // Démarrage du serveur
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`✅ Serveur backend sur http://localhost:${PORT}`));
+// -------------------------
+const PORT = process.env.PORT || 5001;
+server.listen(PORT, () => console.log(`✅ Serveur sur http://localhost:${PORT}`));
