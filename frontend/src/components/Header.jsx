@@ -12,43 +12,19 @@
  *
  */
 
-import React, { useState } from 'react';
-import { FaSearch, FaTimes } from 'react-icons/fa';
+import React from 'react';
 import { 
   HeaderContainer, 
   WelcomeChoices, 
   NavLinks,
-  ConnectButton,
-  SearchContainer
+  ConnectButton
 } from '../styles/HeaderStyles';
 import hubCyLogo from '../assets/HubCyLogo.png';
-import MagnifyGlass from '../assets/magnifyGlass.png';
+import SearchBox from './SearchBox';
 
 const Header = () => {
-  //state (état, donées)
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [submit, setSubmit] = useState(false); 
+  // Supprimer isSearchOpen et handleClick car ils sont gérés dans SearchBox
   
-  //comportements
-  const handleClick = (event) => {
-    event.preventDefault();
-    setIsSearchOpen(!isSearchOpen);
-    handleSubmit(event);
-  };
-  
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    setSearchValue(event.target.value);
-  }
-
-  //1.copie du state
-
-  //2.manipuler cette copie
-
-  //3.mettre à jour le state avec le setter
-
-
-  //affichage du header
   return (
     <HeaderContainer>
       <WelcomeChoices>
@@ -56,7 +32,7 @@ const Header = () => {
           <img src={hubCyLogo} alt="HubCY" />
         </a>
       </WelcomeChoices>
-
+  
       <NavLinks>
         <a href="/faq">FAQ</a>
         <div>
@@ -65,17 +41,10 @@ const Header = () => {
           </a>
         </div>
       </NavLinks>
-
-    <SearchContainer>
-      {isSearchOpen ? (
-          <FaTimes onClick={handleClick} size={25} />
-        ) : (
-          <FaSearch onClick={handleClick} size={35} />
-        )}
-    </SearchContainer>
-
+  
+      <SearchBox />
     </HeaderContainer>
   );
 };
 
-export default Header; 
+export default Header;
