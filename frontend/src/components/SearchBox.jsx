@@ -15,7 +15,6 @@ const SearchBox = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Effectuez ici votre logique de recherche avec searchText
     console.log('Recherche:', searchText);
   };
 
@@ -23,17 +22,19 @@ const SearchBox = () => {
     <SearchContainer isOpen={isOpen}>
       <div onClick={toggleSearch}>
         {isOpen ? (
-          <FaTimes size={35} style={{ transform: 'rotate(0)' }} />
+          <FaTimes size={28} style={{ transform: 'rotate(0)' }} />
         ) : (
-          <FaSearch size={50} />
+          <FaSearch size={28} />
         )}
       </div>
       <form onSubmit={handleSubmit}>
         <SearchBar 
+          as="textarea" 
           isOpen={isOpen}
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           placeholder="Rechercher..."
+          rows="1"
         />
       </form>
     </SearchContainer>

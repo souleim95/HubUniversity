@@ -23,8 +23,6 @@ import hubCyLogo from '../assets/HubCyLogo.png';
 import SearchBox from './SearchBox';
 
 const Header = () => {
-  // Supprimer isSearchOpen et handleClick car ils sont gérés dans SearchBox
-  
   return (
     <HeaderContainer>
       <WelcomeChoices>

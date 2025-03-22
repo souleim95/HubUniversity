@@ -35,7 +35,7 @@ export const WelcomeChoices = styled.div`
 
   img {
     height: 50px;
-    margin: 5px 15px 5px 2px;
+    margin: 7px 1px 6px 3px;
     transition: transform 0.3s ease;
 
     &:hover {
@@ -56,6 +56,7 @@ export const NavLinks = styled.nav`
     color: rgb(15, 110, 173);
     font-weight: 500;
     transition: all 0.3s ease;
+    margin-right: 19px;
 
     &:hover {
       color: rgb(49, 137, 196);
@@ -63,9 +64,11 @@ export const NavLinks = styled.nav`
     }
   }
 
-  div  a{
-    padding: 0.4vw 1vw;
+  div{
+    width: 0px;
+    margin-right: 155px;
   }
+  
 `;
 
 export const ConnectButton = styled.button`
@@ -80,7 +83,6 @@ export const ConnectButton = styled.button`
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  margin-right: 30vw;
 
 
   &:hover {
@@ -96,8 +98,8 @@ export const ConnectButton = styled.button`
 `; 
 
 export const SearchContainer = styled.div`
-  position: fixed;
-  right: 20px;
+  position: absolute;
+  right: 62px;
   top: 30px;
   z-index: 1010;
   display: flex;
@@ -109,10 +111,11 @@ export const SearchContainer = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
+    top: 10px;
     
     svg {
-      width: 20px;
-      height: 20px;
+      width: 28px;
+      height: 28px;
       color: rgb(49, 137, 196);
       transition: all 0.3s ease;
     }
@@ -121,9 +124,11 @@ export const SearchContainer = styled.div`
 
 export const SearchBar = styled.input`
   position: fixed;
-  top: 70px; // Positionné sous le header
-  right: 20px;
+  top: 89px; 
+  right: 0px;
   width: 250px;
+  min-height: 20px;
+  max-height: 200px;
   padding: 10px;
   border: 2px solid rgb(15, 110, 173);
   border-radius: 4px;
@@ -134,4 +139,8 @@ export const SearchBar = styled.input`
   background-color: white;
   z-index: 1009;
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  overflow-y: auto; // Permet le défilement vertical
+  resize: vertical; // Permet à l'utilisateur de redimensionner verticalement
+  height: auto; // La hauteur s'adapte au contenu
+  word-wrap: break-word; // Passe à la ligne si le texte est trop long
 `;

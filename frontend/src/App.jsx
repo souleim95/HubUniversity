@@ -18,6 +18,7 @@ import HeroSection from './components/HeroSection';
 import CampusMap from './components/CampusMap';
 import SignupForm from './components/SignupForm';
 import Footer from './components/Footer';
+import RerSchedule from './components/RerSchedule';
 import { createGlobalStyle } from 'styled-components';
 
 const GlobalStyle = createGlobalStyle`
@@ -56,6 +57,7 @@ export default function App() {
         <main>
           <HeroSection />
           <CampusMap />
+          <RerSchedule />
           <SignupForm />
         </main>
         <Footer />
