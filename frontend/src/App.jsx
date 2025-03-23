@@ -16,7 +16,7 @@ import React from 'react';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
 import CampusMap from './components/CampusMap';
-import SignupForm from './components/SignupForm';
+//import SignupForm from './components/SignupForm';
 import Footer from './components/Footer';
 import RerSchedule from './components/RerSchedule';
 import { createGlobalStyle } from 'styled-components';
@@ -58,7 +58,7 @@ export default function App() {
           <HeroSection />
           <CampusMap />
           <RerSchedule />
-          <SignupForm />
+          {/* <SignupForm /> */}
         </main>
         <Footer />
       </div>
