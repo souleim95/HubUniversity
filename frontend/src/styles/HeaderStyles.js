@@ -144,3 +144,70 @@ export const SearchBar = styled.input`
   height: auto; // La hauteur s'adapte au contenu
   word-wrap: break-word; // Passe à la ligne si le texte est trop long
 `;
+
+
+export const LoginFormContainer = styled.div`
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 2vw;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  z-index: 1002;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 25vw;
+
+  h2 {
+    margin-bottom: 1vw;
+    color: rgb(15, 110, 173);
+  }
+
+  input {
+    width: 100%;
+    padding: 0.8vw;
+    margin-bottom: 1vw;
+    border: 1px solid rgb(15, 110, 173);
+    border-radius: 5px;
+    font-size: 1vw;
+  }
+
+  button {
+    padding: 0.8vw;
+    width: 100%;
+    background-color: rgb(15, 110, 173);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1vw;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 0.5vw;
+
+    &:hover {
+      background-color: rgb(49, 137, 196);
+    }
+  }
+
+  .close-btn {
+    background-color: rgb(200, 50, 50);
+
+    &:hover {
+      background-color: rgb(170, 30, 30);
+    }
+  }
+`;
+
+export const Overlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1001;
+`;
