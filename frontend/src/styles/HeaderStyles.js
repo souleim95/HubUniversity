@@ -145,7 +145,6 @@ export const SearchBar = styled.input`
   word-wrap: break-word; // Passe à la ligne si le texte est trop long
 `;
 
-
 export const LoginFormContainer = styled.div`
   position: fixed;
   top: 50%;
