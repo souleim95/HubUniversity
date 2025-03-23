@@ -26,7 +26,6 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: false, // Désactive le SSL
 });
-
 // Vérification de la connexion PostgreSQL
 pool.connect()
   .then(() => console.log("✅ Connexion PostgreSQL réussie"))
@@ -49,21 +48,26 @@ app.get("/api/users", async (req, res) => {
     res.status(500).send("Erreur serveur");
   }
 });
-
 // Route pour ajouter un nouvel utilisateur
 app.post("/api/users", async (req, res) => {
-  const { name, email, password } = req.body;
+  console.log("ici");
+  const { fullName, email, role } = req.body;
   
   // Vérifier que tous les champs nécessaires sont présents
-  if (!name || !email || !password) {
-    return res.status(400).json({ error: "Les champs name, email et password sont obligatoires." });
+  if (!fullName || !email || !role) {
+    return res.status(400).json({ error: "Les champs fullName, email, password, et role sont obligatoires." });
   }
+  //verifications de la requete SQL 
+  const sqlQuery = "INSERT INTO users (fullName, email, role) VALUES ($1, $2, $3) RETURNING *";
+  const sqlValues = [fullName, email, role];
+  console.log("Requête SQL :", sqlQuery);
+  console.log("Valeurs SQL :", sqlValues);
 
   try {
     // Insérer l'utilisateur dans la table "users"
     const result = await pool.query(
-      "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *",
-      [name, email, password]
+      "INSERT INTO users (fullName, email, role) VALUES ($1, $2, $3) RETURNING *",
+      [fullName, email, role]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
