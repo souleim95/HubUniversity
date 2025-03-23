@@ -1,49 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
+import {
+  ScheduleContainer,
+  MainTitle,
+  DirectionBox,
+  DirectionTitle,
+  ErrorMessage
+} from '../styles/RerScheduleStyles';
 
-const ScheduleContainer = styled.div`
-  padding: 20px;
-  margin: 20px auto;
-  max-width: 800px;
-  background-color:#f5f7fa;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-`;
-
-const MainTitle = styled.h2`
-  font-family: var(--font-secondary);
-  color: rgb(15, 110, 173);
-  text-align: center;
-  margin-bottom: 20px;
-  font-size: 2em;
-`;
-
-const DirectionBox = styled.div`
-  margin: 10px 0;
-  padding: 15px;
-  background-color:rgb(255, 255, 255);
-  border-radius: 4px;
-`;
-
-const DirectionTitle = styled.h3`
-  font-family: var(--font-secondary);
-  cursor: pointer;
-  color: rgb(15, 110, 173);
-  font-size: 1.5em;
-  margin-bottom: 15px;
-  text-decoration: none;
-  
-  &:hover {
-    color:rgb(67, 143, 228);
-    text-decoration: none;
-  }
-`;
-
-const ErrorMessage = styled.div`
-  color: #dc3545;
-  margin: 10px 0;
-  font-size: 1.1em;
-`;
 
 export default function RerSchedule() {
   const [schedules, setSchedules] = useState({ toParis: [], toCergy: [] });

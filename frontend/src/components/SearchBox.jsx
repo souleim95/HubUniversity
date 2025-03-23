@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
-import { FaSearch, FaTimes } from 'react-icons/fa';
-import { SearchContainer, SearchBar } from '../styles/HeaderStyles';
+import { 
+  FaSearch, 
+  FaTimes 
+} from 'react-icons/fa';
+import { 
+  SearchContainer, 
+  SearchBar 
+} from '../styles/HeaderStyles';
 
 const SearchBox = () => {
   const [isOpen, setIsOpen] = useState(false);
