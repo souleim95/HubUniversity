@@ -13,6 +13,7 @@
  * - Pas de validation des emails académiques
  * - À connecter avec le backend pour l'enregistrement réel des utilisateurs
  * 
+ *
 
 import React from 'react';
 
