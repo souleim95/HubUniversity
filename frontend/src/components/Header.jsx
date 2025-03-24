@@ -8,14 +8,15 @@ import {
   Overlay 
 } from '../styles/HeaderStyles';
 import hubCyLogo from '../assets/HubCyLogo.png';
-import SearchBox from './SearchBox'; // Importation du composant SearchBox
+import SearchBox from './SearchBox';
 
 const Header = () => {
   const [isFormOpen, setIsFormOpen] = useState(null); 
-  const [formData, setFormData] = useState({ fullName: '', email: '', role: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', role: '', password: '' });
 
   const toggleForm = (formType) => {
     setIsFormOpen(isFormOpen === formType ? null : formType);
+    setFormData({ name: '', email: '', role: '', password: '' }); // Réinitialisation du formulaire
   };
 
   const handleChange = (e) => {
@@ -25,27 +26,47 @@ const Header = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log('Envoi des données:', formData); // DEBUG
+    // Déterminer les données à envoyer
+    let requestData;
+    if (isFormOpen === 'signup') {
+      requestData = {
+        name: formData.name,
+        email: formData.email,
+        role: formData.role
+      };
+    } else {
+      requestData = {
+        email: formData.email,
+        password: formData.password
+      };
+    }
+
+    const url = isFormOpen === 'signup' 
+      ? 'http://localhost:5001/api/users' 
+      : 'http://localhost:5001/api/login';
 
     try {
-      const response = await fetch('http://localhost:5001/api/users', {
+      const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(requestData),
       });
 
       if (response.ok) {
-        const user = await response.json();
-        console.log('Utilisateur créé :', user);
-        alert('Inscription réussie !');
-        toggleForm(null); // Fermer le formulaire après inscription réussie
+        const data = await response.json();
+        alert(isFormOpen === 'signup' ? 'Inscription réussie !' : `Bienvenue ${data.name} !`);
+        
+        if (isFormOpen === 'login') {
+          localStorage.setItem('user', JSON.stringify(data.name));
+          window.location.reload(); // Rafraîchir la page pour mettre à jour le header
+        }
+
+        toggleForm(null); // Fermer le formulaire après succès
       } else {
-        console.error('Erreur lors de l\'inscription :', response.statusText);
-        alert('Erreur lors de l\'inscription.');
+        alert('Erreur lors de l\'opération.');
       }
     } catch (error) {
-      console.error('Erreur réseau :', error);
-      alert('Erreur réseau. Veuillez vérifier votre connexion.');
+      alert('Erreur réseau. Vérifiez votre connexion.');
     }
   };
 
@@ -67,21 +88,31 @@ const Header = () => {
 
       <SearchBox />
 
-      {isFormOpen === 'signup' && (
+      {(isFormOpen === 'signup' || isFormOpen === 'login') && (
         <>
           <Overlay onClick={() => toggleForm(null)} />
           <LoginFormContainer>
-            <h2>Inscription</h2>
+            <h2>{isFormOpen === 'signup' ? 'Inscription' : 'Connexion'}</h2>
             <form onSubmit={handleSubmit}>
-              <input type="text" name="fullName" placeholder="Nom complet" value={formData.fullName} onChange={handleChange} required />
-              <input type="email" name="email" placeholder="Email académique" value={formData.email} onChange={handleChange} required />
-              <select name="role" value={formData.role} onChange={handleChange} required>
-                <option value="">Sélectionnez votre rôle</option>
-                <option value="student">Étudiant</option>
-                <option value="teacher">Enseignant</option>
-              </select>
-              <button type="submit">Créer un compte</button>
-              <button onClick={() => toggleForm(null)} className="close-btn">Fermer</button>
+              {isFormOpen === 'signup' && (
+                <input type="text" name="name" placeholder="Nom complet" value={formData.name} onChange={handleChange} required />
+              )}
+              <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} required />
+              
+              {isFormOpen === 'login' && (
+                <input type="password" name="password" placeholder="Mot de passe" value={formData.password} onChange={handleChange} required />
+              )}
+
+              {isFormOpen === 'signup' && (
+                <select name="role" value={formData.role} onChange={handleChange} required>
+                  <option value="">Sélectionnez votre rôle</option>
+                  <option value="student">Étudiant</option>
+                  <option value="teacher">Enseignant</option>
+                </select>
+              )}
+
+              <button type="submit">{isFormOpen === 'signup' ? 'Créer un compte' : 'Se connecter'}</button>
+              <button type="button" onClick={() => toggleForm(null)} className="close-btn">Fermer</button>
             </form>
           </LoginFormContainer>
         </>
