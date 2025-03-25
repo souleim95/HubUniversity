@@ -106,13 +106,6 @@ const Faq = () => {
             <li>🏫 Réservation de salle : +1pt</li>
             <li>🎓 Participation événement : +3pts</li>
         </ul>
-        Niveaux disponibles :
-        <ul>
-            <li>Débutant : 0 points</li>
-            <li>Intermédiaire : 10 points</li>
-            <li>Avancé : 30 points</li>
-            <li>Expert : 50 points</li>
-        </ul>
         </div>
     },
     {
