@@ -80,7 +80,6 @@ const Header = () => {
       </WelcomeChoices>
 
       <NavLinks>
-        <a href="/faq">FAQ</a>
         <div>
           <ConnectButton onClick={() => toggleForm('login')}>Connexion</ConnectButton>
           <ConnectButton onClick={() => toggleForm('signup')}>Inscription</ConnectButton>
