@@ -25,39 +25,40 @@ const Header = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    let requestData = isFormOpen === 'signup' 
-      ? { name: formData.name, email: formData.email, role: formData.role, password: formData.password } 
+    let requestData = isFormOpen === 'signup'
+      ? { name: formData.name, email: formData.email, role: formData.role, password: formData.password }
       : { email: formData.email, password: formData.password };
-
-    const url = isFormOpen === 'signup' 
-      ? 'http://localhost:5001/api/users' 
+  
+    const url = isFormOpen === 'signup'
+      ? 'http://localhost:5001/api/users'
       : 'http://localhost:5001/api/login';
-
+  
     try {
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestData),
       });
-
+  
       if (response.ok) {
         const data = await response.json();
-        alert(isFormOpen === 'signup' ? 'Inscription réussie !' : `Bienvenue ${data.name} !`);
-
+        alert(isFormOpen === 'signup' ? 'Inscription réussie !' : `Bienvenue ${data.user.name} !`);
+  
         if (isFormOpen === 'login') {
-          localStorage.setItem('user', JSON.stringify(data.name));
+          localStorage.setItem('user', JSON.stringify(data.user.name));
           window.location.reload();
         }
-
+  
         setIsFormOpen(null); // Fermer après succès
       } else {
-        alert('Erreur lors de l\'opération.', response.status);
-        console.log(response.statusText);
+        const errorData = await response.json();
+        alert(errorData.error || 'Erreur lors de la connexion.');
       }
     } catch (error) {
       alert('Erreur réseau. Vérifiez votre connexion.');
     }
   };
+  
 
   return (
     <HeaderContainer>
