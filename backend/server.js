@@ -104,6 +104,56 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
+app.get("/api/rer-schedule", async (req, res) => {
+  try {
+    const apiKey = process.env.API_SNCF_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ error: "Clé API SNCF non configurée" });
+    }
+    // Utilisation du code UIC de Cergy Préfecture : 87381905
+    const stopAreaId = "stop_area:OCE:SA:87381905";
+    const count = 10;
+    // Construction de l'URL pour récupérer les 10 prochains départs du RER A
+    const url = `https://api.sncf.com/v1/coverage/sncf/stop_areas/${stopAreaId}/departures?count=${count}&filter[]=line.name=RER A`;
+    
+    // Authentification Basic : username = API key, password vide
+    const auth = Buffer.from(apiKey + ":").toString("base64");
+
+    const response = await fetch(url, {
+      headers: {
+        "Authorization": `Basic ${auth}`
+      }
+    });
+    const data = await response.json();
+
+    let versParis = [];
+    let versCergy = [];
+
+    if (data.departures) {
+      data.departures.forEach(dep => {
+        const direction = dep.display_informations && dep.display_informations.direction;
+        const departureTime = dep.stop_date_time && dep.stop_date_time.departure_date_time;
+        const time = departureTime ? departureTime.substr(11, 5) : "";
+        if (direction) {
+          const directionLower = direction.toLowerCase();
+          if (directionLower.includes("paris")) {
+            versParis.push(time);
+          } else if (directionLower.includes("cergy")) {
+            versCergy.push(time);
+          }
+        }
+      });
+    }
+    
+    res.json({ versParis, versCergy });
+  } catch (err) {
+    console.error("Erreur lors de la récupération des horaires RER :", err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+
+
 
 // -------------------------
 // WebSockets
