@@ -20,7 +20,8 @@ const Header = () => {
   };
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData({ ...formData, 
+      [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
@@ -40,7 +41,6 @@ const Header = () => {
         password: formData.password
       };
     }
-
     const url = isFormOpen === 'signup' 
       ? 'http://localhost:5001/api/users' 
       : 'http://localhost:5001/api/login';
@@ -63,7 +63,8 @@ const Header = () => {
 
         toggleForm(null); // Fermer le formulaire après succès
       } else {
-        alert('Erreur lors de l\'opération.');
+        alert('Erreur lors de l\'opération.', response.status);
+        console.log(response.statusText);
       }
     } catch (error) {
       alert('Erreur réseau. Vérifiez votre connexion.');
@@ -79,7 +80,6 @@ const Header = () => {
       </WelcomeChoices>
 
       <NavLinks>
-        <a href="/faq">FAQ</a>
         <div>
           <ConnectButton onClick={() => toggleForm('login')}>Connexion</ConnectButton>
           <ConnectButton onClick={() => toggleForm('signup')}>Inscription</ConnectButton>

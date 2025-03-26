@@ -50,20 +50,6 @@ export const NavLinks = styled.nav`
   display: flex;
   align-items: center;
 
-  a {
-    font-size: 16px;
-    text-decoration: none;
-    color: rgb(15, 110, 173);
-    font-weight: 500;
-    transition: all 0.3s ease;
-    margin-right: 19px;
-
-    &:hover {
-      color: rgb(49, 137, 196);
-      transform: scale(1.1);
-    }
-  }
-
   div{
     width: 0px;
     margin-right: 155px;
