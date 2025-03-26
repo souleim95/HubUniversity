@@ -6,7 +6,7 @@ export const FaqTitle = styled.h2`
   writing-mode: vertical-lr;
   transform: rotate(180deg);
   position: absolute;
-  left: -34px;
+  left: -27px;
   font-size: 2em;
   padding: 20px 0;
   border-right: 4px solid rgb(15, 110, 173);
@@ -16,8 +16,11 @@ export const FaqTitle = styled.h2`
 export const FaqContainer = styled.div`
   max-width: 800px;
   margin: 40px auto;
-  padding: 20px 20px 20px 100px; /* Added left padding for title */
+  padding: 20px 20px 20px 100px; 
   position: relative;
+  background-color: #f5f5f5; 
+  border-radius: 10px; 
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
 `;
 
 export const FaqItem = styled.div`

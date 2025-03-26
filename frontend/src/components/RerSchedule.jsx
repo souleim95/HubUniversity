@@ -7,7 +7,6 @@ import {
   ErrorMessage
 } from '../styles/RerScheduleStyles';
 
-
 export default function RerSchedule() {
   const [schedules, setSchedules] = useState({ toParis: [], toCergy: [] });
   const [lastUpdate, setLastUpdate] = useState(null);
@@ -15,19 +14,28 @@ export default function RerSchedule() {
   useEffect(() => {
     const fetchSchedules = async () => {
       try {
-        // Utilisation de l'API pierre-grimaud qui est plus fiable
-        const [parisRes, cergyRes] = await Promise.all([
-          fetch('https://api-ratp.pierre-grimaud.fr/v4/schedules/rers/A/cergy+le+haut/A'),
-          fetch('https://api-ratp.pierre-grimaud.fr/v4/schedules/rers/A/cergy+le+haut/R')
-        ]);
-
-        const parisData = await parisRes.json();
-        const cergyData = await cergyRes.json();
-
-        setSchedules({
-          toParis: parisData.result.schedules || [],
-          toCergy: cergyData.result.schedules || []
-        });
+        const response = await fetch(
+          'https://api.sncf.com/v1/coverage/sncf/stop_areas/stop_area:SNCF:87381905/arrivals?count=10',
+          {
+            headers: {
+              Authorization: '794cbefe-7238-4c7c-835c-8e16aa6f3d7f'
+            }
+          }
+        );
+        if (!response.ok) {
+          throw new Error(`Erreur HTTP : ${response.status}`);
+        }
+        const data = await response.json();
+        const arrivals = data.arrivals || [];
+        // Filtrer les arrivées selon la direction affichée
+        const toParis = arrivals.filter(arrival =>
+          arrival.display_informations.direction.includes('Boissy-Saint-Léger')
+        );
+        const toCergy = arrivals.filter(arrival =>
+          arrival.display_informations.direction.includes('Cergy le Haut')
+        );
+        
+        setSchedules({ toParis, toCergy });
         setLastUpdate(new Date());
       } catch (error) {
         console.error('Erreur lors de la récupération des horaires:', error);
@@ -40,15 +48,25 @@ export default function RerSchedule() {
   }, []);
 
   const handleDirectionClick = (direction) => {
-    const url = direction === 'paris' 
-      ?'https://www.ratp.fr/horaires-rer?network-current=rer&networks=rer&line_rer=A&line_str_id_rer=LIG%3AIDFM%3AC01742&stop_point_rer=Cergy+Préfecture&stop_place_id_rer=ART%3AIDFM%3A44559&form_id=scheduledform&op=Rechercher&type=now&departure_date=22%2F032025&departure_time=0%3A47' 
-      : 'https://www.ratp.fr/horaires-rer?network-current=rer&networks=rer&line_rer=A&line_str_id_rer=LIG%3AIDFM%3AC01742&stop_point_rer=Châtelet+-+Les+Halles&stop_place_id_rer=ART%3AIDFM%3A45102&form_id=scheduledform&op=Rechercher&type=now&departure_date=22%2F032025&departure_time=0%3A49' ;
+    // Vous pouvez modifier ces URL ou leur logique selon vos besoins.
+    const url =
+      direction === 'paris'
+        ? 'https://www.ratp.fr/horaires-rer?network-current=rer&networks=rer&line_rer=A&stop_point_rer=Cergy+Préfecture'
+        : 'https://www.ratp.fr/horaires-rer?network-current=rer&networks=rer&line_rer=A&stop_point_rer=Cergy+Préfecture';
     window.open(url, '_blank');
+  };
+
+  // Fonction de formatage de l'heure (exemple: "20250326T145800" => "14:58")
+  const formatHeure = (dateTimeStr) => {
+    if (!dateTimeStr || dateTimeStr.length < 13) return dateTimeStr;
+    const heure = dateTimeStr.substring(9, 11);
+    const minutes = dateTimeStr.substring(11, 13);
+    return `${heure}:${minutes}`;
   };
 
   return (
     <ScheduleContainer>
-      <MainTitle>Horaires RER A - Cergy-le-Haut</MainTitle>
+      <MainTitle>Horaires RER A - Cergy Préfecture</MainTitle>
       <small>Dernière mise à jour : {lastUpdate?.toLocaleTimeString()}</small>
       <DirectionBox>
         <DirectionTitle onClick={() => handleDirectionClick('paris')}>
@@ -57,7 +75,7 @@ export default function RerSchedule() {
         {schedules.toParis.length > 0 ? (
           schedules.toParis.slice(0, 3).map((train, index) => (
             <div key={index} style={{ margin: '10px 0', fontSize: '1.1em' }}>
-              ⏰ Prochain train dans : {train.message}
+              ⏰ Prochain train vers {train.display_informations.direction} à {formatHeure(train.stop_date_time.arrival_date_time)}
             </div>
           ))
         ) : (
@@ -71,7 +89,7 @@ export default function RerSchedule() {
         {schedules.toCergy.length > 0 ? (
           schedules.toCergy.slice(0, 3).map((train, index) => (
             <div key={index} style={{ margin: '10px 0', fontSize: '1.1em' }}>
-              ⏰ Prochain train dans : {train.message}
+              ⏰ Prochain train vers {train.display_informations.direction} à {formatHeure(train.stop_date_time.arrival_date_time)}
             </div>
           ))
         ) : (
@@ -81,3 +99,4 @@ export default function RerSchedule() {
     </ScheduleContainer>
   );
 }
+

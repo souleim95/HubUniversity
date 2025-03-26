@@ -23,6 +23,7 @@ services:
     environment:
       - DATABASE_URL=postgres://postgres@db:5432/projet_universite
       - NODE_ENV=production
+      - SNCF_API_KEY=794cbefe-7238-4c7c-835c-8e16aa6f3d7f
     depends_on:
       - db
     ports:
@@ -44,4 +45,3 @@ services:
     ports:
       - "3000:3000"
     command: sh -c "npm install && npm start"
-
