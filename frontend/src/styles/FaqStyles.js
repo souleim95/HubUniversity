@@ -14,13 +14,28 @@ export const FaqTitle = styled.h2`
 `;
 
 export const FaqContainer = styled.div`
-  max-width: 800px;
+  max-width: 1000px;
   margin: 40px auto;
   padding: 20px 20px 20px 100px; 
   position: relative;
   background-color: #f5f5f5; 
   border-radius: 10px; 
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+`;
+
+export const FaqContent = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+`;
+
+export const FaqColumn = styled.div`
+  flex: 1;
+  min-width: 300px;
+  
+  @media (max-width: 768px) {
+    flex: 100%;
+  }
 `;
 
 export const FaqItem = styled.div`
@@ -51,4 +66,4 @@ export const Answer = styled.div`
   max-height: ${props => props.isOpen ? '500px' : '0'};
   overflow: hidden;
   transition: all 0.3s ease;
-`;
+`
