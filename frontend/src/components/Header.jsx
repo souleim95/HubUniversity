@@ -15,32 +15,20 @@ const Header = () => {
   const [formData, setFormData] = useState({ name: '', email: '', role: '', password: '' });
 
   const toggleForm = (formType) => {
-    setIsFormOpen(isFormOpen === formType ? null : formType);
+    setIsFormOpen(formType);
     setFormData({ name: '', email: '', role: '', password: '' }); // Réinitialisation du formulaire
   };
 
   const handleChange = (e) => {
-    setFormData({ ...formData, 
-      [e.target.name]: e.target.value });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    let requestData = isFormOpen === 'signup' 
+      ? { name: formData.name, email: formData.email, role: formData.role, password: formData.password } 
+      : { email: formData.email, password: formData.password };
 
-    // Déterminer les données à envoyer
-    let requestData;
-    if (isFormOpen === 'signup') {
-      requestData = {
-        name: formData.name,
-        email: formData.email,
-        role: formData.role
-      };
-    } else {
-      requestData = {
-        email: formData.email,
-        password: formData.password
-      };
-    }
     const url = isFormOpen === 'signup' 
       ? 'http://localhost:5001/api/users' 
       : 'http://localhost:5001/api/login';
@@ -55,13 +43,13 @@ const Header = () => {
       if (response.ok) {
         const data = await response.json();
         alert(isFormOpen === 'signup' ? 'Inscription réussie !' : `Bienvenue ${data.name} !`);
-        
+
         if (isFormOpen === 'login') {
           localStorage.setItem('user', JSON.stringify(data.name));
-          window.location.reload(); // Rafraîchir la page pour mettre à jour le header
+          window.location.reload();
         }
 
-        toggleForm(null); // Fermer le formulaire après succès
+        setIsFormOpen(null); // Fermer après succès
       } else {
         alert('Erreur lors de l\'opération.', response.status);
         console.log(response.statusText);
@@ -82,7 +70,6 @@ const Header = () => {
       <NavLinks>
         <div>
           <ConnectButton onClick={() => toggleForm('login')}>Connexion</ConnectButton>
-          <ConnectButton onClick={() => toggleForm('signup')}>Inscription</ConnectButton>
         </div>
       </NavLinks>
 
@@ -90,7 +77,7 @@ const Header = () => {
 
       {(isFormOpen === 'signup' || isFormOpen === 'login') && (
         <>
-          <Overlay onClick={() => toggleForm(null)} />
+          <Overlay onClick={() => setIsFormOpen(null)} />
           <LoginFormContainer>
             <h2>{isFormOpen === 'signup' ? 'Inscription' : 'Connexion'}</h2>
             <form onSubmit={handleSubmit}>
@@ -104,15 +91,38 @@ const Header = () => {
               )}
 
               {isFormOpen === 'signup' && (
-                <select name="role" value={formData.role} onChange={handleChange} required>
-                  <option value="">Sélectionnez votre rôle</option>
-                  <option value="student">Étudiant</option>
-                  <option value="teacher">Enseignant</option>
-                </select>
+                <>
+                  <input type="password" name="password" placeholder="Mot de passe" value={formData.password} onChange={handleChange} required />
+                  <select name="role" value={formData.role} onChange={handleChange} required>
+                    <option value="">Sélectionnez votre rôle</option>
+                    <option value="student">Étudiant</option>
+                    <option value="teacher">Enseignant</option>
+                  </select>
+                </>
               )}
 
               <button type="submit">{isFormOpen === 'signup' ? 'Créer un compte' : 'Se connecter'}</button>
-              <button type="button" onClick={() => toggleForm(null)} className="close-btn">Fermer</button>
+
+              {/* 🔹 Ajout du bouton de bascule 🔹 */}
+              {isFormOpen === 'login' ? (
+                <p>
+                  Pas encore inscrit ?{' '}
+                  <button type="button" onClick={() => toggleForm('signup')} className="switch-form">
+                    Inscription
+                  </button>
+                </p>
+              ) : (
+                <p>
+                  Déjà un compte ?{' '}
+                  <button type="button" onClick={() => toggleForm('login')} className="switch-form">
+                    Connexion
+                  </button>
+                </p>
+              )}
+
+              <button type="button" onClick={() => setIsFormOpen(null)} className="close-btn">
+                Fermer
+              </button>
             </form>
           </LoginFormContainer>
         </>
