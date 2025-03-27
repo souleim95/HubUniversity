@@ -5,7 +5,8 @@ import {
   NavLinks,
   ConnectButton,
   LoginFormContainer, 
-  Overlay 
+  Overlay,
+  SearchContainer
 } from '../styles/HeaderStyles';
 import hubCyLogo from '../assets/HubCyLogo.png';
 import SearchBox from './SearchBox';
