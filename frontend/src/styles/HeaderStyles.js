@@ -44,17 +44,32 @@ export const WelcomeChoices = styled.div`
   }
 `;
 
-export const NavLinks = styled.nav`
-  position: absolute;
-  right: 80px;
+export const NavLinks = styled.div`
   display: flex;
   align-items: center;
+  position: absolute;
+  left: 250px;
+  top: 30px;
 
-  div{
-    width: 0px;
-    margin-right: 155px;
+  div {
+    display: flex;
+    align-items: center;
+    gap: 15px;
   }
-  
+
+  span {
+    color: #2C5282;
+    font-size: 1.1rem;
+    font-weight: 600;
+    padding: 8px 15px;
+    margin-left: 5px;
+    border-radius: 4px;
+    background-color: rgba(44, 82, 130, 0.1);
+  }
+
+  button {
+    margin-left: 1045px;
+  }
 `;
 
 export const ConnectButton = styled.button`
@@ -85,19 +100,18 @@ export const ConnectButton = styled.button`
 
 export const SearchContainer = styled.div`
   position: absolute;
-  right: 62px;
+  right: 120px;
   top: 30px;
   z-index: 1010;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
+  gap: 15px;
 
   div {
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    top: 10px;
     
     svg {
       width: 28px;

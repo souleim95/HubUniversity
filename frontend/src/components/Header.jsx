@@ -13,6 +13,7 @@ import SearchBox from './SearchBox';
 const Header = () => {
   const [isFormOpen, setIsFormOpen] = useState(null); 
   const [formData, setFormData] = useState({ name: '', email: '', role: '', password: '' });
+  const [userName, setUserName] = useState(localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null);
 
   const toggleForm = (formType) => {
     setIsFormOpen(formType);
@@ -42,10 +43,11 @@ const Header = () => {
   
       if (response.ok) {
         const data = await response.json();
-        alert(isFormOpen === 'signup' ? 'Inscription réussie !' : `Bienvenue ${data.user.name} !`);
+        alert(isFormOpen === 'signup' ? 'Inscription réussie !' : `Bonjour ${data.user.name} !`);
   
         if (isFormOpen === 'login') {
           localStorage.setItem('user', JSON.stringify(data.user.name));
+          setUserName(data.user.name);
           window.location.reload();
         }
   
@@ -70,11 +72,29 @@ const Header = () => {
 
       <NavLinks>
         <div>
-          <ConnectButton onClick={() => toggleForm('login')}>Connexion</ConnectButton>
+          {userName && (
+            <span>Bonjour {userName}</span>
+          )}
+          {!userName && (
+            <ConnectButton onClick={() => toggleForm('login')}>Connexion</ConnectButton>
+          )}
         </div>
       </NavLinks>
 
-      <SearchBox />
+      <SearchContainer>
+        <SearchBox />
+        {userName && (
+          <ConnectButton 
+            onClick={() => {
+              localStorage.removeItem('user');
+              setUserName(null);
+              window.location.reload();
+            }}
+          >
+            Déconnexion
+          </ConnectButton>
+        )}
+      </SearchContainer>
 
       {(isFormOpen === 'signup' || isFormOpen === 'login') && (
         <>
