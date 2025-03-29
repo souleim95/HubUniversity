@@ -24,6 +24,7 @@ const UserMenu = ({ user, role, onLogout }) => {
       {open && (
         <DropdownMenu>
           <DropdownItem onClick={() => handleNavigate('/dashboard')}>Tableau de bord</DropdownItem>
+          <DropdownItem onClick={() => handleNavigate('/profil')}>Profil</DropdownItem>
 
           {(role === 'gestionnaire' || role === 'admin') && (
             <DropdownItem onClick={() => handleNavigate('/gestion')}>Gestion</DropdownItem>
