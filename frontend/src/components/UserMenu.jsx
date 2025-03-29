@@ -16,10 +16,13 @@ const UserMenu = ({ user, role, onLogout }) => {
     setOpen(false);
   };
 
+  // Ajouter une vérification pour éviter les erreurs
+  const userInitial = user?.login ? user.login.charAt(0).toUpperCase() : 'U';
+
   return (
     <MenuContainer>
       <MenuButton onClick={() => setOpen(!open)}>
-        {user.login.charAt(0).toUpperCase()}
+        {userInitial} {/* Affiche la première lettre du nom, ou 'U' si undefined */}
       </MenuButton>
       {open && (
         <DropdownMenu>

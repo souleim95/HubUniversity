@@ -9,8 +9,8 @@ import Faq from './components/Faq';
 import Dashboard from './components/Dashboard';
 import Gestion from './components/Gestion';
 import Admin from './components/Admin';
-import ProtectedRoute from './components/ProtectedRoute';
 import Profile from './components/Profile';
+import ProtectedRoute from './components/ProtectedRoute';
 import { createGlobalStyle } from 'styled-components';
 
 const GlobalStyle = createGlobalStyle`
