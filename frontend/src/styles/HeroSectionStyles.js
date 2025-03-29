@@ -31,4 +31,24 @@ export const HeroContent = styled.div`
   backdrop-filter: blur(5px);
   width: 100%;
   max-width: 1200px;
+
+  h1 {
+    font-size: 2.5rem;
+  }
+
+  p {
+    font-size: 1.2rem;
+  }
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+
+    h1 {
+      font-size: 1.8rem;
+    }
+
+    p {
+      font-size: 1rem;
+    }
+  }
 `;

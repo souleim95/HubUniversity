@@ -11,16 +11,29 @@ export const FaqTitle = styled.h2`
   padding: 20px 0;
   border-right: 4px solid rgb(15, 110, 173);
   border-left: none;
+
+  @media (max-width: 768px) {
+    position: static;
+    writing-mode: horizontal-tb;
+    transform: none;
+    border: none;
+    text-align: center;
+    margin: 10px 0;
+  }
 `;
 
 export const FaqContainer = styled.div`
   max-width: 1000px;
   margin: 40px auto;
-  padding: 20px 20px 20px 100px; 
+  padding: 20px 20px 20px 100px;
   position: relative;
-  background-color: #f5f5f5; 
-  border-radius: 10px; 
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+  background-color: #f5f5f5;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  @media (max-width: 768px) {
+    padding: 20px;
+  }
 `;
 
 export const FaqContent = styled.div`
@@ -32,7 +45,7 @@ export const FaqContent = styled.div`
 export const FaqColumn = styled.div`
   flex: 1;
   min-width: 300px;
-  
+
   @media (max-width: 768px) {
     flex: 100%;
   }
@@ -42,7 +55,7 @@ export const FaqItem = styled.div`
   margin-bottom: 15px;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 `;
 
 export const Question = styled.div`
@@ -66,4 +79,4 @@ export const Answer = styled.div`
   max-height: ${props => props.isOpen ? '500px' : '0'};
   overflow: hidden;
   transition: all 0.3s ease;
-`
+`;

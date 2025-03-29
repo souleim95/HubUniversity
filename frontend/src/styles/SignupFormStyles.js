@@ -3,11 +3,15 @@ import styled from 'styled-components';
 export const SignupSection = styled.section`
   padding: 60px 30px;
   background-color: #f5f7fa;
+  max-width: 1200px;
+  margin: auto;
+  width: 100%;
 `;
 
 export const Form = styled.form`
+  width: 90%;
   max-width: 500px;
-  margin: 0 auto;
+  margin: auto;
   display: flex;
   flex-direction: column;
   gap: 1rem;

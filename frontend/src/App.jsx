@@ -1,22 +1,8 @@
-/*
- * Composant App - Le composant racine de notre application
- * 
- * Ce fichier est le point central de notre site web. Il fait deux choses importantes:
- * - Il définit le style global (polices, marges, etc.) pour toute l'application
- * - Il assemble tous les composants principaux dans leur ordre d'affichage
- * 
- * Structure:
- * - GlobalStyle: définit les polices (Poppins pour le texte, Playfair pour les titres)
- * - Le conteneur principal avec Header en haut, Footer en bas, et les trois sections 
- *   principales (HeroSection, CampusMap, SignupForm) dans la balise <main>
- *
- */
-
 import React from 'react';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
 import CampusMap from './components/CampusMap';
-//import SignupForm from './components/SignupForm';
+// import SignupForm from './components/SignupForm';
 import Footer from './components/Footer';
 import RerSchedule from './components/RerSchedule';
 import Faq from './components/Faq';
@@ -31,6 +17,12 @@ const GlobalStyle = createGlobalStyle`
     --font-secondary: 'Playfair Display', serif;
   }
 
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
   body {
     font-family: var(--font-primary);
     padding-top: 6vh;
@@ -38,10 +30,12 @@ const GlobalStyle = createGlobalStyle`
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    overflow-x: hidden;
   }
 
   main {
     flex: 1;
+    width: 100%;
   }
 
   h1, h2, h3 {
@@ -59,7 +53,7 @@ export default function App() {
           <HeroSection />
           <CampusMap />
           <RerSchedule />
-          <Faq/> 
+          <Faq />
           {/* <SignupForm /> */}
         </main>
         <Footer />

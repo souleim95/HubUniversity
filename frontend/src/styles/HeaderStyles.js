@@ -11,124 +11,116 @@ export const HeaderContainer = styled.header`
   display: flex;
   align-items: center;
   padding: 10px 20px;
-  min-height: 60px;
+  flex-wrap: wrap;
+  justify-content: space-between;
 `;
 
 export const WelcomeChoices = styled.div`
   display: flex;
   align-items: center;
   border-right: solid rgb(15, 110, 173) 3px;
-  margin: 0;
-  padding-right: 0.85%;
-  width: auto;
+  padding-right: 10px;
 
   a {
     text-decoration: none;
     color: rgb(15, 110, 173);
-    font-size: 1.2vw;
-    cursor: pointer;
+    font-size: 1.1rem;
     font-weight: 600;
-    background-color: whitesmoke;
-    border: none;
-    left: 1vw;
   }
 
   img {
-    height: 50px;
-    margin: 7px 1px 6px 3px;
+    height: 45px;
+    margin: 5px;
     transition: transform 0.3s ease;
 
     &:hover {
       transform: scale(1.1);
     }
   }
+
+  @media (max-width: 768px) {
+    flex: 1 1 100%;
+    justify-content: center;
+    border: none;
+    padding: 5px 0;
+  }
 `;
 
 export const NavLinks = styled.div`
   display: flex;
   align-items: center;
-  position: absolute;
-  left: 250px;
-  top: 30px;
-
-  div {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-  }
+  gap: 15px;
 
   span {
     color: #2C5282;
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 600;
-    padding: 8px 15px;
-    margin-left: 5px;
+    padding: 8px 12px;
     border-radius: 4px;
     background-color: rgba(44, 82, 130, 0.1);
   }
 
-  button {
-    margin-left: 1045px;
+  @media (max-width: 768px) {
+    flex: 1 1 100%;
+    justify-content: center;
+    margin-top: 10px;
   }
 `;
 
 export const ConnectButton = styled.button`
-  padding: 8px 20px;
-  font-size: 16px;
-  z-index: 998;
+  padding: 8px 16px;
+  font-size: 14px;
   background-color: rgb(15, 110, 173);
   color: white;
   border: none;
-  border-radius: 25px;
+  border-radius: 20px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 
   &:hover {
     background-color: rgb(49, 137, 196);
     transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
   }
 
-  &:active {
-    transform: translateY(0px);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  @media (max-width: 768px) {
+    padding: 6px 12px;
+    font-size: 13px;
   }
-`; 
+`;
 
 export const SearchContainer = styled.div`
-  position: absolute;
-  right: 120px;
-  top: 30px;
-  z-index: 1010;
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 10px;
 
   div {
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    
+
     svg {
-      width: 28px;
-      height: 28px;
+      width: 24px;
+      height: 24px;
       color: rgb(49, 137, 196);
       transition: all 0.3s ease;
     }
+  }
+
+  @media (max-width: 768px) {
+    flex: 1 1 100%;
+    justify-content: center;
+    margin-top: 10px;
   }
 `;
 
 export const SearchBar = styled.input`
   position: fixed;
-  top: 89px; 
-  right: 0px;
+  top: 70px;
+  right: 10px;
   width: 250px;
-  min-height: 20px;
-  max-height: 200px;
   padding: 10px;
   border: 2px solid rgb(15, 110, 173);
   border-radius: 4px;
@@ -138,11 +130,6 @@ export const SearchBar = styled.input`
   transition: all 0.3s ease;
   background-color: white;
   z-index: 1009;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  overflow-y: auto; // Permet le défilement vertical
-  resize: vertical; // Permet à l'utilisateur de redimensionner verticalement
-  height: auto; // La hauteur s'adapte au contenu
-  word-wrap: break-word; // Passe à la ligne si le texte est trop long
 `;
 
 export const Overlay = styled.div`
@@ -169,7 +156,7 @@ export const LoginFormContainer = styled.div`
   flex-direction: column;
   align-items: center;
   width: 300px;
-  
+
   h2 {
     margin-bottom: 15px;
   }
@@ -180,8 +167,6 @@ export const LoginFormContainer = styled.div`
     margin-bottom: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
-    box-sizing: border-box;
-
   }
 
   button {

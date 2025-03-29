@@ -1,13 +1,13 @@
 import styled from 'styled-components';
 
-
 export const ScheduleContainer = styled.div`
   padding: 20px;
   margin: 20px auto;
   max-width: 800px;
-  background-color:#f5f7fa;
+  width: 90%;
+  background-color: #f5f7fa;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
 export const MainTitle = styled.h2`
@@ -16,12 +16,16 @@ export const MainTitle = styled.h2`
   text-align: center;
   margin-bottom: 20px;
   font-size: 2em;
+
+  @media (max-width: 768px) {
+    font-size: 1.5em;
+  }
 `;
 
 export const DirectionBox = styled.div`
   margin: 10px 0;
   padding: 15px;
-  background-color:rgb(255, 255, 255);
+  background-color: rgb(255, 255, 255);
   border-radius: 4px;
 `;
 
@@ -31,11 +35,13 @@ export const DirectionTitle = styled.h3`
   color: rgb(15, 110, 173);
   font-size: 1.5em;
   margin-bottom: 15px;
-  text-decoration: none;
-  
+
   &:hover {
-    color:rgb(67, 143, 228);
-    text-decoration: none;
+    color: rgb(67, 143, 228);
+  }
+
+  @media (max-width: 768px) {
+    font-size: 1.2em;
   }
 `;
 
