@@ -1,11 +1,15 @@
 import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
 import CampusMap from './components/CampusMap';
-// import SignupForm from './components/SignupForm';
 import Footer from './components/Footer';
 import RerSchedule from './components/RerSchedule';
 import Faq from './components/Faq';
+import Dashboard from './components/Dashboard';
+import Gestion from './components/Gestion';
+import Admin from './components/Admin';
+import ProtectedRoute from './components/ProtectedRoute';
 import { createGlobalStyle } from 'styled-components';
 
 const GlobalStyle = createGlobalStyle`
@@ -45,19 +49,42 @@ const GlobalStyle = createGlobalStyle`
 
 export default function App() {
   return (
-    <>
+    <Router>
       <GlobalStyle />
       <div className="App">
         <Header />
-        <main>
-          <HeroSection />
-          <CampusMap />
-          <RerSchedule />
-          <Faq />
-          {/* <SignupForm /> */}
-        </main>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <main>
+                <HeroSection />
+                <CampusMap />
+                <RerSchedule />
+                <Faq />
+              </main>
+            }
+          />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route
+            path="/gestion"
+            element={
+              <ProtectedRoute allowedRoles={['gestionnaire', 'admin']}>
+                <Gestion />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <Admin />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
         <Footer />
       </div>
-    </>
+    </Router>
   );
 }

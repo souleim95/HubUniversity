@@ -10,15 +10,17 @@ import {
 } from '../styles/HeaderStyles';
 import hubCyLogo from '../assets/HubCyLogo.png';
 import SearchBox from './SearchBox';
+import UserMenu from './UserMenu';
 
 const Header = () => {
   const [isFormOpen, setIsFormOpen] = useState(null); 
   const [formData, setFormData] = useState({ name: '', email: '', role: '', password: '' });
-  const [userName, setUserName] = useState(localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null);
+  const [userName, setUserName] = useState(localStorage.getItem('user') || null);
+  const [role, setRole] = useState(localStorage.getItem('role') || null);
 
   const toggleForm = (formType) => {
     setIsFormOpen(formType);
-    setFormData({ name: '', email: '', role: '', password: '' }); // Réinitialisation du formulaire
+    setFormData({ name: '', email: '', role: '', password: '' });
   };
 
   const handleChange = (e) => {
@@ -30,29 +32,31 @@ const Header = () => {
     let requestData = isFormOpen === 'signup'
       ? { name: formData.name, email: formData.email, role: formData.role, password: formData.password }
       : { email: formData.email, password: formData.password };
-  
+
     const url = isFormOpen === 'signup'
       ? 'http://localhost:5001/api/users'
       : 'http://localhost:5001/api/login';
-  
+
     try {
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestData),
       });
-  
+
       if (response.ok) {
         const data = await response.json();
         alert(isFormOpen === 'signup' ? 'Inscription réussie !' : `Bonjour ${data.user.name} !`);
-  
+
         if (isFormOpen === 'login') {
-          localStorage.setItem('user', JSON.stringify(data.user.name));
+          localStorage.setItem('user', data.user.name);
+          localStorage.setItem('role', data.user.role);
           setUserName(data.user.name);
+          setRole(data.user.role);
           window.location.reload();
         }
-  
-        setIsFormOpen(null); // Fermer après succès
+
+        setIsFormOpen(null);
       } else {
         const errorData = await response.json();
         alert(errorData.error || 'Erreur lors de la connexion.');
@@ -61,7 +65,14 @@ const Header = () => {
       alert('Erreur réseau. Vérifiez votre connexion.');
     }
   };
-  
+
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('role');
+    setUserName(null);
+    setRole(null);
+    window.location.reload();
+  };
 
   return (
     <HeaderContainer>
@@ -85,15 +96,11 @@ const Header = () => {
       <SearchContainer>
         <SearchBox />
         {userName && (
-          <ConnectButton 
-            onClick={() => {
-              localStorage.removeItem('user');
-              setUserName(null);
-              window.location.reload();
-            }}
-          >
-            Déconnexion
-          </ConnectButton>
+          <UserMenu 
+            user={{ login: userName }}
+            role={role}
+            onLogout={handleLogout}
+          />
         )}
       </SearchContainer>
 
@@ -119,13 +126,14 @@ const Header = () => {
                     <option value="">Sélectionnez votre rôle</option>
                     <option value="student">Étudiant</option>
                     <option value="teacher">Enseignant</option>
+                    <option value="gestionnaire">Gestionnaire</option>
+                    <option value="admin">Administrateur</option>
                   </select>
                 </>
               )}
 
               <button type="submit">{isFormOpen === 'signup' ? 'Créer un compte' : 'Se connecter'}</button>
 
-              {/* 🔹 Ajout du bouton de bascule 🔹 */}
               {isFormOpen === 'login' ? (
                 <p>
                   Pas encore inscrit ?{' '}
