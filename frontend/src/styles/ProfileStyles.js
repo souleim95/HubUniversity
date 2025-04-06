@@ -1,9 +1,9 @@
 import styled from 'styled-components';
 
 export const ProfileContainer = styled.div`
-  max-width: 1200px;
-  margin: 30px auto;
-  padding: 30px;
+  max-width: 1400px;  // Augmentez la largeur maximale du conteneur
+  margin: 40px auto;  // Augmentez la marge pour plus d'espace autour
+  padding: 40px;  // Augmentez l'espacement interne
   background-color: #f5f7fa;
   border-radius: 15px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.1);
@@ -13,7 +13,7 @@ export const ProfileContainer = styled.div`
   width: 95%;
   
   @media (max-width: 768px) {
-    padding: 20px;
+    padding: 25px;  // Augmentez l'espacement sur mobile également
   }
 `;
 
@@ -38,24 +38,25 @@ export const Header = styled.header`
 export const InfoSection = styled.section`
   display: flex;
   justify-content: space-between;
-  gap: 20px;
+  gap: 30px;  // Augmenter l'espace entre les cartes
   flex-wrap: nowrap;
   width: 100%;
-  align-items: stretch; /* Assure que toutes les boxes ont la même hauteur */
-  height: 100%; /* Prendre toute la hauteur disponible */
-
+  align-items: stretch;
+  height: 100%;
+  
   @media (max-width: 768px) {
     flex-direction: column;
   }
 `;
 
 
+
 export const ProfileCard = styled.div`
   flex: 1;
   min-width: 0;
-  min-height: 300px;
+  min-height: 400px;  // Augmentez la hauteur minimale de la carte
   background-color: white;
-  padding: 20px;
+  padding: 25px;  // Augmentez l'espacement interne
   border-radius: 15px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   text-align: center;
@@ -66,10 +67,11 @@ export const ProfileCard = styled.div`
   height: 100%;
   
   p {
-    margin: 8px 0;
-    font-size: 1rem;
+    margin: 10px 0;  // Ajoutez un peu plus d'espace entre les paragraphes
+    font-size: 1.1rem;  // Augmentez la taille de la police pour plus de lisibilité
   }
 `;
+
 
 export const LevelBox = styled.div`
   margin-top: 10px;
@@ -126,12 +128,12 @@ export const IconWrapper = styled.div`
 `;
 
 export const InputField = styled.input`
-  margin: 15px 0;
-  padding: 14px;
+  margin: 20px 0;  // Augmenter l'espacement entre les champs
+  padding: 18px;  // Augmenter l'espacement interne pour un champ plus grand
   width: 100%;
   border-radius: 10px;
   border: 1px solid #e1e1e1;
-  font-size: 1.1rem;
+  font-size: 1.2rem;  // Augmenter la taille de la police des champs
   transition: all 0.3s ease;
 
   &:focus {
@@ -140,6 +142,7 @@ export const InputField = styled.input`
     box-shadow: 0 0 8px rgba(15, 110, 173, 0.3);
   }
 `;
+
 
 export const SaveButton = styled(LevelBox)`
   width: 100%;
@@ -168,9 +171,9 @@ export const SaveButton = styled(LevelBox)`
 export const ChangePasswordSection = styled.div`
   flex: 1;
   min-width: 0;
-  min-height: 300px;
+  min-height: 400px;  // Augmentez la hauteur de la section
   background-color: white;
-  padding: 20px;
+  padding: 25px;  // Augmentez l'espacement interne
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   display: flex;
@@ -178,14 +181,6 @@ export const ChangePasswordSection = styled.div`
   justify-content: space-between;
   align-items: center;
   height: 100%;
-
-  h3 {
-    margin-bottom: 20px;
-  }
-
-  input {
-    margin-bottom: 10px;
-  }
 `;
 
 export const PasswordInputField = styled(InputField)`

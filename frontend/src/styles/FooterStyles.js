@@ -1,5 +1,19 @@
 import styled from 'styled-components';
 
+// Conteneur principal de la page
+export const PageContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;  // Assure que le conteneur prend toute la hauteur de la fenêtre
+`;
+
+// Contenu principal de la page
+export const Content = styled.main`
+  flex: 1;  // Ce conteneur prendra l'espace restant
+  padding: 20px;
+`;
+
+// Footer
 export const FooterContainer = styled.footer`
   background-color: whitesmoke;
   width: 100%;
@@ -8,16 +22,17 @@ export const FooterContainer = styled.footer`
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 20px;
-  padding: 20px;
+  gap: 15px;
+  padding: 10px;
   text-align: center;
+  margin-top: auto;  // Cela assure que le footer est poussé en bas
 `;
 
 export const Names = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  font-size: 1rem;
+  gap: 5px;
+  font-size: 0.9rem;
   align-items: center;
 
   a {

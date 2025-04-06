@@ -1,9 +1,9 @@
 import styled from 'styled-components';
 
 export const DashboardContainer = styled.div`
-  max-width: 1200px;
-  margin: 30px auto;
-  padding: 30px;
+  max-width: 1400px;  // Augmentez la largeur maximale du conteneur
+  margin: 40px auto;  // Augmentez la marge autour
+  padding: 40px;  // Augmentez l'espacement interne
   background-color: #f5f7fa;
   border-radius: 15px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.1);
@@ -14,7 +14,7 @@ export const DashboardContainer = styled.div`
   gap: 40px;
 
   @media (max-width: 768px) {
-    padding: 20px;
+    padding: 25px;  // Augmenter l'espacement pour les petits écrans
   }
 `;
 
@@ -45,18 +45,19 @@ export const InfoSection = styled.section`
 
 export const ProfileCard = styled.div`
   background-color: white;
-  padding: 20px;
+  padding: 25px;  // Augmenter l'espacement interne pour une carte plus spacieuse
   border-radius: 15px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   width: 100%;
-  max-width: 400px;
+  max-width: 450px;  // Augmenter la largeur maximale
   text-align: left;
 
   p {
-    margin: 8px 0;
-    font-size: 1rem;
+    margin: 10px 0;  // Augmenter l'espace entre les paragraphes
+    font-size: 1.1rem;  // Augmenter la taille de la police
   }
 `;
+
 
 export const LevelBox = styled.div`
   margin-top: 10px;
@@ -67,8 +68,8 @@ export const LevelBox = styled.div`
 `;
 
 export const ChangeLevelButton = styled.button`
-  margin-top: 15px;
-  padding: 10px 20px;
+  margin-top: 20px;  // Augmenter la marge entre le bouton et les éléments
+  padding: 12px 25px;  // Augmenter l'espacement interne du bouton
   background-color: rgb(49, 137, 196);
   color: white;
   border: none;
@@ -81,11 +82,12 @@ export const ChangeLevelButton = styled.button`
   }
 `;
 
+
 export const ProgressBar = styled.div`
   background-color: #e0e0e0;
   border-radius: 10px;
-  height: 20px;
-  margin-top: 15px;
+  height: 25px;  // Augmenter la hauteur de la barre de progression
+  margin-top: 20px;  // Augmenter l'espace au-dessus
   width: 100%;
   
   div {
@@ -95,19 +97,21 @@ export const ProgressBar = styled.div`
   }
 `;
 
+
 export const ObjectGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));  // Augmenter la largeur minimale des éléments
+  gap: 30px;  // Augmenter l'espacement entre les éléments
   text-align: left;
 
   h3 {
     grid-column: span 2;
+    font-size: 1.2rem;  // Augmenter la taille des titres
   }
 `;
 
 export const ObjectItem = styled.div`
-  padding: 15px;
+  padding: 20px;  // Augmenter l'espacement interne des objets
   background-color: white;
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);

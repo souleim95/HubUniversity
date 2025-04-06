@@ -12,37 +12,40 @@ import Admin from './components/Admin';
 import Profile from './components/Profile';
 import ProtectedRoute from './components/ProtectedRoute';
 import GlobalStyle from './styles/GlobalStyle'; // Import du style global
+import { PageContainer, Content } from './styles/styles'; // Importez les styles flexbox
 
 export default function App() {
   return (
     <Router>
       <GlobalStyle /> {/* Applique les styles globaux */}
-      <div className="App">
+      <PageContainer> {/* Conteneur flexbox pour garantir que le footer reste en bas */}
         <Header /> {/* Affiche le header */}
-        <Routes>
-          <Route path="/" element={
-            <main>
-              <HeroSection />
-              <CampusMap />
-              <RerSchedule />
-              <Faq />
-            </main>
-          } />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/gestion" element={
-            <ProtectedRoute allowedRoles={['gestionnaire', 'admin']}>
-              <Gestion />
-            </ProtectedRoute>
-          } />
-          <Route path="/admin" element={
-            <ProtectedRoute allowedRoles={['admin']}>
-              <Admin />
-            </ProtectedRoute>
-          } />
-          <Route path="/profil" element={<Profile />} />
-        </Routes>
+        <Content>
+          <Routes>
+            <Route path="/" element={
+              <main>
+                <HeroSection />
+                <CampusMap />
+                <RerSchedule />
+                <Faq />
+              </main>
+            } />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/gestion" element={
+              <ProtectedRoute allowedRoles={['gestionnaire', 'admin']}>
+                <Gestion />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <Admin />
+              </ProtectedRoute>
+            } />
+            <Route path="/profil" element={<Profile />} />
+          </Routes>
+        </Content>
         <Footer /> {/* Affiche le footer */}
-      </div>
+      </PageContainer>
     </Router>
   );
 }
