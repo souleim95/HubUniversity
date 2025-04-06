@@ -100,33 +100,142 @@ export const ProgressBar = styled.div`
 
 export const ObjectGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));  // Augmenter la largeur minimale des éléments
-  gap: 30px;  // Augmenter l'espacement entre les éléments
-  text-align: left;
-
-  h3 {
-    grid-column: span 2;
-    font-size: 1.2rem;  // Augmenter la taille des titres
-  }
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px;
+  margin-top: 20px;
 `;
 
 export const ObjectItem = styled.div`
-  padding: 20px;  // Augmenter l'espacement interne des objets
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
 
   &:hover {
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+`;
+
+export const ObjectHeader = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+`;
+
+export const ObjectControls = styled.div`
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+`;
+
+export const ControlButton = styled.button`
+  padding: 8px 15px;
+  margin: 5px;
+  border: none;
+  border-radius: 5px;
+  background: ${props => props.active ? '#4CAF50' : '#f0f0f0'};
+  color: ${props => props.active ? 'white' : 'black'};
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: ${props => props.active ? '#45a049' : '#e0e0e0'};
   }
 `;
 
 export const IconWrapper = styled.div`
-  font-size: 2rem;
+  font-size: 24px;
   margin-right: 15px;
-  color: rgb(49, 137, 196);
+  color: #2c3e50;
+`;
+
+export const RangeSlider = styled.input`
+  width: 100%;
+  margin: 10px 0;
+  -webkit-appearance: none;
+  height: 10px;
+  border-radius: 5px;
+  background: #d3d3d3;
+  outline: none;
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #4CAF50;
+    cursor: pointer;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    
+    &::-webkit-slider-thumb {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+  }
+`;
+
+export const ValueDisplay = styled.div`
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #2c3e50;
+  margin: 5px 0;
+`;
+
+export const ToggleButton = styled(ControlButton)`
+  width: 120px;
+  background: ${props => props.active ? '#4CAF50' : '#ff4444'};
+  color: white;
+
+  &:hover {
+    background: ${props => props.active ? '#45a049' : '#cc0000'};
+  }
+`;
+
+export const SectionTitle = styled.h2`
+  color: #2b6cb0;
+  font-size: 2em;
+  margin: 20px 0 40px 0;
+  text-align: center;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+`;
+
+export const CategoryContainer = styled.div`
+  margin: 20px 0;
+`;
+
+export const CategoryButton = styled.button`
+  padding: 12px 24px;
+  margin: 0 10px;
+  border: none;
+  border-radius: 8px;
+  background: ${props => props.active ? '#2b6cb0' : '#e2e8f0'};
+  color: ${props => props.active ? 'white' : '#2d3748'};
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+`;
+
+export const SubItemContainer = styled.div`
+  border-left: 3px solid #2b6cb0;
+  margin-left: 20px;
+  padding-left: 20px;
+  margin-top: 10px;
 `;
