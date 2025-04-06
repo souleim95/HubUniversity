@@ -1,16 +1,3 @@
-/*
- * Composant CampusMap - Affiche une carte interactive du campus
- * 
- * Ce composant est prévu pour afficher une carte des campus et les événements à venir.
- * Pour l'instant, c'est juste une structure avec des placeholders - on doit encore 
- * implémenter la carte interactive. 
- * La section EventsList est aussi à compléter avec des vrais événements.
- * 
- * - MapSection : le conteneur principal avec fond blanc
- * - MapContainer : la div où on va intégrer la carte
- * - EventsList : liste des événements sous la carte
- */
-
 import React from 'react';
 import { 
   MapSection, 
@@ -20,17 +7,17 @@ import {
 
 const CampusMap = () => {
   return (
-    <MapSection id="quick-access">
+    <MapSection>
       <h2>Campus Connecté</h2>
       <MapContainer>
-        {/* Insérer ici notre carte interactive */}
+        {/* Intégrer ici la carte interactive */}
       </MapContainer>
       <EventsList>
         <h3>Événements à venir</h3>
-        {/* Liste des événements */}
+        {/* Liste des événements à ajouter ici */}
       </EventsList>
     </MapSection>
   );
 };
 
-export default CampusMap; 
+export default CampusMap;

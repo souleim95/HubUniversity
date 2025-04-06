@@ -1,4 +1,16 @@
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
+
+// Animation pour faire apparaître les éléments
+const fadeIn = keyframes`
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+`;
 
 export const HeroContainer = styled.section`
   min-height: 95vh;
@@ -31,6 +43,10 @@ export const HeroContent = styled.div`
   backdrop-filter: blur(5px);
   width: 100%;
   max-width: 1200px;
+
+  h1, p {
+    animation: ${fadeIn} 2s ease-out;
+  }
 
   h1 {
     font-size: 2.5rem;

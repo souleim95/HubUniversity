@@ -1,40 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
-
-const ProfileContainer = styled.div`
-  max-width: 600px;
-  margin: 50px auto;
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  text-align: center;
-`;
-
-const InfoItem = styled.div`
-  margin: 15px 0;
-  font-size: 1.1rem;
-`;
-
-const LevelButton = styled.button`
-  background-color: rgb(15, 110, 173);
-  color: white;
-  padding: 10px 20px;
-  margin-top: 20px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-`;
-
-const InputField = styled.input`
-  margin: 10px 0;
-  padding: 10px;
-  width: 100%;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-`;
-
-const levels = ['Débutant', 'Intermédiaire', 'Avancé', 'Expert'];
+import { 
+  ProfileContainer, 
+  Header, 
+  InfoSection, 
+  ProfileCard, 
+  LevelBox, 
+  ProgressBar, 
+  InputField, 
+  SaveButton, 
+  ChangePasswordSection, 
+  PasswordInputField 
+} from '../styles/ProfileStyles';
 
 const Profile = () => {
   const [userName, setUserName] = useState(localStorage.getItem('user'));
@@ -50,46 +26,103 @@ const Profile = () => {
     role: role,
   });
 
+  const [passwordData, setPasswordData] = useState({
+    oldPassword: '',
+    newPassword: '',
+    confirmNewPassword: ''
+  });
+
+  const [isModified, setIsModified] = useState(false); // New state to track changes
+
   useEffect(() => {
     setConnections(10);
     setPoints(120);
   }, []);
 
-  const handleChangeLevel = () => {
-    const currentIndex = levels.indexOf(level);
-    const nextIndex = (currentIndex + 1) % levels.length;
-    setLevel(levels[nextIndex]);
-  };
+  useEffect(() => {
+    const hasChanges = 
+      formData.name !== userName ||
+      formData.email !== email ||
+      passwordData.oldPassword || 
+      passwordData.newPassword ||
+      passwordData.confirmNewPassword;
+
+    setIsModified(hasChanges);
+  }, [formData, passwordData]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
+  const handlePasswordChange = (e) => {
+    const { name, value } = e.target;
+    setPasswordData({ ...passwordData, [name]: value });
+  };
+
   const handleSave = () => {
     localStorage.setItem('user', formData.name);
     localStorage.setItem('email', formData.email);
     alert('Modifications enregistrées!');
+    setIsModified(false);
   };
 
   return (
     <ProfileContainer>
-      <h2>Mon Profil</h2>
-      <InfoItem><strong>Nom :</strong> <InputField type="text" name="name" value={formData.name} onChange={handleInputChange} /></InfoItem>
-      <InfoItem><strong>Email :</strong> <InputField type="email" name="email" value={formData.email} onChange={handleInputChange} /></InfoItem>
-      <InfoItem><strong>Rôle :</strong> {role}</InfoItem>
-      <InfoItem><strong>Niveau :</strong> {level}</InfoItem>
-      <InfoItem><strong>Connexions :</strong> {connections}</InfoItem>
-      <InfoItem><strong>Points :</strong> {points}</InfoItem>
+      <Header>
+        <h2>Mon Profil</h2>
+        <p>Gérer vos informations personnelles et suivre votre progression</p>
+      </Header>
 
-      <LevelButton onClick={handleChangeLevel}>Changer de niveau</LevelButton>
+      <InfoSection>
+        <ProfileCard>
+          <p><strong>Nom :</strong> <InputField type="text" name="name" value={formData.name} onChange={handleInputChange} /></p>
+          <p><strong>Email :</strong> <InputField type="email" name="email" value={formData.email} onChange={handleInputChange} /></p>
+        </ProfileCard>
 
-      <div>
-        <h3>Modifier votre mot de passe :</h3>
-        <InputField type="password" name="password" placeholder="Nouveau mot de passe" onChange={handleInputChange} />
-      </div>
+        {/* Changer le mot de passe (section de saisie uniquement, pas de bouton) */}
+        <ChangePasswordSection>
+          <h3>Changer le mot de passe</h3>
+          <PasswordInputField
+            type="password"
+            name="oldPassword"
+            placeholder="Ancien mot de passe"
+            value={passwordData.oldPassword}
+            onChange={handlePasswordChange}
+          />
+          <PasswordInputField
+            type="password"
+            name="newPassword"
+            placeholder="Nouveau mot de passe"
+            value={passwordData.newPassword}
+            onChange={handlePasswordChange}
+          />
+          <PasswordInputField
+            type="password"
+            name="confirmNewPassword"
+            placeholder="Confirmer le mot de passe"
+            value={passwordData.confirmNewPassword}
+            onChange={handlePasswordChange}
+          />
+        </ChangePasswordSection>
 
-      <LevelButton onClick={handleSave}>Enregistrer les modifications</LevelButton>
+        <ProfileCard>
+          <p><strong>Rôle :</strong> {role}</p>
+          <p><strong>Connexions :</strong> {connections}</p>
+          <p><strong>Points :</strong> {points}</p>
+          
+          <ProgressBar>
+            <div style={{ width: `${(points / 200) * 100}%` }}></div>
+          </ProgressBar>
+
+          <LevelBox>
+            <p>{level}</p>
+          </LevelBox>
+        </ProfileCard>
+      </InfoSection>
+
+      {/* Bouton Enregistrer les modifications */}
+      <SaveButton className={isModified ? 'changed' : ''} onClick={handleSave}>Enregistrer les modifications</SaveButton>
     </ProfileContainer>
   );
 };

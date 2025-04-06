@@ -4,7 +4,7 @@ import {
   MenuButton, 
   DropdownMenu, 
   DropdownItem 
-} from '../styles/UserMenuStyles';
+} from '../styles/UserMenuStyles';  // Import des styles
 import { useNavigate } from 'react-router-dom';
 
 const UserMenu = ({ user, role, onLogout }) => {
@@ -13,16 +13,15 @@ const UserMenu = ({ user, role, onLogout }) => {
 
   const handleNavigate = (path) => {
     navigate(path);
-    setOpen(false);
+    setOpen(false);  // Ferme le menu après la navigation
   };
 
-  // Ajouter une vérification pour éviter les erreurs
-  const userInitial = user?.login ? user.login.charAt(0).toUpperCase() : 'U';
+  const userInitial = user?.login ? user.login.charAt(0).toUpperCase() : 'U';  // Affichage de la première lettre du login
 
   return (
     <MenuContainer>
       <MenuButton onClick={() => setOpen(!open)}>
-        {userInitial} {/* Affiche la première lettre du nom, ou 'U' si undefined */}
+        {userInitial} {/* Affiche la première lettre du login, ou 'U' si 'user' est undefined */}
       </MenuButton>
       {open && (
         <DropdownMenu>

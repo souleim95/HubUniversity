@@ -50,3 +50,10 @@ export const ErrorMessage = styled.div`
   margin: 10px 0;
   font-size: 1.1em;
 `;
+
+// Ajout de TrainInfo pour l'affichage des horaires de train
+export const TrainInfo = styled.div`
+  font-size: 1.1em;
+  margin: 10px 0;
+  color: #333;
+`;

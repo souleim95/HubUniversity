@@ -1,12 +1,6 @@
 import React, { useState } from 'react';
-import { 
-  FaSearch, 
-  FaTimes 
-} from 'react-icons/fa';
-import { 
-  SearchContainer, 
-  SearchBar 
-} from '../styles/HeaderStyles';
+import { FaSearch, FaTimes } from 'react-icons/fa';
+import { SearchContainer, SearchBar } from '../styles/HeaderStyles';
 
 const SearchBox = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -26,11 +20,15 @@ const SearchBox = () => {
 
   return (
     <SearchContainer isOpen={isOpen}>
-      <div onClick={toggleSearch}>
+      <div onClick={toggleSearch} aria-label="Ouvrir la recherche">
         {isOpen ? (
-          <FaTimes size={28} style={{ transform: 'rotate(0)' }} />
+          <FaTimes 
+            size={28} 
+            style={{ transform: 'rotate(180deg)', transition: 'transform 0.3s' }} 
+            aria-label="Fermer la recherche"
+          />
         ) : (
-          <FaSearch size={28} />
+          <FaSearch size={28} aria-label="Ouvrir la recherche" />
         )}
       </div>
       <form onSubmit={handleSubmit}>
@@ -41,6 +39,7 @@ const SearchBox = () => {
           onChange={(e) => setSearchText(e.target.value)}
           placeholder="Rechercher..."
           rows="1"
+          style={{ transition: 'height 0.3s ease' }} // Animation de la hauteur
         />
       </form>
     </SearchContainer>

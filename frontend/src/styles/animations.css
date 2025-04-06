@@ -1,0 +1,11 @@
+@keyframes slideIn {
+    from {
+      opacity: 0; /* L'élément commence invisible */
+    }
+    to {
+      opacity: 1; /* L'élément devient visible */
+    }
+  }
+  
+
+  

@@ -1,4 +1,6 @@
 import styled from 'styled-components';
+import './animations.css';
+  // Importation du fichier d'animations CSS
 
 export const HeaderContainer = styled.header`
   background-color: whitesmoke;
@@ -156,6 +158,8 @@ export const LoginFormContainer = styled.div`
   flex-direction: column;
   align-items: center;
   width: 300px;
+  animation: slideIn 0.5s ease-in-out; /* Douce transition de 0.5 secondes */
+
 
   h2 {
     margin-bottom: 15px;
