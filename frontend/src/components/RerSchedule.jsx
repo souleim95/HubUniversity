@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import WeatherInfo from './WeatherInfo'; // Assurez-vous d'importer WeatherInfo ici
 import {
   ScheduleContainer,
   MainTitle,
   DirectionBox,
   DirectionTitle,
   ErrorMessage,
-  TrainInfo
+  TrainInfo,
+  FlexContainer // Ajout d'un conteneur flex
 } from '../styles/RerScheduleStyles';
 
 export default function RerSchedule() {
@@ -79,35 +81,43 @@ export default function RerSchedule() {
       {loading && <p>Chargement des horaires...</p>}
       {error && <ErrorMessage>{error}</ErrorMessage>}
 
-      <DirectionBox>
-        <DirectionTitle onClick={() => handleDirectionClick('paris')}>
-          Direction Paris ↗️
-        </DirectionTitle>
-        {schedules.toParis.length > 0 ? (
-          schedules.toParis.slice(0, 3).map((train, index) => (
-            <TrainInfo key={index}>
-              ⏰ Prochain train vers {train.display_informations.direction} à {formatHeure(train.stop_date_time.arrival_date_time)}
-            </TrainInfo>
-          ))
-        ) : (
-          <ErrorMessage>Aucun train disponible pour le moment</ErrorMessage>
-        )}
-      </DirectionBox>
+      <FlexContainer>
+        <div>
+          <DirectionBox>
+            <DirectionTitle onClick={() => handleDirectionClick('paris')}>
+              Direction Paris ↗️
+            </DirectionTitle>
+            {schedules.toParis.length > 0 ? (
+              schedules.toParis.slice(0, 3).map((train, index) => (
+                <TrainInfo key={index}>
+                  ⏰ Prochain train vers {train.display_informations.direction} à {formatHeure(train.stop_date_time.arrival_date_time)}
+                </TrainInfo>
+              ))
+            ) : (
+              <ErrorMessage>Aucun train disponible pour le moment</ErrorMessage>
+            )}
+          </DirectionBox>
 
-      <DirectionBox>
-        <DirectionTitle onClick={() => handleDirectionClick('cergy')}>
-          Direction Cergy ↗️
-        </DirectionTitle>
-        {schedules.toCergy.length > 0 ? (
-          schedules.toCergy.slice(0, 3).map((train, index) => (
-            <TrainInfo key={index}>
-              ⏰ Prochain train vers {train.display_informations.direction} à {formatHeure(train.stop_date_time.arrival_date_time)}
-            </TrainInfo>
-          ))
-        ) : (
-          <ErrorMessage>Aucun train disponible pour le moment</ErrorMessage>
-        )}
-      </DirectionBox>
+          <DirectionBox>
+            <DirectionTitle onClick={() => handleDirectionClick('cergy')}>
+              Direction Cergy ↗️
+            </DirectionTitle>
+            {schedules.toCergy.length > 0 ? (
+              schedules.toCergy.slice(0, 3).map((train, index) => (
+                <TrainInfo key={index}>
+                  ⏰ Prochain train vers {train.display_informations.direction} à {formatHeure(train.stop_date_time.arrival_date_time)}
+                </TrainInfo>
+              ))
+            ) : (
+              <ErrorMessage>Aucun train disponible pour le moment</ErrorMessage>
+            )}
+          </DirectionBox>
+        </div>
+
+        <div>
+          <WeatherInfo />
+        </div>
+      </FlexContainer>
     </ScheduleContainer>
   );
 }
