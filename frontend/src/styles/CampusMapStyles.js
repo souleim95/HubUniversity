@@ -8,22 +8,28 @@ export const MapSection = styled.section`
   width: 100%;
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Ajout d'une ombre douce */
+  overflow: hidden; /* Empêche les cartes de dépasser */
 `;
 
 export const MapContainer = styled.div`
-  height: 400px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
   margin: 2rem 0;
+  padding: 10px;
   border-radius: 10px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease; /* Transition douce pour les interactions */
-
+  transition: all 0.3s ease;
+  
   &:hover {
     transform: scale(1.05); /* Agrandissement au survol */
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2); /* Ombre plus marquée au survol */
   }
 
+  /* Adaptation sur petits écrans */
   @media (max-width: 768px) {
-    height: 250px; /* Ajustement sur mobile */
+    height: auto;
   }
 `;
 
@@ -58,4 +64,3 @@ export const EventsList = styled.div`
     }
   }
 `;
-
