@@ -13,8 +13,7 @@ import Profile from './components/Profile';
 import ProtectedRoute from './components/ProtectedRoute';
 import GlobalStyle from './styles/GlobalStyle'; // Import du style global
 import { PageContainer, Content } from './styles/styles'; // Importez les styles flexbox
-import WeatherInfo from './components/WeatherInfo';
-
+import InfoBox from './components/InfoBox';
 export default function App() {
   return (
     <Router>
@@ -27,7 +26,7 @@ export default function App() {
               <main>
                 <HeroSection />
                 <CampusMap />
-                <RerSchedule />
+                <InfoBox />
                 <Faq />
               </main>
             } />
