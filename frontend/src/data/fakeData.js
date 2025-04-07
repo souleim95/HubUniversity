@@ -40,7 +40,7 @@ export const fakeObjects = [
     },
     {
         id: 'capteur789',
-        name: 'Capteur de présence Bâtiment B',
+        name: 'Capteur de présence',
         type: 'Capteur',
         status: 'Actif',
         lastDetection: '2024-01-19T10:30:00'
@@ -117,6 +117,65 @@ export const fakeObjects = [
         lastAccess: '2024-01-19T07:00:00',
         autoLock: true,
         securityLevel: 'high'
+    },
+    {
+        id: 'cam_entree',
+        name: 'Caméra Entrée',
+        type: 'Caméra',
+        status: 'Actif',
+        isRecording: true,
+        resolution: '4K'
+    },
+    {
+        id: 'eclairage_parking',
+        name: 'Éclairage Parking',
+        type: 'Éclairage',
+        status: 'Éteint',
+        brightness: 0,
+        autoMode: true
+    },
+    {
+        id: 'borne_recharge',
+        name: 'Borne de recharge VE',
+        type: 'Borne',
+        status: 'Disponible'
+    },
+    {
+        id: 'panneau_places',
+        name: 'Affichage Places',
+        type: 'Panneau',
+        status: 'Actif',
+        message: '45 places libres'
+    },
+    {
+        id: 'detecteur_parking',
+        name: 'Détecteur Occupation',
+        type: 'Capteur',
+        status: 'Actif'
+    },
+    {
+        id: 'cam_urgence',
+        name: 'Caméra Issue Secours',
+        type: 'Caméra',
+        status: 'Actif'
+    },
+    {
+        id: 'alarme_incendie',
+        name: 'Alarme Incendie',
+        type: 'Securite',
+        status: 'Actif'
+    },
+    {
+        id: 'eclairage_urgence',
+        name: 'Éclairage Secours',
+        type: 'Éclairage',
+        status: 'Actif'
+    },
+    {
+        id: 'detecteur_fumee',
+        name: 'Détecteur de Fumée',
+        type: 'Detecteur',
+        status: 'Actif'
     }
 ];
 
@@ -127,7 +186,11 @@ export const categories = {
   },
   ecole: {
     name: 'École',
-    items: ['grille_ecole', 'cam456', 'capteur789', 'light001', 'door001', 'acces_parking', 'panneau_info']
+    items: ['grille_ecole', 'light001', 'door001', 'panneau_info', 'alarme_incendie', 'eclairage_urgence', 'detecteur_fumee', 'cam_urgence']
+  },
+  parking: {
+    name: 'Parking & Extérieur',
+    items: ['acces_parking', 'cam456', 'cam_entree', 'capteur789', 'eclairage_parking', 'borne_recharge', 'panneau_places', 'detecteur_parking']
   }
 };
 

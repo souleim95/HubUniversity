@@ -201,16 +201,7 @@ export const ToggleButton = styled(ControlButton)`
   }
 `;
 
-export const SectionTitle = styled.h2`
-  color: #2b6cb0;
-  font-size: 2em;
-  margin: 20px 0 40px 0;
-  text-align: center;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-`;
+
 
 export const CategoryContainer = styled.div`
   margin: 20px 0;
