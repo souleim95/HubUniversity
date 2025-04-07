@@ -1,12 +1,6 @@
 // src/data/fakeData.js
 
-export const fakeUser = {
-    login: 'JohnDoe',
-    age: 22,
-    genre: 'Homme',
-    level: 'Débutant',
-    points: 3,
-  };
+
   
 export const fakeObjects = [
     {

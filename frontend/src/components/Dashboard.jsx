@@ -23,7 +23,7 @@ import {
   SubItemContainer,
 } from '../styles/DashboardStyles';
 
-import { fakeUser, fakeObjects, categories, equipments } from '../data/fakeData';
+import { fakeObjects, categories, equipments } from '../data/fakeData';
 import { 
   FaWifi, 
   FaThermometerHalf, 
@@ -47,7 +47,6 @@ import {
 } from 'react-icons/fa';
 
 const Dashboard = () => {
-  const [user, setUser] = useState(fakeUser);
   const [objects, setObjects] = useState(fakeObjects);
   const [selectedCategory, setSelectedCategory] = useState('salles');
   const [selectedRoom, setSelectedRoom] = useState(null);
@@ -60,17 +59,7 @@ const Dashboard = () => {
     }
   }, [selectedRoom]);
 
-  const handleLevelChange = () => {
-    if (user.points >= 3 && user.level === 'Débutant') {
-      setUser({ ...user, level: 'Intermédiaire' });
-    } else if (user.points >= 5 && user.level === 'Intermédiaire') {
-      setUser({ ...user, level: 'Avancé' });
-    } else if (user.points >= 7 && user.level === 'Avancé') {
-      setUser({ ...user, level: 'Expert' });
-    } else {
-      alert('Pas assez de points pour changer de niveau');
-    }
-  };
+  
 
   const getIcon = (type) => {
     switch(type) {
@@ -702,23 +691,6 @@ const Dashboard = () => {
         <h2>Mon Tableau de Bord</h2>
         <p>Suivez votre progression et gérez vos objets connectés</p>
       </Header>
-      <InfoSection>
-        <ProfileCard>
-          <h3>Profil</h3>
-          <p><strong>Pseudo :</strong> {user.login}</p>
-          <p><strong>Âge :</strong> {user.age}</p>
-          <p><strong>Genre :</strong> {user.genre}</p>
-          <p><strong>Niveau :</strong> {user.level}</p>
-          <p><strong>Points :</strong> {user.points}</p>
-          
-          <ProgressBar>
-            <div style={{ width: `${(user.points / 10) * 100}%` }} />
-          </ProgressBar>
-
-          <LevelBox>Niveau actuel : {user.level}</LevelBox>
-          <ChangeLevelButton onClick={handleLevelChange}>Changer de niveau</ChangeLevelButton>
-        </ProfileCard>
-      </InfoSection>
 
       <SectionTitle>Gestion des Équipements</SectionTitle>
       <CategoryContainer>
