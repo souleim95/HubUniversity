@@ -36,9 +36,10 @@ export default function RerSchedule() {
         const arrivals = data.arrivals || [];
 
         // Filtrer les arrivées selon la direction affichée
-        const toParis = arrivals.filter(arrival =>
-          arrival.display_informations.direction.includes('Boissy-Saint-Léger')
-        );
+        const toParis = arrivals.filter(arrival => {
+          const dir = arrival.display_informations.direction.toLowerCase();
+          return /paris|châtelet|nation|boissy|torcy|marne|chessy/.test(dir);
+        });        
         const toCergy = arrivals.filter(arrival =>
           arrival.display_informations.direction.includes('Cergy le Haut')
         );
