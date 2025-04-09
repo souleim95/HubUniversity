@@ -9,6 +9,7 @@ export const MapSection = styled.section`
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Ajout d'une ombre douce */
   overflow: hidden; /* Empêche les cartes de dépasser */
+  
 `;
 
 export const MapContainer = styled.div`
@@ -21,7 +22,6 @@ export const MapContainer = styled.div`
   border-radius: 10px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
-  
   &:hover {
     transform: scale(1.05); /* Agrandissement au survol */
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2); /* Ombre plus marquée au survol */
@@ -64,3 +64,40 @@ export const EventsList = styled.div`
     }
   }
 `;
+
+
+export const TabsWrapper = styled.div`
+
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 0 20px;
+  margin: 2rem auto 2rem;
+  max-width: 100%;
+`;
+
+export const Tabs = styled.div`
+
+  display: inline-flex;
+  gap: 1rem;
+`;
+
+export const Tab = styled.button`
+
+  padding: 10px 20px;
+  border-radius: 20px;
+  border: none;
+  background-color: ${({ active }) => (active ? '#2C5282' : '#E2E8F0')};
+  color: ${({ active }) => (active ? '#fff' : '#2C5282')};
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background-color: #2C5282;
+    color: white;
+  }
+`;
+
+
+
+

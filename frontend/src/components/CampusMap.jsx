@@ -1,70 +1,104 @@
-import React from 'react';
-import { fakeObjects } from '../data/fakeData'; // Import des objets
-import { MapSection, MapContainer, EventsList } from '../styles/CampusMapStyles';
-import { ObjectCard, ObjectFront, ObjectBack } from '../styles/InteractiveCardStyles'; // Styles des cartes interactives
-import salleImage from '../assets/salle.jpg'; // Importer l'image de salle
-//import thermostatImage from '../assets/thermostat.jpg'; // Importer l'image de thermostat
+import React, { useState } from 'react';
+import { fakeObjects } from '../data/fakeData';
+import {
+  MapSection,
+  MapContainer,
+  EventsList,
+  TabsWrapper,
+  Tabs,
+  Tab
+} from '../styles/CampusMapStyles';
+
+import { ObjectCard, CardInner, ObjectFront, ObjectBack } from '../styles/InteractiveCardStyles';
+
+import salleImage from '../assets/salle.jpg';
+import thermostatImage from '../assets/thermostat.jpg';
+//import capteurImage from '../assets/capteur.jpg';
+//import cameraImage from '../assets/camera.jpg';
+//import borneImage from '../assets/borne.jpg';
+
 
 const CampusMap = () => {
-  // Fonction pour obtenir les objets uniques par type
-  const getUniqueObjects = () => {
-    const seen = new Set();
-    return fakeObjects.filter((object) => {
-      if (seen.has(object.type)) {
-        return false;
+  // Groupe les objets par type
+  const groupObjectsByType = () => {
+    const grouped = {};
+    fakeObjects.forEach((object) => {
+      if (!grouped[object.type]) {
+        grouped[object.type] = [];
       }
-      seen.add(object.type);
-      return true;
+      grouped[object.type].push(object);
     });
+    return grouped;
   };
 
-  const uniqueObjects = getUniqueObjects(); // Récupérer les objets uniques
+  const groupedObjects = groupObjectsByType();
+  const objectTypes = Object.keys(groupedObjects);
 
-  // Fonction pour choisir l'image en fonction du type
+  // État de l’onglet actif
+  const [selectedType, setSelectedType] = useState(objectTypes[0]);
+
   const getImageForType = (type) => {
     switch (type.toLowerCase()) {
       case 'salle':
         return salleImage;
-      //case 'thermostat':
-        //return thermostatImage;
-      // Ajouter des cas pour d'autres types si nécessaire
+      case 'thermostat':
+        return thermostatImage;
+      case 'capteur':
+        //return capteurImage;
+      case 'camera':
+        //return cameraImage;
+      case 'borne':
+       // return borneImage;
       default:
-        return null; // Image par défaut si type non défini
+        //return salleImage; // fallback
     }
   };
 
   return (
     <MapSection>
-      <h2>Campus Connecté</h2>
-      <MapContainer>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', justifyContent: 'center' }}>
-          {uniqueObjects.map((object) => (
-            <ObjectCard key={object.id}>
-              {/* Face avant de la carte */}
-              <ObjectFront>
-                <img 
-                  src={getImageForType(object.type)} // Utiliser la fonction pour obtenir l'image
-                  alt={object.name} 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                />
-                <h4>{object.type}</h4> {/* Affichage du type comme titre */}
-              </ObjectFront>
+      <h2 style={{ textAlign: 'center' }}>Campus Connecté</h2>
 
-              {/* Face arrière de la carte */}
-              <ObjectBack>
-                <p><strong>Type:</strong> {object.type}</p>
-                <p><strong>Status:</strong> {object.status}</p>
-                {object.capacity && <p><strong>Capacité:</strong> {object.capacity} personnes</p>}
-                {object.temperature && <p><strong>Température:</strong> {object.temperature}°C</p>}
-                {object.nextReservation && <p><strong>Prochaine réservation:</strong> {new Date(object.nextReservation).toLocaleString() || 'Aucune réservation prévue'}</p>}
-              </ObjectBack>
-            </ObjectCard>
+      {/* Onglets */}
+      <TabsWrapper>
+        <Tabs>
+          {objectTypes.map((type) => (
+            <Tab key={type} active={selectedType === type} onClick={() => setSelectedType(type)}>
+              {type.charAt(0).toUpperCase() + type.slice(1)}s
+            </Tab>
           ))}
-        </div>
+        </Tabs>
+      </TabsWrapper>
+
+
+      {/* Contenu de l’onglet actif */}
+      <h3 style={{ textAlign: 'center' }}>
+        {selectedType.charAt(0).toUpperCase() + selectedType.slice(1)}s
+      </h3>
+      <MapContainer>
+        {groupedObjects[selectedType].map((object) => (
+          <ObjectCard key={object.id}>
+          <CardInner>
+            <ObjectFront>
+              <img
+                src={getImageForType(object.type)}
+                alt={object.name}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+              <h4>{object.name}</h4>
+            </ObjectFront>
+            <ObjectBack>
+              <p>{object.description || 'Ajoutez une note personnalisée ici'}</p>
+            </ObjectBack>
+          </CardInner>
+        </ObjectCard>
+        
+        
+          ))}
       </MapContainer>
+
       <EventsList>
         <h3>Événements à venir</h3>
-        {/* Liste des événements à ajouter ici */}
+        {/* Liste des événements à venir */}
       </EventsList>
     </MapSection>
   );
