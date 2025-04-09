@@ -1,128 +1,187 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  ProfileContainer, 
-  Header, 
-  InfoSection, 
-  ProfileCard, 
-  LevelBox, 
-  ProgressBar, 
-  InputField, 
-  SaveButton, 
-  ChangePasswordSection, 
-  PasswordInputField 
+import {
+  ProfileContainer,
+  Header,
+  InfoSection,
+  ProfileCard,
+  InputField,
+  SaveButton,
+  ChangePasswordSection,
+  PasswordInputField,
+  ToggleViewButton,
 } from '../styles/ProfileStyles';
 
 const Profile = () => {
-  const [userName, setUserName] = useState(localStorage.getItem('user'));
-  const [email, setEmail] = useState(localStorage.getItem('email') || '');
-  const [role, setRole] = useState(localStorage.getItem('role'));
-  const [level, setLevel] = useState('Débutant');
-  const [connections, setConnections] = useState(10); // simulation
-  const [points, setPoints] = useState(120); // simulation
-  const [formData, setFormData] = useState({
-    name: userName,
-    email: email,
-    password: '',
-    role: role,
-  });
+  const [isPublic, setIsPublic] = useState(true);
+  const [age, setAge] = useState('');
 
-  const [passwordData, setPasswordData] = useState({
+  const initialFormData = {
+    pseudonyme: localStorage.getItem('user') || '',
+    genre: localStorage.getItem('genre') || '',
+    dateNaissance: localStorage.getItem('dateNaissance') || '',
+    typeMembre: localStorage.getItem('role') || '',
+    photo: null,
+    nom: localStorage.getItem('nom') || '',
+    prenom: localStorage.getItem('prenom') || '',
     oldPassword: '',
     newPassword: '',
-    confirmNewPassword: ''
-  });
-
-  const [isModified, setIsModified] = useState(false); // New state to track changes
-
-  useEffect(() => {
-    setConnections(10);
-    setPoints(120);
-  }, []);
-
-  useEffect(() => {
-    const hasChanges = 
-      formData.name !== userName ||
-      formData.email !== email ||
-      passwordData.oldPassword || 
-      passwordData.newPassword ||
-      passwordData.confirmNewPassword;
-
-    setIsModified(hasChanges);
-  }, [formData, passwordData]);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    confirmNewPassword: '',
   };
 
-  const handlePasswordChange = (e) => {
-    const { name, value } = e.target;
-    setPasswordData({ ...passwordData, [name]: value });
+  const [formData, setFormData] = useState(initialFormData);
+  const [isModified, setIsModified] = useState(false);
+
+  useEffect(() => {
+    if (formData.dateNaissance) {
+      const birthDate = new Date(formData.dateNaissance);
+      const today = new Date();
+      let calculatedAge = today.getFullYear() - birthDate.getFullYear();
+      if (
+        today.getMonth() < birthDate.getMonth() ||
+        (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate())
+      ) {
+        calculatedAge--;
+      }
+      setAge(calculatedAge);
+    }
+  }, [formData.dateNaissance]);
+
+  useEffect(() => {
+    setIsModified(JSON.stringify(formData) !== JSON.stringify(initialFormData));
+  }, [formData]);
+
+  const toggleView = () => setIsPublic(!isPublic);
+
+  const handleInputChange = (e) => {
+    const { name, value, type, files } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: type === 'file' ? files[0] : value,
+    }));
   };
 
   const handleSave = () => {
-    localStorage.setItem('user', formData.name);
-    localStorage.setItem('email', formData.email);
-    alert('Modifications enregistrées!');
+    if (formData.newPassword || formData.confirmNewPassword || formData.oldPassword) {
+      if (!formData.oldPassword) {
+        alert('Veuillez entrer votre ancien mot de passe.');
+        return;
+      }
+      if (formData.newPassword !== formData.confirmNewPassword) {
+        alert('La confirmation du mot de passe ne correspond pas.');
+        return;
+      }
+      alert('Mot de passe modifié avec succès.');
+    }
+
+    localStorage.setItem('user', formData.pseudonyme);
+    localStorage.setItem('genre', formData.genre);
+    localStorage.setItem('dateNaissance', formData.dateNaissance);
+    localStorage.setItem('nom', formData.nom);
+    localStorage.setItem('prenom', formData.prenom);
+
     setIsModified(false);
+    alert('Modifications enregistrées !');
   };
 
   return (
     <ProfileContainer>
       <Header>
-        <h2>Mon Profil</h2>
-        <p>Gérer vos informations personnelles et suivre votre progression</p>
+        <h2>{isPublic ? 'Profil Public 🌐' : 'Profil Privé 🔒'}</h2>
+        <ToggleViewButton onClick={toggleView}>
+          {isPublic ? 'Voir les infos privées 🔒' : 'Voir les infos publiques 🌐'}
+        </ToggleViewButton>
       </Header>
 
       <InfoSection>
-        <ProfileCard>
-          <p><strong>Nom :</strong> <InputField type="text" name="name" value={formData.name} onChange={handleInputChange} /></p>
-          <p><strong>Email :</strong> <InputField type="email" name="email" value={formData.email} onChange={handleInputChange} /></p>
-        </ProfileCard>
+        {isPublic ? (
+          <ProfileCard>
+            <InputField
+              name="pseudonyme"
+              placeholder="Pseudonyme"
+              value={formData.pseudonyme}
+              onChange={handleInputChange}
+            />
+            <InputField
+              name="dateNaissance"
+              type="date"
+              value={formData.dateNaissance}
+              onChange={handleInputChange}
+            />
+            <InputField name="age" placeholder="Âge" type="number" value={age} readOnly />
 
-        {/* Changer le mot de passe (section de saisie uniquement, pas de bouton) */}
-        <ChangePasswordSection>
-          <h3>Changer le mot de passe</h3>
-          <PasswordInputField
-            type="password"
-            name="oldPassword"
-            placeholder="Ancien mot de passe"
-            value={passwordData.oldPassword}
-            onChange={handlePasswordChange}
-          />
-          <PasswordInputField
-            type="password"
-            name="newPassword"
-            placeholder="Nouveau mot de passe"
-            value={passwordData.newPassword}
-            onChange={handlePasswordChange}
-          />
-          <PasswordInputField
-            type="password"
-            name="confirmNewPassword"
-            placeholder="Confirmer le mot de passe"
-            value={passwordData.confirmNewPassword}
-            onChange={handlePasswordChange}
-          />
-        </ChangePasswordSection>
+            <select
+              name="genre"
+              value={formData.genre}
+              onChange={handleInputChange}
+              style={{
+                padding: '18px',
+                margin: '20px 0',
+                width: '100%',
+                borderRadius: '10px',
+                border: '1px solid #e1e1e1',
+                fontSize: '1.2rem',
+              }}
+            >
+              <option value="">Sélectionner un genre</option>
+              <option value="Homme">Homme</option>
+              <option value="Femme">Femme</option>
+            </select>
 
-        <ProfileCard>
-          <p><strong>Rôle :</strong> {role}</p>
-          <p><strong>Connexions :</strong> {connections}</p>
-          <p><strong>Points :</strong> {points}</p>
-          
-          <ProgressBar>
-            <div style={{ width: `${(points / 200) * 100}%` }}></div>
-          </ProgressBar>
+            <InputField name="typeMembre" value={formData.typeMembre} readOnly />
+            
+            <label style={{ margin: '10px 0', fontSize: '1.1rem' }}>
+              Photo de profil :
+              <InputField name="photo" type="file" onChange={handleInputChange} />
+            </label>
+          </ProfileCard>
+        ) : (
+          <>
+            <ProfileCard>
+              <InputField
+                name="nom"
+                placeholder="Nom"
+                value={formData.nom}
+                onChange={handleInputChange}
+              />
+              <InputField
+                name="prenom"
+                placeholder="Prénom"
+                value={formData.prenom}
+                onChange={handleInputChange}
+              />
+            </ProfileCard>
 
-          <LevelBox>
-            <p>{level}</p>
-          </LevelBox>
-        </ProfileCard>
+            <ChangePasswordSection>
+              <h3>Modifier le mot de passe</h3>
+              <PasswordInputField
+                name="oldPassword"
+                type="password"
+                placeholder="Ancien mot de passe"
+                value={formData.oldPassword}
+                onChange={handleInputChange}
+              />
+              <PasswordInputField
+                name="newPassword"
+                type="password"
+                placeholder="Nouveau mot de passe"
+                value={formData.newPassword}
+                onChange={handleInputChange}
+              />
+              <PasswordInputField
+                name="confirmNewPassword"
+                type="password"
+                placeholder="Confirmer le mot de passe"
+                value={formData.confirmNewPassword}
+                onChange={handleInputChange}
+              />
+            </ChangePasswordSection>
+          </>
+        )}
       </InfoSection>
 
-      {/* Bouton Enregistrer les modifications */}
-      <SaveButton className={isModified ? 'changed' : ''} onClick={handleSave}>Enregistrer les modifications</SaveButton>
+      <SaveButton className={isModified ? 'changed' : ''} onClick={handleSave}>
+        Enregistrer les modifications
+      </SaveButton>
     </ProfileContainer>
   );
 };

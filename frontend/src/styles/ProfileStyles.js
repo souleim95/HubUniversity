@@ -197,3 +197,19 @@ export const ChangePasswordButton = styled(SaveButton)`
     background-color: rgb(230, 60, 60);
   }
 `;
+
+export const ToggleViewButton = styled.button`
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  margin-top: 15px;
+  border-radius: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #45a049;
+  }
+`;
