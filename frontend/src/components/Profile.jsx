@@ -60,6 +60,17 @@ const Profile = () => {
     }));
   };
 
+  useEffect(() => {
+    if (formData.photo instanceof File) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        localStorage.setItem('photoUrl', reader.result);
+      };
+      reader.readAsDataURL(formData.photo);
+    }
+  }, [formData.photo]);
+  
+
   const handleSave = () => {
     if (formData.newPassword || formData.confirmNewPassword || formData.oldPassword) {
       if (!formData.oldPassword) {

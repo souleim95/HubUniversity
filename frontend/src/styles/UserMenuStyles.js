@@ -93,3 +93,10 @@ export const ProfileIcon = styled.div`
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
   }
 `;
+
+export const UserAvatar = styled.img`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+`;

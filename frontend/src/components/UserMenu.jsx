@@ -3,7 +3,8 @@ import {
   MenuContainer, 
   MenuButton, 
   DropdownMenu, 
-  DropdownItem 
+  DropdownItem,
+  UserAvatar
 } from '../styles/UserMenuStyles';  // Import des styles
 import { useNavigate } from 'react-router-dom';
 
@@ -16,13 +17,20 @@ const UserMenu = ({ user, role, onLogout }) => {
     setOpen(false);  // Ferme le menu après la navigation
   };
 
-  const userInitial = user?.login ? user.login.charAt(0).toUpperCase() : 'U';  // Affichage de la première lettre du login
-
+  const userPhoto = localStorage.getItem('photoUrl');
+  const userInitial = user?.login ? user.login.charAt(0).toUpperCase() : 'U';
+  
   return (
     <MenuContainer>
-      <MenuButton onClick={() => setOpen(!open)}>
-        {userInitial} {/* Affiche la première lettre du login, ou 'U' si 'user' est undefined */}
-      </MenuButton>
+<MenuButton onClick={() => setOpen(!open)}>
+  {userPhoto ? (
+    <UserAvatar src={userPhoto} alt="Photo de profil" />
+  ) : (
+    userInitial
+  )}
+</MenuButton>
+
+
       {open && (
         <DropdownMenu>
           <DropdownItem onClick={() => handleNavigate('/dashboard')}>Tableau de bord</DropdownItem>
