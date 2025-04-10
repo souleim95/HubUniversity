@@ -1,15 +1,16 @@
-
 services:
   db:
     image: postgres:17
     container_name: projet_universite_db
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_HOST_AUTH_METHOD: trust
       POSTGRES_DB: projet_universite
+      POSTGRES_HOST_AUTH_METHOD: trust
     ports:
       - "5432:5432"
+    # 1) On attache un volume nommé (db-data) à /var/lib/postgresql/data
     volumes:
+      - db-data:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
@@ -20,12 +21,12 @@ services:
   backend:
     build: ./backend
     container_name: projet_universite_backend
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
       - DATABASE_URL=postgres://postgres@db:5432/projet_universite
       - NODE_ENV=production
-      - SNCF_API_KEY=794cbefe-7238-4c7c-835c-8e16aa6f3d7f
-    depends_on:
-      - db
     ports:
       - "5001:5001"
     volumes:
@@ -45,3 +46,7 @@ services:
     ports:
       - "3000:3000"
     command: sh -c "npm install --production && npm start"
+
+# 2) On déclare le volume nommé (db-data) en bas du fichier
+volumes:
+  db-data:
