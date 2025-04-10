@@ -53,7 +53,7 @@ const Header = () => {
 
       if (response.ok) {
         const data = await response.json();
-        alert(isFormOpen === 'signup' ? 'Inscription réussie !' : `Bonjour ${data.user.name} !`);
+        //alert(isFormOpen === 'signup' ? 'Inscription réussie !' : `Bonjour ${data.user.name} !`);
 
         if (isFormOpen === 'login') {
           localStorage.setItem('user', data.user.name);
