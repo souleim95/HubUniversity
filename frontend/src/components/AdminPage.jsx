@@ -36,7 +36,9 @@ import {
   Tab,
   ExportButton
 } from '../styles/AdminStyles.js';
-import { FaUsers, FaTools, FaShieldAlt, FaPalette, FaChartBar, FaPlus, FaEdit, FaTrash, FaDownload, FaExclamationTriangle, FaCheck, FaTimes } from 'react-icons/fa';
+import { FaUsers, FaTools, FaShieldAlt, FaPalette, FaChartBar, FaPlus, FaEdit, FaTrash, FaDownload, FaExclamationTriangle, FaCheck } from 'react-icons/fa';
+// Importer les données depuis fakeData.js
+import { fakeObjects, categories, equipments } from '../data/fakeData';
 
 function AdminPage() {
     // --------- Gestion des états (states) ---------
@@ -54,13 +56,13 @@ function AdminPage() {
     });
 
     // États pour la gestion des objets connectés
-    const [objects, setObjects] = useState([]);
-    const [categories, setCategories] = useState([]);
+    const [objects, setObjects] = useState([]); // Sera rempli avec fakeObjects
+    const [categoryList, setCategoryList] = useState([]); // Liste des catégories
     const [showObjectModal, setShowObjectModal] = useState(false);
     const [objectFormData, setObjectFormData] = useState({
         name: '',
-        category: '',
-        status: 'active',
+        type: '',
+        status: 'Actif',
         priority: 'normal'
     });
 
@@ -111,35 +113,47 @@ function AdminPage() {
         setLoadingUsers(false);
     };
 
-    // Récupère la liste des objets et catégories
+    // Récupère la liste des objets et catégories depuis fakeData.js
     const fetchObjects = async () => {
-        // Données temporaires pour le développement
-        const mockObjects = [
-            { id: 1, name: 'Salle 101', category: 'Salle', status: 'active', priority: 'high' },
-            { id: 2, name: 'Imprimante A', category: 'Équipement', status: 'maintenance', priority: 'normal' },
-            { id: 3, name: 'Chauffage', category: 'Équipement', status: 'inactive', priority: 'high' },
-            { id: 4, name: 'Refectoire', category: 'Salle', status: 'inactive', priority: 'high' },
-        ];
-        setObjects(mockObjects);
-        setCategories(['Salle', 'Équipement', 'Service']);
+        // Utiliser les données de fakeData
+        setObjects(fakeObjects);
+        
+        // Extraire les types uniques des objets
+        const uniqueTypes = [...new Set(fakeObjects.map(obj => obj.type))];
+        setCategoryList(uniqueTypes);
     };
 
     // Récupère les données pour les rapports
     const fetchReports = async () => {
-        // Données factices pour les graphiques et statistiques
+        // Générer des rapports basés sur les données réelles
+        
+        // Consommation énergétique: simuler basé sur le nombre d'objets actifs
+        const activeObjects = fakeObjects.filter(obj => obj.status === 'Actif' || obj.status === 'Allumé');
+        const energyData = [
+            { date: new Date().toISOString().split('T')[0], value: activeObjects.length * 50 }, // 50 unités par objet actif
+            { date: new Date(Date.now() - 86400000).toISOString().split('T')[0], value: activeObjects.length * 45 }
+        ];
+        
+        // Activité utilisateurs: simuler basée sur le nombre d'objets et de salles
+        const rooms = fakeObjects.filter(obj => obj.type === 'Salle');
+        const userActivityData = [
+            { date: new Date().toISOString().split('T')[0], activeUsers: Math.min(users.length * 10, rooms.reduce((sum, room) => sum + (room.capacity || 20), 0)) },
+            { date: new Date(Date.now() - 86400000).toISOString().split('T')[0], activeUsers: Math.min(users.length * 8, rooms.reduce((sum, room) => sum + (room.capacity || 20), 0)) }
+        ];
+        
+        // Usage des services: basé sur le nombre d'équipements par salle
+        const equipmentCountByRoom = Object.keys(equipments).map(roomId => {
+            const room = fakeObjects.find(obj => obj.id === roomId);
+            return {
+                service: room ? room.name : roomId,
+                usage: equipments[roomId].length
+            };
+        });
+        
         setReports({
-            energyConsumption: [
-                { date: '2024-07-26', value: 1500 },
-                { date: '2024-07-25', value: 1450 }
-            ],
-            userActivity: [
-                { date: '2024-07-26', activeUsers: 120 },
-                { date: '2024-07-25', activeUsers: 115 }
-            ],
-            serviceUsage: [
-                { service: 'Imprimante', usage: 50 },
-                { service: 'Salle de réunion', usage: 30 }
-            ]
+            energyConsumption: energyData,
+            userActivity: userActivityData,
+            serviceUsage: equipmentCountByRoom
         });
     };
 
@@ -198,19 +212,52 @@ function AdminPage() {
     const handleAddObject = () => {
         setObjectFormData({
             name: '',
-            category: categories[0],
-            status: 'active',
+            type: categoryList[0] || 'Salle',
+            status: 'Actif',
             priority: 'normal'
         });
         setShowObjectModal(true);
     };
 
-    // Enregistre un nouvel objet
+    // Ouvre la modal pour modifier un objet existant
+    const handleEditObject = (object) => {
+        setSelectedObject(object);
+        setObjectFormData({
+            name: object.name,
+            type: object.type,
+            status: object.status,
+            priority: object.priority || 'normal'
+        });
+        setShowObjectModal(true);
+    };
+
+    // Supprime un objet après confirmation
+    const handleDeleteObject = (objectId) => {
+        if (window.confirm('Êtes-vous sûr de vouloir supprimer cet objet ?')) {
+            setObjects(objects.filter(obj => obj.id !== objectId));
+        }
+    };
+
+    // Enregistre un nouvel objet ou modifie un objet existant
     const handleObjectSubmit = async (e) => {
         e.preventDefault();
-        // Dans une vraie app, on ferait un appel API ici
-        setObjects([...objects, { id: Date.now(), ...objectFormData }]);
+        
+        if (selectedObject) {
+            // Modification d'un objet existant
+            setObjects(objects.map(obj => 
+                obj.id === selectedObject.id ? { ...obj, ...objectFormData } : obj
+            ));
+        } else {
+            // Ajout d'un nouvel objet
+            const newObject = {
+                id: `obj_${Date.now()}`,
+                ...objectFormData
+            };
+            setObjects([...objects, newObject]);
+        }
+        
         setShowObjectModal(false);
+        setSelectedObject(null);
     };
 
     // --------- Gestion des rapports ---------
@@ -264,7 +311,7 @@ function AdminPage() {
                     <StatLabel>Utilisateurs Total</StatLabel>
                 </StatCard>
                 <StatCard>
-                    <StatValue>{objects.length}</StatValue>
+                    <StatValue>{objects.filter(obj => obj.status === 'Actif' || obj.status === 'Allumé').length}</StatValue>
                     <StatLabel>Objets Actifs</StatLabel>
                 </StatCard>
                 <StatCard>
@@ -272,8 +319,8 @@ function AdminPage() {
                     <StatLabel>Consommation Totale</StatLabel>
                 </StatCard>
                 <StatCard>
-                    <StatValue>{reports.userActivity.reduce((total, item) => total + item.activeUsers, 0)}</StatValue>
-                    <StatLabel>Activité Utilisateurs</StatLabel>
+                    <StatValue>{Object.keys(equipments).reduce((sum, roomId) => sum + equipments[roomId].length, 0)}</StatValue>
+                    <StatLabel>Équipements Totaux</StatLabel>
                 </StatCard>
             </StatsGrid>
 
@@ -361,39 +408,201 @@ function AdminPage() {
                         </ActionButton>
                     </SectionHeader>
                     
-                    {/* Affichage en grille des catégories et objets */}
-                    <Grid>
-                        <Card>
-                            <CardTitle>Catégories</CardTitle>
-                            <ul className="space-y-2">
-                                {categories.map((category, index) => (
-                                    <li key={index} className="flex justify-between items-center">
-                                        <span>{category}</span>
-                                        <SecondaryButton>Supprimer</SecondaryButton>
+                    {/* Vue d'ensemble - Stats rapides */}
+                    <div style={{ marginBottom: '20px', display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+                        <Card style={{ flex: '1', minWidth: '200px', textAlign: 'center', padding: '15px' }}>
+                            <StatValue>{objects.filter(obj => obj.type === 'Salle').length}</StatValue>
+                            <StatLabel>Salles</StatLabel>
+                        </Card>
+                        <Card style={{ flex: '1', minWidth: '200px', textAlign: 'center', padding: '15px' }}>
+                            <StatValue>{objects.filter(obj => obj.status === 'Actif' || obj.status === 'Allumé').length}</StatValue>
+                            <StatLabel>Objets Actifs</StatLabel>
+                        </Card>
+                        <Card style={{ flex: '1', minWidth: '200px', textAlign: 'center', padding: '15px' }}>
+                            <StatValue>{objects.filter(obj => obj.status === 'Maintenance').length}</StatValue>
+                            <StatLabel>En Maintenance</StatLabel>
+                        </Card>
+                        <Card style={{ flex: '1', minWidth: '200px', textAlign: 'center', padding: '15px' }}>
+                            <StatValue>{Object.values(equipments).flat().length}</StatValue>
+                            <StatLabel>Équipements</StatLabel>
+                        </Card>
+                    </div>
+                    
+                    {/* Affichage par catégories */}
+                    <Grid style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+                        {/* Liste des types d'objets */}
+                        <Card style={{ gridColumn: '1 / span 1' }}>
+                            <CardTitle>Types d'Objets</CardTitle>
+                            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                                {categoryList.map((category, index) => (
+                                    <li key={index} style={{ 
+                                        padding: '10px 15px', 
+                                        borderBottom: '1px solid #eee',
+                                        display: 'flex', 
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        cursor: 'pointer',
+                                        backgroundColor: index % 2 === 0 ? '#f9f9f9' : 'transparent',
+                                        borderRadius: '4px',
+                                        margin: '2px 0'
+                                    }}>
+                                        <span style={{ fontWeight: 'bold' }}>{category}</span>
+                                        <span style={{ 
+                                            backgroundColor: '#e0e0e0', 
+                                            padding: '2px 8px', 
+                                            borderRadius: '12px', 
+                                            fontSize: '0.8rem',
+                                            minWidth: '30px',
+                                            textAlign: 'center'
+                                        }}>
+                                            {objects.filter(obj => obj.type === category).length}
+                                        </span>
                                     </li>
                                 ))}
                             </ul>
                         </Card>
-                        <Card>
-                            <CardTitle>Objets</CardTitle>
-                            <ul className="space-y-2">
+                        
+                        {/* Liste des objets avec statut */}
+                        <Card style={{ gridColumn: 'span 3' }}>
+                            <CardTitle>Objets par Statut</CardTitle>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px', flexWrap: 'wrap', gap: '10px' }}>
+                                <div style={{ 
+                                    padding: '8px 15px', 
+                                    backgroundColor: '#4CAF50', 
+                                    color: 'white', 
+                                    borderRadius: '4px', 
+                                    fontSize: '0.9em',
+                                    flex: '1',
+                                    minWidth: '120px',
+                                    textAlign: 'center'
+                                }}>
+                                    Actifs: {objects.filter(obj => obj.status === 'Actif' || obj.status === 'Allumé' || obj.status === 'Disponible').length}
+                                </div>
+                                <div style={{ 
+                                    padding: '8px 15px', 
+                                    backgroundColor: '#FFC107', 
+                                    color: 'white', 
+                                    borderRadius: '4px', 
+                                    fontSize: '0.9em',
+                                    flex: '1',
+                                    minWidth: '120px',
+                                    textAlign: 'center'
+                                }}>
+                                    Occupés: {objects.filter(obj => obj.status === 'Occupée').length}
+                                </div>
+                                <div style={{ 
+                                    padding: '8px 15px', 
+                                    backgroundColor: '#F44336', 
+                                    color: 'white', 
+                                    borderRadius: '4px', 
+                                    fontSize: '0.9em',
+                                    flex: '1',
+                                    minWidth: '120px',
+                                    textAlign: 'center'
+                                }}>
+                                    Inactifs: {objects.filter(obj => obj.status === 'Inactif' || obj.status === 'Éteint').length}
+                                </div>
+                            </div>
+                            
+                            <div style={{ maxHeight: '460px', overflowY: 'auto', borderRadius: '4px', border: '1px solid #eee' }}>
+                                <Table style={{ borderCollapse: 'collapse', width: '100%' }}>
+                                    <TableHeader>
+                                        <tr>
+                                            <TableHeaderCell>Nom</TableHeaderCell>
+                                            <TableHeaderCell>Type</TableHeaderCell>
+                                            <TableHeaderCell>Statut</TableHeaderCell>
+                                            <TableHeaderCell>Actions</TableHeaderCell>
+                                        </tr>
+                                    </TableHeader>
+                                    <tbody>
                                 {objects.map((object) => (
-                                    <li key={object.id} className="flex justify-between items-center">
-                                        <div>
-                                            <span className="font-medium">{object.name}</span>
-                                            <StatusBadge status={object.status} className="ml-2">
+                                            <TableRow key={object.id}>
+                                                <TableCell>{object.name}</TableCell>
+                                                <TableCell>{object.type}</TableCell>
+                                                <TableCell>
+                                                    <StatusBadge status={
+                                                        object.status === 'Actif' || object.status === 'Allumé' || object.status === 'Disponible' ? 'active' :
+                                                        object.status === 'Inactif' || object.status === 'Éteint' ? 'inactive' :
+                                                        'maintenance'
+                                                    }>
                                                 {object.status}
                                             </StatusBadge>
-                                        </div>
+                                                </TableCell>
+                                                <TableCell>
                                         <ButtonGroup>
-                                            <SecondaryButton>Modifier</SecondaryButton>
-                                            <PrimaryButton>Supprimer</PrimaryButton>
+                                                        <SecondaryButton onClick={() => handleEditObject(object)}>
+                                                            <FaEdit style={{ marginRight: '5px' }} /> Modifier
+                                                        </SecondaryButton>
+                                                        <PrimaryButton onClick={() => handleDeleteObject(object.id)}>
+                                                            <FaTrash style={{ marginRight: '5px' }} /> Supprimer
+                                                        </PrimaryButton>
                                         </ButtonGroup>
-                                    </li>
+                                                </TableCell>
+                                            </TableRow>
                                 ))}
-                            </ul>
+                                    </tbody>
+                                </Table>
+                            </div>
                         </Card>
                     </Grid>
+                    
+                    {/* Tableau des équipements par salle */}
+                    <SectionTitle style={{ marginTop: '30px', marginBottom: '15px' }}>
+                        Équipements par Salle
+                    </SectionTitle>
+                    <div style={{ maxHeight: '500px', overflowY: 'auto', border: '1px solid #eee', borderRadius: '4px' }}>
+                        <Table>
+                            <TableHeader>
+                                <tr>
+                                    <TableHeaderCell>Salle</TableHeaderCell>
+                                    <TableHeaderCell>Nombre d'équipements</TableHeaderCell>
+                                    <TableHeaderCell>Statut Salle</TableHeaderCell>
+                                    <TableHeaderCell>Actions</TableHeaderCell>
+                                </tr>
+                            </TableHeader>
+                            <tbody>
+                                {Object.keys(equipments).map(roomId => {
+                                    const room = fakeObjects.find(obj => obj.id === roomId);
+                                    if (!room) return null;
+                                    
+                                    return (
+                                        <TableRow key={roomId} style={{ cursor: 'pointer' }} onClick={() => {
+                                            // Ici on pourrait implémenter un affichage détaillé des équipements
+                                            console.log(`Equipements de ${room.name}:`, equipments[roomId]);
+                                        }}>
+                                            <TableCell style={{ fontWeight: 'bold' }}>{room.name}</TableCell>
+                                            <TableCell>{equipments[roomId].length}</TableCell>
+                                            <TableCell>
+                                                <StatusBadge status={
+                                                    room.status === 'Disponible' ? 'active' :
+                                                    room.status === 'Occupée' ? 'inactive' : 'maintenance'
+                                                }>
+                                                    {room.status}
+                                                </StatusBadge>
+                                            </TableCell>
+                                            <TableCell>
+                                                <ButtonGroup>
+                                                    <SecondaryButton onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleEditObject(room);
+                                                    }}>
+                                                        <FaEdit style={{ marginRight: '5px' }} /> Gérer
+                                                    </SecondaryButton>
+                                                    <PrimaryButton onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        // Ici on pourrait implémenter un modal pour voir les équipements
+                                                        alert(`${room.name} contient ${equipments[roomId].length} équipements`);
+                                                    }}>
+                                                        Détails
+                                                    </PrimaryButton>
+                                                </ButtonGroup>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
+                            </tbody>
+                        </Table>
+                    </div>
                 </Section>
             )}
 
@@ -420,18 +629,44 @@ function AdminPage() {
 
                     {/* Liste des alertes de sécurité en cours */}
                     <SectionTitle style={{ marginTop: '2rem' }}>Alertes de Sécurité</SectionTitle>
-                    {reports.userActivity.map(alert => (
-                        <AlertBanner key={alert.date} type="warning">
+                    
+                    {/* Afficher les vrais objets qui nécessitent attention */}
+                    {fakeObjects
+                        .filter(obj => 
+                            obj.status === 'Maintenance' || 
+                            obj.status === 'Alarme Incendie' || 
+                            obj.status === 'Fumée détectée' ||
+                            obj.status === 'Alarme'
+                        )
+                        .map(alert => (
+                            <AlertBanner key={alert.id} type="warning">
                             <FaExclamationTriangle />
                             <div>
-                                <strong>{alert.activeUsers} utilisateurs actifs</strong>
-                                <div style={{ fontSize: '0.875rem', opacity: 0.8 }}>{alert.date}</div>
+                                    <strong>{alert.name}: {alert.status}</strong>
+                                    <div style={{ fontSize: '0.875rem', opacity: 0.8 }}>Attention requise</div>
                             </div>
                             <ActionButton onClick={() => handleAlertAction(alert)}>
                                 Résoudre
                             </ActionButton>
                         </AlertBanner>
-                    ))}
+                        ))
+                    }
+                    
+                    {/* Si aucune alerte, afficher un message positif */}
+                    {fakeObjects.filter(obj => 
+                        obj.status === 'Maintenance' || 
+                        obj.status === 'Alarme Incendie' || 
+                        obj.status === 'Fumée détectée' ||
+                        obj.status === 'Alarme'
+                    ).length === 0 && (
+                        <AlertBanner type="success">
+                            <FaCheck />
+                            <div>
+                                <strong>Aucune alerte active</strong>
+                                <div style={{ fontSize: '0.875rem', opacity: 0.8 }}>Tous les systèmes fonctionnent normalement</div>
+                            </div>
+                        </AlertBanner>
+                    )}
                 </Section>
             )}
 
@@ -477,35 +712,176 @@ function AdminPage() {
                         <SectionTitle><FaChartBar /> Rapports Avancés</SectionTitle>
                         <ButtonGroup>
                             <ExportButton onClick={() => handleExportReport('energyConsumption')}>
-                                <FaDownload /> Exporter CSV
+                                <FaDownload /> Exporter Consommation
                             </ExportButton>
                             <ExportButton onClick={() => handleExportReport('userActivity')}>
-                                <FaDownload /> Exporter CSV
+                                <FaDownload /> Exporter Activité
                             </ExportButton>
                             <ExportButton onClick={() => handleExportReport('serviceUsage')}>
-                                <FaDownload /> Exporter CSV
+                                <FaDownload /> Exporter Usage
                             </ExportButton>
                         </ButtonGroup>
                     </SectionHeader>
 
-                    {/* Affichage des métriques clés */}
-                    <Grid>
-                        <Card>
+                    {/* Affichage des métriques clés amélioré */}
+                    <Grid style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px', marginBottom: '30px' }}>
+                        <Card style={{ padding: '20px', textAlign: 'center' }}>
                             <CardTitle>Consommation Énergétique</CardTitle>
-                            <StatValue>{reports.energyConsumption.reduce((total, item) => total + item.value, 0)}</StatValue>
-                            <StatLabel>Total sur 30 jours</StatLabel>
+                            <StatValue style={{ color: '#4CAF50', fontSize: '2.5rem' }}>
+                                {reports.energyConsumption.reduce((total, item) => total + item.value, 0)}
+                            </StatValue>
+                            <StatLabel>Total kWh sur 30 jours</StatLabel>
+                            <div style={{ marginTop: '15px', height: '80px', backgroundColor: '#f5f5f5', borderRadius: '4px', padding: '10px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around' }}>
+                                {reports.energyConsumption.map((item, index) => (
+                                    <div key={index} style={{ height: `${(item.value / 2000) * 100}%`, width: '30px', backgroundColor: '#4CAF50', borderRadius: '4px', position: 'relative' }}>
+                                        <span style={{ position: 'absolute', top: '-20px', left: '50%', transform: 'translateX(-50%)', fontSize: '0.7rem' }}>{item.date}</span>
+                                    </div>
+                                ))}
+                            </div>
                         </Card>
-                        <Card>
-                            <CardTitle>Taux de Connexion</CardTitle>
-                            <StatValue>{reports.userActivity.reduce((total, item) => total + item.activeUsers, 0) / users.length * 100}%</StatValue>
-                            <StatLabel>Moyenne quotidienne</StatLabel>
+                        
+                        <Card style={{ padding: '20px', textAlign: 'center' }}>
+                            <CardTitle>Activité Utilisateurs</CardTitle>
+                            <StatValue style={{ color: '#2196F3', fontSize: '2.5rem' }}>
+                                {reports.userActivity.length > 0 
+                                    ? Math.round(reports.userActivity.reduce((total, item) => total + item.activeUsers, 0) / reports.userActivity.length)
+                                    : 0}
+                            </StatValue>
+                            <StatLabel>Moyenne utilisateurs quotidiens</StatLabel>
+                            <div style={{ marginTop: '15px', height: '80px', backgroundColor: '#f5f5f5', borderRadius: '4px', padding: '10px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around' }}>
+                                {reports.userActivity.map((item, index) => (
+                                    <div key={index} style={{ height: `${(item.activeUsers / 200) * 100}%`, width: '30px', backgroundColor: '#2196F3', borderRadius: '4px', position: 'relative' }}>
+                                        <span style={{ position: 'absolute', top: '-20px', left: '50%', transform: 'translateX(-50%)', fontSize: '0.7rem' }}>{item.date}</span>
+                                    </div>
+                                ))}
+                            </div>
                         </Card>
-                        <Card>
-                            <CardTitle>Services Populaires</CardTitle>
-                            <StatValue>{reports.serviceUsage.length}</StatValue>
-                            <StatLabel>Services actifs</StatLabel>
+                        
+                        <Card style={{ padding: '20px', textAlign: 'center' }}>
+                            <CardTitle>Taux d'Occupation</CardTitle>
+                            <StatValue style={{ color: '#FF9800', fontSize: '2.5rem' }}>
+                                {fakeObjects.filter(obj => obj.type === 'Salle' && obj.status === 'Occupée').length} / {fakeObjects.filter(obj => obj.type === 'Salle').length}
+                            </StatValue>
+                            <StatLabel>Salles occupées</StatLabel>
+                            <div style={{ 
+                                marginTop: '15px', 
+                                height: '80px', 
+                                backgroundColor: '#f5f5f5', 
+                                borderRadius: '4px', 
+                                padding: '10px', 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center' 
+                            }}>
+                                <div style={{ 
+                                    width: '100%', 
+                                    height: '30px', 
+                                    backgroundColor: '#eee', 
+                                    borderRadius: '15px', 
+                                    overflow: 'hidden',
+                                    position: 'relative'
+                                }}>
+                                    <div style={{ 
+                                        width: `${(fakeObjects.filter(obj => obj.type === 'Salle' && obj.status === 'Occupée').length / fakeObjects.filter(obj => obj.type === 'Salle').length) * 100}%`, 
+                                        height: '100%', 
+                                        backgroundColor: '#FF9800', 
+                                        borderRadius: '15px 0 0 15px'
+                                    }}></div>
+                                    <span style={{ 
+                                        position: 'absolute', 
+                                        top: '50%', 
+                                        left: '50%', 
+                                        transform: 'translate(-50%, -50%)', 
+                                        fontSize: '0.8rem',
+                                        fontWeight: 'bold',
+                                        color: '#333'
+                                    }}>
+                                        {Math.round((fakeObjects.filter(obj => obj.type === 'Salle' && obj.status === 'Occupée').length / fakeObjects.filter(obj => obj.type === 'Salle').length) * 100)}%
+                                    </span>
+                                </div>
+                            </div>
+                        </Card>
+                        
+                        <Card style={{ padding: '20px', textAlign: 'center' }}>
+                            <CardTitle>Équipements Actifs</CardTitle>
+                            <StatValue style={{ color: '#9C27B0', fontSize: '2.5rem' }}>
+                                {Object.values(equipments).flat().filter(eq => eq.status === 'Actif' || eq.status === 'Allumé').length} / {Object.values(equipments).flat().length}
+                            </StatValue>
+                            <StatLabel>Taux d'activité</StatLabel>
+                            <div style={{ 
+                                marginTop: '15px', 
+                                height: '80px', 
+                                backgroundColor: '#f5f5f5', 
+                                borderRadius: '4px', 
+                                padding: '10px', 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center' 
+                            }}>
+                                <div style={{ 
+                                    width: '100%', 
+                                    height: '30px', 
+                                    backgroundColor: '#eee', 
+                                    borderRadius: '15px', 
+                                    overflow: 'hidden',
+                                    position: 'relative'
+                                }}>
+                                    <div style={{ 
+                                        width: `${(Object.values(equipments).flat().filter(eq => eq.status === 'Actif' || eq.status === 'Allumé').length / Object.values(equipments).flat().length) * 100}%`, 
+                                        height: '100%', 
+                                        backgroundColor: '#9C27B0', 
+                                        borderRadius: '15px 0 0 15px'
+                                    }}></div>
+                                    <span style={{ 
+                                        position: 'absolute', 
+                                        top: '50%', 
+                                        left: '50%', 
+                                        transform: 'translate(-50%, -50%)', 
+                                        fontSize: '0.8rem',
+                                        fontWeight: 'bold', 
+                                        color: '#333'
+                                    }}>
+                                        {Math.round((Object.values(equipments).flat().filter(eq => eq.status === 'Actif' || eq.status === 'Allumé').length / Object.values(equipments).flat().length) * 100)}%
+                                    </span>
+                                </div>
+                            </div>
                         </Card>
                     </Grid>
+                    
+                    {/* Tableau des services les plus utilisés */}
+                    <SectionTitle style={{ marginBottom: '15px' }}>Services les Plus Utilisés</SectionTitle>
+                    <div style={{ maxHeight: '300px', overflowY: 'auto', border: '1px solid #eee', borderRadius: '4px', marginBottom: '30px' }}>
+                        <Table>
+                            <TableHeader>
+                                <tr>
+                                    <TableHeaderCell>Service</TableHeaderCell>
+                                    <TableHeaderCell>Utilisation</TableHeaderCell>
+                                    <TableHeaderCell>Pourcentage</TableHeaderCell>
+                                </tr>
+                            </TableHeader>
+                            <tbody>
+                                {reports.serviceUsage.sort((a, b) => b.usage - a.usage).map((service, index) => (
+                                    <TableRow key={index}>
+                                        <TableCell>{service.service}</TableCell>
+                                        <TableCell>{service.usage}</TableCell>
+                                        <TableCell>
+                                            <div style={{ width: '100%', height: '20px', backgroundColor: '#f5f5f5', borderRadius: '10px', overflow: 'hidden', position: 'relative' }}>
+                                                <div style={{ 
+                                                    width: `${(service.usage / reports.serviceUsage.reduce((max, s) => Math.max(max, s.usage), 0)) * 100}%`, 
+                                                    height: '100%', 
+                                                    backgroundColor: index === 0 ? '#4CAF50' : (index === 1 ? '#2196F3' : '#FF9800'), 
+                                                    borderRadius: '10px'
+                                                }}></div>
+                                                <span style={{ position: 'absolute', top: '50%', left: '5px', transform: 'translateY(-50%)', fontSize: '0.8rem', color: '#333' }}>
+                                                    {Math.round((service.usage / reports.serviceUsage.reduce((sum, s) => sum + s.usage, 0)) * 100)}%
+                                                </span>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </tbody>
+                        </Table>
+                    </div>
                 </Section>
             )}
 
@@ -572,7 +948,7 @@ function AdminPage() {
             {showObjectModal && (
                 <ModalOverlay onClick={() => setShowObjectModal(false)}>
                     <ModalContent onClick={e => e.stopPropagation()}>
-                        <SectionTitle>Ajouter un objet</SectionTitle>
+                        <SectionTitle>{selectedObject ? "Modifier l'objet" : "Ajouter un objet"}</SectionTitle>
                         <form onSubmit={handleObjectSubmit}>
                             <FormGroup>
                                 <Label>Nom</Label>
@@ -584,12 +960,12 @@ function AdminPage() {
                                 />
                             </FormGroup>
                             <FormGroup>
-                                <Label>Catégorie</Label>
+                                <Label>Type</Label>
                                 <Select
-                                    value={objectFormData.category}
-                                    onChange={(e) => setObjectFormData({...objectFormData, category: e.target.value})}
+                                    value={objectFormData.type}
+                                    onChange={(e) => setObjectFormData({...objectFormData, type: e.target.value})}
                                 >
-                                    {categories.map((category, index) => (
+                                    {categoryList.map((category, index) => (
                                         <option key={index} value={category}>{category}</option>
                                     ))}
                                 </Select>
@@ -600,9 +976,11 @@ function AdminPage() {
                                     value={objectFormData.status}
                                     onChange={(e) => setObjectFormData({...objectFormData, status: e.target.value})}
                                 >
-                                    <option value="active">Actif</option>
-                                    <option value="maintenance">En maintenance</option>
-                                    <option value="inactive">Inactif</option>
+                                    <option value="Actif">Actif</option>
+                                    <option value="Inactif">Inactif</option>
+                                    <option value="Disponible">Disponible</option>
+                                    <option value="Occupée">Occupée</option>
+                                    <option value="Maintenance">Maintenance</option>
                                 </Select>
                             </FormGroup>
                             <FormGroup>
@@ -621,7 +999,7 @@ function AdminPage() {
                                     Annuler
                                 </SecondaryButton>
                                 <PrimaryButton type="submit">
-                                    Ajouter
+                                    {selectedObject ? 'Modifier' : 'Ajouter'}
                                 </PrimaryButton>
                             </ButtonGroup>
                         </form>
@@ -633,25 +1011,39 @@ function AdminPage() {
             {showAlertModal && (
                 <ModalOverlay onClick={() => setShowAlertModal(false)}>
                     <ModalContent onClick={e => e.stopPropagation()}>
-                        <h2>Résoudre l'alerte</h2>
-                        <AlertBanner type={selectedAlert?.type}>
-                            {selectedAlert?.message}
+                        <SectionTitle>Résoudre l'alerte</SectionTitle>
+                        <AlertBanner type="warning">
+                            <FaExclamationTriangle />
+                            <div>
+                                <strong>{selectedAlert?.name} - {selectedAlert?.status}</strong>
+                                <div style={{ fontSize: '0.875rem', opacity: 0.8 }}>
+                                    Type: {selectedAlert?.type}
+                                </div>
+                            </div>
                         </AlertBanner>
                         <FormGroup>
-                            <Label>Solution appliquée</Label>
-                            <Input type="text" placeholder="Décrivez la solution..." />
+                            <Label>Action corrective</Label>
+                            <Input type="text" placeholder="Décrivez l'action effectuée..." />
                         </FormGroup>
                         <FormGroup>
-                            <Label>Statut</Label>
+                            <Label>Nouveau statut</Label>
                             <Select>
-                                <option value="resolved">Résolu</option>
-                                <option value="in_progress">En cours</option>
-                                <option value="pending">En attente</option>
+                                <option value="Actif">Actif</option>
+                                <option value="Maintenance">Maintenance requise</option>
+                                <option value="Résolu">Problème résolu</option>
                             </Select>
                         </FormGroup>
                         <ButtonGroup>
                             <SecondaryButton onClick={() => setShowAlertModal(false)}>Annuler</SecondaryButton>
-                            <PrimaryButton>Confirmer</PrimaryButton>
+                            <PrimaryButton onClick={() => {
+                                // Simuler la résolution de l'alerte
+                                setObjects(objects.map(obj => 
+                                    obj.id === selectedAlert?.id ? { ...obj, status: 'Actif' } : obj
+                                ));
+                                setShowAlertModal(false);
+                            }}>
+                                Marquer comme résolu
+                            </PrimaryButton>
                         </ButtonGroup>
                     </ModalContent>
                 </ModalOverlay>

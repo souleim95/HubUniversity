@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   HeaderContainer, 
   WelcomeChoices, 
@@ -20,10 +20,56 @@ const Header = () => {
   const [formData, setFormData] = useState({ name: '', email: '', role: '', password: '' });
   const [userName, setUserName] = useState(localStorage.getItem('user') || null);
   const [role, setRole] = useState(localStorage.getItem('role') || null);
+  const [userPoints, setUserPoints] = useState(parseInt(localStorage.getItem('points') || '0'));
   const [selectedCategory, setSelectedCategory] = useState('salles');
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [selectedEquipment, setSelectedEquipment] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setUserPoints(parseInt(localStorage.getItem('points') || '0'));
+      setRole(localStorage.getItem('role'));
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    const interval = setInterval(() => {
+      const storedPoints = parseInt(localStorage.getItem('points') || '0');
+      const storedRole = localStorage.getItem('role');
+      
+      if (storedPoints !== userPoints) {
+        setUserPoints(storedPoints);
+      }
+      
+      if (storedRole !== role) {
+        setRole(storedRole);
+      }
+    }, 1000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, [userPoints, role]);
+
+  const getRoleTitle = (roleKey) => {
+    switch(roleKey) {
+      case 'eleve': return 'Étudiant';
+      case 'professeur': return 'Gestionnaire';
+      case 'directeur': return 'Directeur';
+      default: return 'Utilisateur';
+    }
+  };
+
+  const getRoleColor = (roleKey) => {
+    switch(roleKey) {
+      case 'eleve': return '#4CAF50';
+      case 'professeur': return '#2196F3';
+      case 'directeur': return '#c62828';
+      default: return '#757575';
+    }
+  };
 
   const toggleForm = (formType) => {
     setIsFormOpen(formType);
@@ -53,13 +99,14 @@ const Header = () => {
 
       if (response.ok) {
         const data = await response.json();
-        //alert(isFormOpen === 'signup' ? 'Inscription réussie !' : `Bonjour ${data.user.name} !`);
 
         if (isFormOpen === 'login') {
           localStorage.setItem('user', data.user.name);
           localStorage.setItem('role', data.user.role);
+          localStorage.setItem('points', '0');
           setUserName(data.user.name);
           setRole(data.user.role);
+          setUserPoints(0);
           window.location.reload();
         }
 
@@ -76,8 +123,10 @@ const Header = () => {
   const handleLogout = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('role');
+    localStorage.removeItem('points');
     setUserName(null);
     setRole(null);
+    setUserPoints(0);
     window.location.reload();
   };
 
@@ -129,7 +178,48 @@ const Header = () => {
       <NavLinks>
         <div>
           {userName && (
-            <span>Bonjour {userName}</span>
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              backgroundColor: '#f5f5f5', 
+              padding: '6px 12px', 
+              borderRadius: '20px',
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+              border: '1px solid #e0e0e0'
+            }}>
+              <span style={{ 
+                fontWeight: 'bold', 
+                marginRight: '10px'
+              }}>
+                Bonjour {userName}
+              </span>
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '10px' 
+              }}>
+                <span style={{ 
+                  backgroundColor: '#FFC107', 
+                  color: '#333', 
+                  padding: '3px 8px',
+                  borderRadius: '12px',
+                  fontSize: '0.85rem',
+                  fontWeight: 'bold'
+                }}>
+                  {userPoints} pts
+                </span>
+                <span style={{ 
+                  backgroundColor: getRoleColor(role), 
+                  color: 'white', 
+                  padding: '3px 8px',
+                  borderRadius: '12px',
+                  fontSize: '0.85rem',
+                  fontWeight: 'bold'
+                }}>
+                  {getRoleTitle(role)}
+                </span>
+              </div>
+            </div>
           )}
           {!userName && (
             <ConnectButton onClick={() => toggleForm('login')}>Connexion</ConnectButton>

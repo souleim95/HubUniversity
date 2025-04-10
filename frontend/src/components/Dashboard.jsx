@@ -72,6 +72,85 @@ import {
 
 import { getIcon } from '../utils/iconUtils'; 
 
+// Configuration pour le système de points et de niveaux
+const POINTS_CONFIG = {
+  // Points par interaction
+  BASIC_INTERACTION: 5,    // Pour les interactions simples
+  DEVICE_TOGGLE: 10,       // Pour allumer/éteindre un appareil
+  ADJUST_SETTING: 15,      // Pour ajuster des paramètres (thermostat, volume)
+  SPECIAL_TASK: 25,        // Pour des tâches spéciales (préparer café, utiliser microonde)
+  
+  // Seuils de niveau
+  LEVEL_THRESHOLDS: {
+    'eleve': 0,
+    'professeur': 200,    // 200 points pour devenir gestionnaire
+    'directeur': 500      // 500 points pour devenir directeur
+  }
+};
+
+// Fonction utilitaire pour mettre à jour les points de l'utilisateur
+const updateUserPoints = (pointsToAdd) => {
+  // Récupérer les points actuels
+  const currentPoints = parseInt(localStorage.getItem('points') || '0');
+  const newPoints = currentPoints + pointsToAdd;
+  
+  // Mettre à jour les points dans localStorage
+  localStorage.setItem('points', newPoints.toString());
+  
+  // Vérifier si l'utilisateur a atteint un nouveau niveau
+  const currentRole = localStorage.getItem('role');
+  let newRole = currentRole;
+  
+  if (currentRole === 'eleve' && newPoints >= POINTS_CONFIG.LEVEL_THRESHOLDS.professeur) {
+    newRole = 'professeur';
+  } else if (currentRole === 'professeur' && newPoints >= POINTS_CONFIG.LEVEL_THRESHOLDS.directeur) {
+    newRole = 'directeur';
+  }
+  
+  // Mettre à jour le rôle si nécessaire
+  if (newRole !== currentRole) {
+    localStorage.setItem('role', newRole);
+    
+    // Afficher un message de félicitation pour le nouveau niveau
+    alert(`Félicitations ! Vous êtes maintenant ${newRole === 'professeur' ? 'Gestionnaire' : 'Directeur'} !`);
+    
+    // Rafraîchir la page pour mettre à jour l'affichage
+    window.location.reload();
+  }
+  
+  return { points: newPoints, role: newRole, levelUp: newRole !== currentRole };
+};
+
+// Fonction pour afficher un toast de gain de points
+const showPointsToast = (points) => {
+  const toast = document.createElement('div');
+  toast.style.position = 'fixed';
+  toast.style.bottom = '20px';
+  toast.style.right = '20px';
+  toast.style.backgroundColor = '#4CAF50';
+  toast.style.color = 'white';
+  toast.style.padding = '10px 20px';
+  toast.style.borderRadius = '4px';
+  toast.style.boxShadow = '0 2px 5px rgba(0,0,0,0.3)';
+  toast.style.zIndex = '1000';
+  toast.style.transition = 'all 0.5s ease-in-out';
+  toast.style.opacity = '0';
+  toast.textContent = `+${points} points !`;
+  
+  document.body.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.style.opacity = '1';
+  }, 100);
+  
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    setTimeout(() => {
+      document.body.removeChild(toast);
+    }, 500);
+  }, 3000);
+};
+
 const Dashboard = () => {
   const [objects, setObjects] = useState(fakeObjects);
   const [selectedCategory, setSelectedCategory] = useState('salles');
@@ -318,6 +397,42 @@ const Dashboard = () => {
       return; // Prevent state update
     }
 
+    // Attribuer des points selon le type d'action
+    let pointsEarned = 0;
+    
+    // Définir les points en fonction du type d'action
+    switch (action) {
+      case 'temperature':
+      case 'brightness':
+      case 'volume':
+      case 'position':
+        pointsEarned = POINTS_CONFIG.ADJUST_SETTING;
+        break;
+      case 'light':
+      case 'camera':
+      case 'door':
+      case 'sensor':
+      case 'audio':
+      case 'thermo_toggle':
+      case 'grille':
+      case 'barriere':
+      case 'store':
+        pointsEarned = POINTS_CONFIG.DEVICE_TOGGLE;
+        break;
+      case 'reset_fire_alarm':
+      case 'reset_smoke_detector':
+        pointsEarned = POINTS_CONFIG.SPECIAL_TASK;
+        break;
+      default:
+        pointsEarned = POINTS_CONFIG.BASIC_INTERACTION;
+    }
+    
+    // Attribuer les points si une action a été effectuée
+    if (pointsEarned > 0) {
+      const result = updateUserPoints(pointsEarned);
+      showPointsToast(pointsEarned);
+    }
+
     setObjects(objects.map(obj => {
       if (obj.id === id) {
         switch (action) {
@@ -480,6 +595,43 @@ const Dashboard = () => {
     }
 
     console.log("Equipment control:", id, action, value); // Ajout de log pour débuggage
+
+    // Attribuer des points selon le type d'action
+    let pointsEarned = 0;
+    
+    // Définir les points en fonction du type d'action
+    switch (action) {
+      case 'temperature':
+      case 'brightness':
+      case 'volume':
+      case 'store_position':
+      case 'ventilation_speed':
+      case 'timer':
+      case 'cafetiere_water':
+      case 'cafetiere_beans':
+        pointsEarned = POINTS_CONFIG.ADJUST_SETTING;
+        break;
+      case 'light':
+      case 'audio':
+      case 'store':
+      case 'toggle':
+        pointsEarned = POINTS_CONFIG.DEVICE_TOGGLE;
+        break;
+      case 'cafetiere_prepare':
+      case 'cafetiere_pour':
+      case 'microwave_start':
+      case 'dishwasher_start':
+        pointsEarned = POINTS_CONFIG.SPECIAL_TASK;
+        break;
+      default:
+        pointsEarned = POINTS_CONFIG.BASIC_INTERACTION;
+    }
+    
+    // Attribuer les points si une action a été effectuée
+    if (pointsEarned > 0) {
+      const result = updateUserPoints(pointsEarned);
+      showPointsToast(pointsEarned);
+    }
 
     setRoomEquipments(prev => {
       const currentRoom = selectedRoom;
@@ -919,7 +1071,7 @@ const Dashboard = () => {
         }
         return equip;
       });
-
+      
       return {
         ...prev,
         [currentRoom]: updatedEquipmentsForRoom
