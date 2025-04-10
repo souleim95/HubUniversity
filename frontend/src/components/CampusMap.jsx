@@ -34,7 +34,7 @@ const CampusMap = () => {
   const groupedObjects = groupObjectsByType();
   const objectTypes = Object.keys(groupedObjects);
 
-  // État de l’onglet actif
+  // État de l'onglet actif
   const [selectedType, setSelectedType] = useState(objectTypes[0]);
 
   const getImageForType = (type) => {
@@ -70,7 +70,7 @@ const CampusMap = () => {
       </TabsWrapper>
 
 
-      {/* Contenu de l’onglet actif */}
+      {/* Contenu de l'onglet actif */}
       <h3 style={{ textAlign: 'center' }}>
         {selectedType.charAt(0).toUpperCase() + selectedType.slice(1)}s
       </h3>

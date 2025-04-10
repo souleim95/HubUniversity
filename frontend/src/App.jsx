@@ -9,6 +9,7 @@ import Footer from './components/Footer';
 import Dashboard from './components/Dashboard';
 import Gestion from './components/Gestion';
 import Admin from './components/Admin';
+import AdminPage from './components/AdminPage';
 import Profile from './components/Profile';
 import ProtectedRoute from './components/ProtectedRoute';
 import GlobalStyle from './styles/GlobalStyle'; // Import du style global
@@ -38,7 +39,7 @@ export default function App() {
             } />
             <Route path="/admin" element={
               <ProtectedRoute allowedRoles={['admin']}>
-                <Admin />
+                <AdminPage />
               </ProtectedRoute>
             } />
             <Route path="/profil" element={<Profile />} />

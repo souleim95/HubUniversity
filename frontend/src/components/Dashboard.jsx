@@ -168,18 +168,6 @@ const Dashboard = () => {
   }, []); // Exécuter une seule fois au montage
 
 
-  const isSchoolClosed = () => {
-    const grille = objects.find(obj => obj.id === 'grille_ecole');
-    return grille?.status === 'Fermée';
-  };
-
-  // Helper function to check if fire alarm is active
-  const isFireAlarmActive = () => {
-    const fireAlarm = objects.find(obj => obj.id === 'alarme_incendie');
-    return fireAlarm?.status === 'Alarme Incendie';
-  };
-
-
   // Ajouter un useEffect pour la consommation de la cafetière
   useEffect(() => {
     const cafeInterval = setInterval(() => {
@@ -191,9 +179,11 @@ const Dashboard = () => {
           if (updatedEquipments[roomId]) {
             updatedEquipments[roomId] = updatedEquipments[roomId].map(equip => {
               // Consommation si la cafetière est active et non en nettoyage
-              if (equip.id === 'cafetiere_auto' && (equip.status === 'Actif' || equip.status === 'Prêt') && !equip.isCleaning) {
-                const waterConsumption = 0.2; // Ajuster taux
-                const beansConsumption = 0.1; // Ajuster taux
+              if (equip.id === 'cafetiere_auto' && (equip.status === 'Actif' || equip.status === 'Prêt')) {
+                const isCleaning = equip.isCleaning;
+                // Consommation plus rapide en mode nettoyage
+                const waterConsumption = isCleaning ? 0.8 : 0.2; // Augmenté pour le nettoyage
+                const beansConsumption = isCleaning ? 0 : 0.1; // Pas de consommation de grains pendant le nettoyage
                 const newWaterLevel = Math.max(0, equip.waterLevel - waterConsumption);
                 const newBeansLevel = Math.max(0, equip.beansLevel - beansConsumption);
 
@@ -218,6 +208,110 @@ const Dashboard = () => {
     return () => clearInterval(cafeInterval);
   }, []);
 
+  // Ajouter un useEffect pour la consommation du liquide de rinçage du lave-vaisselle
+  useEffect(() => {
+    const dishwasherInterval = setInterval(() => {
+      setRoomEquipments(prevEquipments => {
+        const updatedEquipments = { ...prevEquipments };
+        let changed = false;
+
+        Object.keys(updatedEquipments).forEach(roomId => {
+          if (updatedEquipments[roomId]) {
+            updatedEquipments[roomId] = updatedEquipments[roomId].map(equip => {
+              // Consommation pour lave-vaisselle en cours
+              if (equip.id === 'lave_vaisselle' && equip.status === 'En cours' && equip.timeRemaining > 0) {
+                // Consommation selon programme
+                let consumptionRate;
+                switch(equip.program) {
+                  case 'Intensif':
+                    consumptionRate = 0.6; // Consommation plus élevée
+                    break;
+                  case 'Normal':
+                    consumptionRate = 0.3;
+                    break;
+                  case 'Eco':
+                    consumptionRate = 0.1; // Basse consommation
+                    break;
+                  case 'Rapide':
+                    consumptionRate = 0.2;
+                    break;
+                  default:
+                    consumptionRate = 0.3;
+                }
+                
+                const newRinseAidLevel = Math.max(0, equip.rinseAidLevel - consumptionRate);
+                const newTimeRemaining = Math.max(0, equip.timeRemaining - 1);
+                const newStatus = newTimeRemaining === 0 ? 'Prêt' : equip.status;
+                
+                changed = true;
+                return {
+                  ...equip,
+                  rinseAidLevel: parseFloat(newRinseAidLevel.toFixed(2)),
+                  timeRemaining: newTimeRemaining,
+                  status: newStatus
+                };
+              }
+              return equip;
+            });
+          }
+        });
+
+        return changed ? updatedEquipments : prevEquipments;
+      });
+    }, 10000); // Vérifie toutes les 10 secondes
+
+    return () => clearInterval(dishwasherInterval);
+  }, []);
+
+  // Modifier l'useEffect pour le décompte du micro-ondes
+  useEffect(() => {
+    console.log("Initialisation du décompte du micro-ondes"); // Debug
+    const microwaveInterval = setInterval(() => {
+      setRoomEquipments(prevEquipments => {
+        let changed = false;
+        const updatedEquipments = { ...prevEquipments };
+
+        Object.keys(updatedEquipments).forEach(roomId => {
+          if (updatedEquipments[roomId]) {
+            updatedEquipments[roomId] = updatedEquipments[roomId].map(equip => {
+              // Chercher tous les types de micro-ondes possibles
+              if (equip.type === 'Microwave' && equip.status === 'En cours' && equip.timer > 0) {
+                console.log(`DÉCOMPTE: ${equip.id} - ${equip.timer}s → ${equip.timer-1}s`); // Afficher le décompte dans la console
+                
+                const newTimer = equip.timer - 1;
+                const newStatus = newTimer <= 0 ? 'Terminé' : 'En cours';
+                
+                changed = true;
+                return {
+                  ...equip,
+                  timer: newTimer,
+                  status: newStatus
+                };
+              }
+              return equip;
+            });
+          }
+        });
+        
+        return changed ? updatedEquipments : prevEquipments;
+      });
+    }, 1000); // Vérifie chaque seconde
+
+    return () => clearInterval(microwaveInterval);
+  }, []);
+
+  const isSchoolClosed = () => {
+    const grille = objects.find(obj => obj.id === 'grille_ecole');
+    return grille?.status === 'Fermée';
+  };
+
+  // Helper function to check if fire alarm is active
+  const isFireAlarmActive = () => {
+    const fireAlarm = objects.find(obj => obj.id === 'alarme_incendie');
+    return fireAlarm?.status === 'Alarme Incendie';
+  };
+
+
   const handleObjectControl = (id, action, value) => {
     if (isFireAlarmActive() && action !== 'reset_fire_alarm') {
       console.warn(`Action '${action}' bloquée pour '${id}': Alarme Incendie active.`);
@@ -240,7 +334,7 @@ const Dashboard = () => {
           case 'mode':
             return { 
               ...obj, 
-              mode: value, 
+              mode: value.toLowerCase(), 
             };
           case 'brightness':
             const newGlobalBrightness = parseInt(value);
@@ -307,6 +401,7 @@ const Dashboard = () => {
             };
           case 'thermo_toggle':
             const currentGlobalTemp = obj.targetTemp;
+            console.log("Thermostat toggle:", value, obj.id); // Ajout de log pour débuggage
             return {
               ...obj,
               status: value ? 'Actif' : 'Inactif',
@@ -384,6 +479,8 @@ const Dashboard = () => {
       return; // Prevent state update
     }
 
+    console.log("Equipment control:", id, action, value); // Ajout de log pour débuggage
+
     setRoomEquipments(prev => {
       const currentRoom = selectedRoom;
       if (!currentRoom || !prev[currentRoom]) {
@@ -392,6 +489,12 @@ const Dashboard = () => {
 
       const updatedEquipmentsForRoom = prev[currentRoom].map(equip => {
         if (equip.id === id) {
+          // Bloquer les interactions si la cafetière est en nettoyage (sauf pour arrêter le nettoyage)
+          if (equip.type === 'Cafetiere' && equip.isCleaning && action !== 'cafetiere_clean') {
+            console.warn(`Action '${action}' bloquée pour '${id}': Nettoyage en cours.`);
+            return equip;
+          }
+          
           switch (action) {
             case 'light':
               const currentBrightness = equip.brightness;
@@ -410,7 +513,7 @@ const Dashboard = () => {
                 previousTargetTemp: newTemp > 0 ? newTemp : equip.previousTargetTemp
               };
             case 'mode':
-              return { ...equip, mode: value };
+              return { ...equip, mode: value.toLowerCase() };
             case 'brightness':
               const newBrightness = parseInt(value);
               return { 
@@ -512,6 +615,17 @@ const Dashboard = () => {
                 mode: value,
                 status: value === 'Veille' ? 'Inactif' : 'Actif'
               };
+            case 'cafetiere_toggle':
+              return {
+                ...equip,
+                status: value ? 'Actif' : 'Inactif'
+              };
+            case 'cafetiere_clean':
+              return {
+                ...equip,
+                isCleaning: value,
+                status: value ? 'Nettoyage' : 'Actif' // Mise à jour du statut pour refléter le nettoyage
+              };
             case 'ventilation_status':
               return {
                 ...equip,
@@ -549,11 +663,99 @@ const Dashboard = () => {
                 status: value ? 'En cours' : 'Disponible',
                 lastTransaction: value ? new Date().toISOString() : equip.lastTransaction
               };
-            case 'rfid_status':
+            case 'take_provision':
+              if (!equip.stock || !equip.capacity) return equip;
+              const currentStock = equip.stock[value] || 0;
+              if (currentStock <= 0) return equip;
+              
               return {
                 ...equip,
-                status: value ? 'Actif' : 'Inactif',
-                lastDetection: value && equip.status !== 'Actif' ? new Date().toISOString() : null
+                stock: {
+                  ...equip.stock,
+                  [value]: currentStock - 1
+                }
+              };
+            case 'refill_stock':
+              if (!equip.stock || !equip.capacity) return equip;
+              
+              const newStock = {};
+              Object.keys(equip.capacity).forEach(item => {
+                newStock[item] = equip.capacity[item];
+              });
+              
+              return {
+                ...equip,
+                stock: newStock
+              };
+            case 'microwave_timer':
+              return {
+                ...equip,
+                timer: parseInt(value)
+              };
+            case 'microwave_start_stop':
+              return {
+                ...equip,
+                status: value ? 'En cours' : 'Prêt'
+              };
+            case 'microwave_door':
+              return {
+                ...equip,
+                doorStatus: value ? 'Ouverte' : 'Fermée',
+                status: value ? 'Prêt' : equip.status // Si on ouvre la porte, ça arrête la cuisson
+              };
+            case 'dishwasher_select_program':
+              return {
+                ...equip,
+                program: value
+              };
+            case 'dishwasher_start_stop':
+              if (value && equip.rinseAidLevel <= 0) {
+                // Ne pas démarrer si pas de liquide de rinçage
+                console.warn("Impossible de démarrer: liquide de rinçage vide");
+                return equip;
+              }
+              
+              // Calculer le temps selon le programme
+              let cycleTime;
+              let initialConsumption = 0; // Consommation immédiate au démarrage
+              
+              switch(equip.program) {
+                case 'Intensif':
+                  cycleTime = 120; // 2 heures
+                  initialConsumption = 25; // 25% de consommation immédiate
+                  break;
+                case 'Normal':
+                  cycleTime = 60; // 1 heure
+                  initialConsumption = 15; // 15% de consommation immédiate
+                  break;
+                case 'Eco':
+                  cycleTime = 90; // 1 heure et demi
+                  initialConsumption = 8; // 8% de consommation immédiate
+                  break;
+                case 'Rapide':
+                  cycleTime = 30; // 30 minutes
+                  initialConsumption = 12; // 12% de consommation immédiate
+                  break;
+                default:
+                  cycleTime = 60;
+                  initialConsumption = 15;
+              }
+              
+              // Calculer le nouveau niveau de liquide de rinçage (seulement si on démarre)
+              const newRinseAidLevel = value 
+                ? Math.max(0, equip.rinseAidLevel - initialConsumption)
+                : equip.rinseAidLevel;
+              
+              return {
+                ...equip,
+                status: value ? 'En cours' : 'Prêt',
+                timeRemaining: value ? cycleTime : 0,
+                rinseAidLevel: parseFloat(newRinseAidLevel.toFixed(2)) // Appliquer la consommation immédiate
+              };
+            case 'fill_rinse_aid':
+              return {
+                ...equip,
+                rinseAidLevel: equip.rinseAidMaxCapacity || 100
               };
             case 'score_reset':
               return {
@@ -696,6 +898,21 @@ const Dashboard = () => {
                 lastDetection: null,
                 alarmTriggerItem: null
               };
+            case 'thermo_toggle':
+              const currentTemp = equip.targetTemp;
+              console.log("Equipment thermostat toggle:", value, equip.id); // Ajout de log pour débuggage
+              return {
+                ...equip,
+                status: value ? 'Actif' : 'Inactif',
+                targetTemp: value ? (equip.previousTargetTemp > 0 ? equip.previousTargetTemp : 1) : 0,
+                previousTargetTemp: !value && currentTemp > 0 ? currentTemp : (equip.previousTargetTemp || 1)
+              };
+            case 'reset_microwave':
+              return {
+                ...equip,
+                status: 'Prêt',
+                showCompletionMessage: false
+              };
             default:
               return equip;
           }
@@ -780,7 +997,7 @@ const Dashboard = () => {
               step="1"
               value={obj.status === 'Inactif' ? 0 : obj.targetTemp}
               onChange={(e) => handler(obj.id, 'temperature', e.target.value)}
-              disabled={obj.status === 'Inactif' || obj.mode === 'auto'}
+              disabled={obj.status === 'Inactif' || obj.mode?.toLowerCase() === 'auto'}
             />
             <ToggleButton
               active={obj.status === 'Actif'}
@@ -788,10 +1005,10 @@ const Dashboard = () => {
               {obj.status === 'Actif' ? 'Désactiver' : 'Activer'}
             </ToggleButton>
             <ToggleButton 
-              active={obj.mode === 'auto'}
-              onClick={() => handler(obj.id, 'mode', obj.mode === 'auto' ? 'manual' : 'auto')}
+              active={obj.mode?.toLowerCase() === 'auto'}
+              onClick={() => handler(obj.id, 'mode', obj.mode?.toLowerCase() === 'auto' ? 'manual' : 'auto')}
               disabled={obj.status === 'Inactif'}>
-              {obj.mode === 'auto' ? 'Mode Auto' : 'Mode Manuel'}
+              {obj.mode?.toLowerCase() === 'auto' ? 'Mode Auto' : 'Mode Manuel'}
             </ToggleButton>
           </ObjectControls>
         );
@@ -923,9 +1140,10 @@ const Dashboard = () => {
       case 'Cafetiere':
         const waterLow = obj.waterLevel < obj.waterLowThreshold;
         const beansLow = obj.beansLevel < obj.beansLowThreshold;
+        const isCleaning = obj.isCleaning;
         return (
           <ObjectControls>
-            <ValueDisplay>État: {obj.status}</ValueDisplay>
+            <ValueDisplay>État: {isCleaning ? 'Nettoyage en cours' : obj.status}</ValueDisplay>
             <ValueDisplay>Mode: {obj.mode}</ValueDisplay>
             <div style={{ margin: '5px 0' }}>
               <span style={{ color: waterLow ? 'orange' : 'inherit' }}>
@@ -935,7 +1153,7 @@ const Dashboard = () => {
               <span> {obj.waterLevel}% </span>
               <ControlButton
                 onClick={() => handler(obj.id, 'fill_water')}
-                disabled={obj.waterLevel === 100}
+                disabled={obj.waterLevel === 100 || isCleaning}
                 title="Remplir Eau">
                 <FaTint />
               </ControlButton>
@@ -948,7 +1166,7 @@ const Dashboard = () => {
               <span> {obj.beansLevel}% </span>
               <ControlButton
                 onClick={() => handler(obj.id, 'fill_beans')}
-                disabled={obj.beansLevel === 100}
+                disabled={obj.beansLevel === 100 || isCleaning}
                 title="Remplir Grains">
                 <FaSeedling />
               </ControlButton>
@@ -958,49 +1176,133 @@ const Dashboard = () => {
             <ToggleButton
                 active={obj.status === 'Actif' || obj.status === 'Prêt'}
                 onClick={() => handler(obj.id, 'cafetiere_toggle', obj.status === 'Inactif' || obj.status === 'Veille')}
-                disabled={obj.isCleaning || waterLow || beansLow}>
+                disabled={isCleaning || waterLow || beansLow}>
                 {obj.status === 'Inactif' || obj.status === 'Veille' ? 'Allumer' : 'Éteindre'}
             </ToggleButton>
               <ControlButton
-                onClick={() => handler(obj.id, 'cafetiere_clean', !obj.isCleaning)}
-                disabled={obj.status === 'Inactif' || obj.status === 'Veille'}>
-                {obj.isCleaning ? <><FaBroom /> Arrêter Nettoyage</> : <><FaBroom /> Nettoyer</>}
+                onClick={() => handler(obj.id, 'cafetiere_clean', !isCleaning)}
+                disabled={obj.status === 'Inactif' || obj.status === 'Veille' || waterLow}
+                style={{ backgroundColor: isCleaning ? '#e74c3c' : undefined }}>
+                {isCleaning ? <><FaBroom /> Arrêter Nettoyage</> : <><FaBroom /> Nettoyer</>}
               </ControlButton>
             </div>
+            {isCleaning && (
+              <ValueDisplay style={{ color: 'orange', marginTop: '10px' }}>
+                Nettoyage en cours - Autres commandes désactivées
+              </ValueDisplay>
+            )}
           </ObjectControls>
         );
 
       case 'Microwave':
+        const isCooking = obj.status === 'En cours';
+        const isFinished = obj.status === 'Terminé';
+        const doorOpen = obj.doorStatus === 'Ouverte';
+        
         return (
           <ObjectControls>
-            <ValueDisplay>État: {obj.status}</ValueDisplay>
+            <ValueDisplay style={{ fontWeight: 'bold', color: isFinished ? 'red' : 'inherit' }}>
+              État: {obj.status}
+            </ValueDisplay>
             <ValueDisplay>Porte: {obj.doorStatus}</ValueDisplay>
+            
+            {/* Timer avec animation */}
+            <div 
+              style={{ 
+                margin: '15px 0', 
+                textAlign: 'center',
+                padding: '8px',
+                backgroundColor: '#000',
+                color: isFinished ? '#ff3b30' : (isCooking ? '#0f0' : '#333'),
+                fontFamily: 'monospace',
+                fontSize: '2em',
+                borderRadius: '4px',
+                letterSpacing: '2px',
+                boxShadow: isCooking ? '0 0 8px #0f0' : 'none',
+                animation: isCooking ? 'pulse 1s infinite' : 'none'
+              }}
+            >
+              {obj.timer} sec
+              {isCooking && (
+                <span style={{marginLeft: '8px', display: 'inline-block'}}>
+                  ▶
+                </span>
+              )}
+            </div>
+            
             <div style={{ margin: '10px 0' }}>
               <label>Temps (sec): </label>
               <RangeSlider
                 type="range"
                 min="0"
-                max={obj.maxTime}
+                max={obj.maxTime || 180}
                 step="10"
                 value={obj.timer}
                 onChange={(e) => handler(obj.id, 'microwave_timer', e.target.value)}
-                disabled={obj.status === 'En cours' || obj.doorStatus === 'Ouverte'}
+                disabled={isCooking || doorOpen || isFinished}
               />
-              <ValueDisplay>{obj.timer}s</ValueDisplay>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <ControlButton 
+                  onClick={() => handler(obj.id, 'microwave_timer', Math.max(0, obj.timer - 10))}
+                  disabled={isCooking || doorOpen || obj.timer <= 0 || isFinished}>
+                  <FaMinus />
+                </ControlButton>
+                <ValueDisplay>{obj.timer}s</ValueDisplay>
+                <ControlButton 
+                  onClick={() => handler(obj.id, 'microwave_timer', Math.min(obj.maxTime || 180, obj.timer + 10))}
+                  disabled={isCooking || doorOpen || obj.timer >= (obj.maxTime || 180) || isFinished}>
+                  <FaPlus />
+                </ControlButton>
+              </div>
             </div>
+            
             <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
               <ToggleButton
-                active={obj.status === 'En cours'}
-                onClick={() => handler(obj.id, 'microwave_start_stop', obj.status !== 'En cours')}
-                disabled={obj.timer === 0 || obj.doorStatus === 'Ouverte'}>
-                {obj.status === 'En cours' ? 'Arrêter' : 'Démarrer'}
+                active={isCooking}
+                onClick={() => handler(obj.id, isFinished ? 'reset_microwave' : 'microwave_start_stop', !isCooking)}
+                disabled={(obj.timer === 0 && !isCooking && !isFinished) || doorOpen}
+                style={{ 
+                  backgroundColor: isFinished ? '#2ecc71' : (isCooking ? '#e74c3c' : (obj.timer > 0 ? '#2ecc71' : undefined)),
+                  flex: '1',
+                  animation: isFinished ? 'pulse 1s infinite' : 'none'
+                }}>
+                {isFinished ? 'Réinitialiser' : (isCooking ? 'Arrêter' : 'Démarrer')}
               </ToggleButton>
               <ToggleButton
-                active={obj.doorStatus === 'Ouverte'}
-                onClick={() => handler(obj.id, 'microwave_door', obj.doorStatus !== 'Ouverte')}>
-                {obj.doorStatus === 'Ouverte' ? 'Fermer Porte' : 'Ouvrir Porte'}
+                active={doorOpen}
+                onClick={() => handler(obj.id, 'microwave_door', !doorOpen)}
+                disabled={isCooking}
+                style={{ flex: '1' }}>
+                {doorOpen ? 'Fermer Porte' : 'Ouvrir Porte'}
               </ToggleButton>
             </div>
+            
+            {isCooking && (
+              <div style={{ 
+                marginTop: '15px', 
+                textAlign: 'center', 
+                color: '#e74c3c',
+                padding: '5px',
+                border: '1px solid #e74c3c',
+                borderRadius: '4px'
+              }}>
+                Cuisson en cours...
+              </div>
+            )}
+            
+            {isFinished && (
+              <div style={{ 
+                marginTop: '15px', 
+                textAlign: 'center', 
+                backgroundColor: '#e74c3c',
+                color: 'white',
+                padding: '10px',
+                borderRadius: '4px',
+                fontWeight: 'bold'
+              }}>
+                CUISSON TERMINÉE !
+              </div>
+            )}
           </ObjectControls>
         );
 
@@ -1023,6 +1325,7 @@ const Dashboard = () => {
 
       case 'Dishwasher':
         const rinseAidLow = obj.rinseAidLevel < obj.rinseAidLowThreshold;
+        const rinseAidEmpty = obj.rinseAidLevel <= 0;
         return (
           <ObjectControls>
             <ValueDisplay>État: {obj.status}</ValueDisplay>
@@ -1039,10 +1342,15 @@ const Dashboard = () => {
                   <option key={prog} value={prog}>{prog}</option>
                 ))}
               </select>
+              {obj.program === 'Intensif' && (
+                <small style={{ display: 'block', color: 'orange', marginTop: '3px' }}>
+                  Consommation élevée de liquide de rinçage
+                </small>
+              )}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-              <ValueDisplay style={{ color: rinseAidLow ? 'orange' : 'inherit', marginRight: '10px' }}>
-                Liquide Rinçage: {obj.rinseAidLevel}% {rinseAidLow && <FaExclamationTriangle title="Niveau bas" />}
+              <ValueDisplay style={{ color: rinseAidEmpty ? 'red' : (rinseAidLow ? 'orange' : 'inherit'), marginRight: '10px' }}>
+                Liquide Rinçage: {obj.rinseAidLevel}% {rinseAidEmpty ? <FaExclamationTriangle title="Vide" /> : (rinseAidLow && <FaExclamationTriangle title="Niveau bas" />)}
               </ValueDisplay>
               <ControlButton
                 onClick={() => handler(obj.id, 'fill_rinse_aid')}
@@ -1053,9 +1361,15 @@ const Dashboard = () => {
             </div>
             <ToggleButton
               active={obj.status === 'En cours'}
-              onClick={() => handler(obj.id, 'dishwasher_start_stop', obj.status !== 'En cours')}>
+              onClick={() => handler(obj.id, 'dishwasher_start_stop', obj.status !== 'En cours')}
+              disabled={rinseAidEmpty && obj.status !== 'En cours'}>
               {obj.status === 'En cours' ? 'Arrêter' : 'Démarrer'}
             </ToggleButton>
+            {rinseAidEmpty && obj.status !== 'En cours' && (
+              <ValueDisplay style={{ color: 'red', marginTop: '10px' }}>
+                Impossible de démarrer: Liquide de rinçage vide
+              </ValueDisplay>
+            )}
           </ObjectControls>
         );
 
