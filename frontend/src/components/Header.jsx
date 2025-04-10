@@ -174,10 +174,9 @@ const Header = () => {
                   <input type="password" name="password" placeholder="Mot de passe" value={formData.password} onChange={handleChange} required />
                   <select name="role" value={formData.role} onChange={handleChange} required>
                     <option value="">Sélectionnez votre rôle</option>
-                    <option value="student">Étudiant</option>
-                    <option value="teacher">Enseignant</option>
-                    <option value="gestionnaire">Gestionnaire</option>
-                    <option value="admin">Administrateur</option>
+                    <option value="eleve">Étudiant</option>
+                    <option value="professeur">Enseignant</option>
+                    <option value="directeur">Administrateur</option>
                   </select>
                 </>
               )}
