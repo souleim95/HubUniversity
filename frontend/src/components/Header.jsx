@@ -11,12 +11,19 @@ import {
 import hubCyLogo from '../assets/HubCyLogo.png';
 import SearchBox from './SearchBox';
 import UserMenu from './UserMenu';
+import { useNavigate } from 'react-router-dom';
+import { equipments } from '../data/fakeData';
+import { categories } from '../data/fakeData';
 
 const Header = () => {
   const [isFormOpen, setIsFormOpen] = useState(null); 
   const [formData, setFormData] = useState({ name: '', email: '', role: '', password: '' });
   const [userName, setUserName] = useState(localStorage.getItem('user') || null);
   const [role, setRole] = useState(localStorage.getItem('role') || null);
+  const [selectedCategory, setSelectedCategory] = useState('salles');
+  const [selectedRoom, setSelectedRoom] = useState(null);
+  const [selectedEquipment, setSelectedEquipment] = useState(null);
+  const navigate = useNavigate();
 
   const toggleForm = (formType) => {
     setIsFormOpen(formType);
@@ -74,6 +81,43 @@ const Header = () => {
     window.location.reload();
   };
 
+  const handleSelectObject = (obj, categoryKey) => {
+    let targetCategory = categoryKey;
+    let targetRoom = null;
+    let targetEquipment = null;
+
+    if (!targetCategory) {
+      for (const [key, value] of Object.entries(categories)) {
+        if (value.items && value.items.includes(obj.id)) {
+          targetCategory = key;
+          break;
+        }
+      }
+    }
+    
+    if (obj.type === 'Salle') {
+      targetRoom = obj.id;
+    } else {
+      targetEquipment = obj.id;
+      for (const [roomId, roomEquips] of Object.entries(equipments)) {
+        if (roomEquips.some(e => e.id === obj.id)) {
+          targetRoom = roomId;
+          break;
+        }
+      }
+    }
+    
+    console.log(`Navigation vers Dashboard - Catégorie: ${targetCategory}, Salle: ${targetRoom}, Équipement: ${targetEquipment}`);
+
+    navigate('/dashboard', { 
+      state: { 
+        category: targetCategory, 
+        room: targetRoom, 
+        equipment: targetEquipment 
+      } 
+    });
+  };
+
   return (
     <HeaderContainer>
       <WelcomeChoices>
@@ -94,7 +138,13 @@ const Header = () => {
       </NavLinks>
 
       <SearchContainer>
-        <SearchBox />
+        <SearchBox 
+          selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory}
+          setSelectedRoom={setSelectedRoom}
+          setSelectedEquipment={setSelectedEquipment}
+          onSelectObject={handleSelectObject}
+        />
         {userName && (
           <UserMenu 
             user={{ login: userName }}

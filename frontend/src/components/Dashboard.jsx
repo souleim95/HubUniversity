@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { 
   DashboardContainer,
   ProfileCard,
@@ -43,84 +44,198 @@ import {
   FaBarcode,
   FaBullhorn,
   FaCarAlt,
-  FaBars  // Pour l'icône de la grille
+  FaBars,
+  FaBroom,
+  FaExclamationTriangle,
+  FaMinus,
+  FaPlus,
+  FaFillDrip,
+  FaWind,
+  FaFilter,
+  FaGasPump,
+  FaSkullCrossbones,
+  FaTint,
+  FaSeedling,
+  FaUserCheck,
+  FaUserTimes,
+  FaBookMedical,
+  FaBookReader,
+  FaBell,
+  FaStopwatch,
+  FaRegClock,
+  FaDoorOpen,
+  FaChargingStation,
+  FaCar,
+  FaFire,
+  FaSmog,
 } from 'react-icons/fa';
+
+import { getIcon } from '../utils/iconUtils'; 
 
 const Dashboard = () => {
   const [objects, setObjects] = useState(fakeObjects);
   const [selectedCategory, setSelectedCategory] = useState('salles');
   const [selectedRoom, setSelectedRoom] = useState(null);
-  const [roomEquipments, setRoomEquipments] = useState({});  // Nouveau state pour les équipements
+  const [roomEquipments, setRoomEquipments] = useState({});
+  const [tempInputValues, setTempInputValues] = useState({});
+  const location = useLocation();
+  const navigate = useNavigate();
 
   // Initialisation des équipements lors de la sélection d'une salle
   useEffect(() => {
-    if (selectedRoom) {
-      setRoomEquipments(equipments[selectedRoom] || {});
+    if (selectedRoom && equipments[selectedRoom] && !roomEquipments[selectedRoom]) {
+        // Initialise seulement si pas déjà fait pour éviter de reset les états modifiés
+        setRoomEquipments(prev => ({
+            ...prev,
+            [selectedRoom]: equipments[selectedRoom].map(equip => ({ ...equip }))
+        }));
     }
-  }, [selectedRoom]);
+  }, [selectedRoom]); // Dépendance à selectedRoom et roomEquipments pour éviter boucle
 
-  
+  // Récupérer les sélections depuis l'état de la navigation (passé par SearchBox via Header)
+  useEffect(() => {
+    const navigationState = location.state;
+    if (navigationState) {
+      const { category, room, equipment } = navigationState;
 
-  const getIcon = (type) => {
-    switch(type) {
-      case 'Salle':
-        return <FaChalkboard />;
-      case 'Thermostat':
-        return <FaThermometerHalf />;
-      case 'Caméra':
-        return <FaVideo />;
-      case 'Capteur':
-        return <FaRadiation />;
-      case 'Éclairage':
-        return <FaLightbulb />;
-      case 'Porte':
-        return <FaDoorClosed />;
-      case 'Audio':
-        return <FaVolumeUp />;
-      case 'Distributeur':
-        return <FaUtensils />;
-      case 'Cafetiere':
-        return <FaCoffee />;
-      case 'Microwave':
-        return <FaUtensils />;
-      case 'AirSensor':
-        return <FaFan />;
-      case 'Dishwasher':
-        return <FaPumpSoap />;
-      case 'Scanner':
-        return <FaBarcode />;
-      case 'Ventilation':
-        return <FaFan />;
-      case 'Detecteur':
-      case 'Securite':
-        return <FaRadiation />;
-      case 'Barriere':
-        return <FaCarAlt />;
-      case 'Panneau':
-      case 'Affichage':
-        return <FaBullhorn />;
-      case 'Grille':
-        return <FaBars />;
-      default:
-        return <FaWifi />;
+      if (category) {
+        setSelectedCategory(category);
+      }
+      if (room) {
+        setSelectedRoom(room);
+      }
+
+      if (equipment) {
+        // Faire défiler et mettre en évidence l'équipement
+        setTimeout(() => {
+          const element = document.getElementById(`equipment-${equipment}`);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            element.classList.add('highlight-equipment');
+            setTimeout(() => {
+              element.classList.remove('highlight-equipment');
+            }, 3000);
+          } else {
+            console.warn(`Équipement avec ID 'equipment-${equipment}' non trouvé dans le DOM pour la mise en évidence.`);
+          }
+        }, 500); // Délai pour laisser le temps au DOM de se mettre à jour
+      }
+
+      // Réinitialiser l'état de la navigation pour éviter sa réutilisation
+      navigate(location.pathname, { replace: true, state: null });
     }
-  };
+  }, [location.state, navigate]); // Dépendance à l'état de la navigation et à navigate
+
+  // useEffect pour la dégradation du filtre de la hotte
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRoomEquipments(prevEquipments => {
+        const updatedEquipments = { ...prevEquipments };
+        let changed = false;
+
+        Object.keys(updatedEquipments).forEach(roomId => {
+          // Vérifie si la room existe dans les équipements avant de mapper
+          if(updatedEquipments[roomId]) {
+            updatedEquipments[roomId] = updatedEquipments[roomId].map(equip => {
+              if (equip.id === 'hotte_labo' && equip.status === 'Actif' && equip.filterLife > 0) {
+                // Augmentation du taux de dégradation
+                const degradationRate = (equip.speed / equip.maxSpeed) * 1; // Était 0.1
+                const newFilterLife = Math.max(0, equip.filterLife - degradationRate);
+                let newFilterStatus = equip.filterStatus;
+                if (newFilterLife < equip.filterChangeThreshold && equip.filterStatus === 'OK') {
+                  newFilterStatus = 'À remplacer';
+                }
+                if (newFilterLife !== equip.filterLife || newFilterStatus !== equip.filterStatus) {
+                  changed = true;
+                  return {
+                    ...equip,
+                    filterLife: parseFloat(newFilterLife.toFixed(2)),
+                    filterStatus: newFilterStatus
+                  };
+                }
+              }
+              return equip;
+            });
+          }
+        });
+
+        // Retourne le nouvel état seulement si quelque chose a changé
+        return changed ? updatedEquipments : prevEquipments;
+      });
+    }, 5000); // Vérifie toutes les 5 secondes
+
+    return () => clearInterval(interval); // Nettoyer l'intervalle
+  }, []); // Exécuter une seule fois au montage
+
 
   const isSchoolClosed = () => {
     const grille = objects.find(obj => obj.id === 'grille_ecole');
     return grille?.status === 'Fermée';
   };
 
+  // Helper function to check if fire alarm is active
+  const isFireAlarmActive = () => {
+    const fireAlarm = objects.find(obj => obj.id === 'alarme_incendie');
+    return fireAlarm?.status === 'Alarme Incendie';
+  };
+
+
+  // Ajouter un useEffect pour la consommation de la cafetière
+  useEffect(() => {
+    const cafeInterval = setInterval(() => {
+      setRoomEquipments(prevEquipments => {
+        const updatedEquipments = { ...prevEquipments };
+        let changed = false;
+
+        Object.keys(updatedEquipments).forEach(roomId => {
+          if (updatedEquipments[roomId]) {
+            updatedEquipments[roomId] = updatedEquipments[roomId].map(equip => {
+              // Consommation si la cafetière est active et non en nettoyage
+              if (equip.id === 'cafetiere_auto' && (equip.status === 'Actif' || equip.status === 'Prêt') && !equip.isCleaning) {
+                const waterConsumption = 0.2; // Ajuster taux
+                const beansConsumption = 0.1; // Ajuster taux
+                const newWaterLevel = Math.max(0, equip.waterLevel - waterConsumption);
+                const newBeansLevel = Math.max(0, equip.beansLevel - beansConsumption);
+
+                if (newWaterLevel !== equip.waterLevel || newBeansLevel !== equip.beansLevel) {
+                  changed = true;
+                  return {
+                    ...equip,
+                    waterLevel: parseFloat(newWaterLevel.toFixed(2)),
+                    beansLevel: parseFloat(newBeansLevel.toFixed(2))
+                  };
+                }
+              }
+              return equip;
+            });
+          }
+        });
+
+        return changed ? updatedEquipments : prevEquipments;
+      });
+    }, 7000); // Vérifie toutes les 7 secondes
+
+    return () => clearInterval(cafeInterval);
+  }, []);
+
   const handleObjectControl = (id, action, value) => {
+    if (isFireAlarmActive() && action !== 'reset_fire_alarm') {
+      console.warn(`Action '${action}' bloquée pour '${id}': Alarme Incendie active.`);
+      return; // Prevent state update
+    }
+
     setObjects(objects.map(obj => {
       if (obj.id === id) {
         switch (action) {
           case 'salle':
             return { ...obj, status: value };
           case 'temperature':
+            const newGlobalTemp = parseInt(value);
             return { 
               ...obj, 
-              targetTemp: parseInt(value),
+              targetTemp: newGlobalTemp,
+              status: newGlobalTemp <= 0 ? 'Inactif' : 'Actif',
+              previousTargetTemp: newGlobalTemp > 0 ? newGlobalTemp : obj.previousTargetTemp
             };
           case 'mode':
             return { 
@@ -128,15 +243,20 @@ const Dashboard = () => {
               mode: value, 
             };
           case 'brightness':
+            const newGlobalBrightness = parseInt(value);
             return { 
               ...obj, 
-              brightness: parseInt(value),
-              status: 'Allumé'
+              brightness: newGlobalBrightness,
+              status: newGlobalBrightness <= 0 ? 'Éteint' : 'Allumé',
+              previousBrightness: newGlobalBrightness > 0 ? newGlobalBrightness : obj.previousBrightness
             };
           case 'light':
+            const currentGlobalBrightness = obj.brightness;
             return { 
               ...obj, 
               status: value ? 'Allumé' : 'Éteint',
+              brightness: value ? (obj.previousBrightness > 0 ? obj.previousBrightness : 1) : 0,
+              previousBrightness: !value && currentGlobalBrightness > 0 ? currentGlobalBrightness : (obj.previousBrightness || 1)
             };
           case 'camera':
             return { ...obj, status: value ? 'Actif' : 'Inactif' };
@@ -145,16 +265,20 @@ const Dashboard = () => {
           case 'sensor':
             return { ...obj, status: value ? 'Actif' : 'Inactif' };
           case 'volume':
+            const newGlobalVolume = parseInt(value);
             return { 
               ...obj, 
-              volume: parseInt(value),
-              status: 'Allumé'
+              volume: newGlobalVolume,
+              status: newGlobalVolume === 0 ? 'Mute' : 'Allumé',
+              previousVolume: newGlobalVolume > 0 ? newGlobalVolume : obj.previousVolume // Ne change pas si 0
             };
           case 'audio':
+            const currentGlobalVolume = obj.volume;
             return { 
               ...obj, 
               status: value ? 'Allumé' : 'Mute',
-              volume: value ? (obj.volume || 50) : 0  // Conserver le volume précédent quand on allume
+              volume: value ? (obj.previousVolume > 0 ? obj.previousVolume : 1) : 0, // Retourne à 1 si previousVolume était 0
+              previousVolume: !value && currentGlobalVolume > 0 ? currentGlobalVolume : (obj.previousVolume || 1) // Sauvegarde si > 0, sinon garde ou met 1
             };
           case 'grille':
             const newStatus = value ? 'Ouverte' : 'Fermée';
@@ -181,6 +305,71 @@ const Dashboard = () => {
               position: parseInt(value),
               status: parseInt(value) > 0 ? 'Ouvert' : 'Fermé'
             };
+          case 'thermo_toggle':
+            const currentGlobalTemp = obj.targetTemp;
+            return {
+              ...obj,
+              status: value ? 'Actif' : 'Inactif',
+              targetTemp: value ? (obj.previousTargetTemp > 0 ? obj.previousTargetTemp : 1) : 0,
+              previousTargetTemp: !value && currentGlobalTemp > 0 ? currentGlobalTemp : (obj.previousTargetTemp || 1)
+            };
+          case 'update_message':
+            return {
+              ...obj,
+              message: value
+            };
+          case 'clear_temp_input':
+            setTempInputValues(prev => {
+              const { [id]: _, ...rest } = prev;
+              return rest;
+            });
+            return obj;
+          case 'simulate_access_request': // For acces_parking
+            const previousStatus = obj.status; // Store previous status
+            // Use setTimeout to reset status after a delay
+            setTimeout(() => {
+              handleObjectControl(id, 'reset_access_status', previousStatus);
+            }, 2000);
+            return { ...obj, status: 'Demande en cours...' };
+          case 'reset_access_status': // Used by setTimeout
+            return {
+              ...obj, 
+              status: value // Restore previous status passed as value
+            };
+          case 'simulate_car_enter':
+            console.log(`Action: simulate_car_enter for ${id}`); // Debug log
+            if (obj.id === 'affichage_parking' && obj.freeSpots > 0) {
+              return { ...obj, freeSpots: obj.freeSpots - 1 };
+            }
+            return obj;
+          case 'simulate_car_leave':
+            console.log(`Action: simulate_car_leave for ${id}`); // Debug log
+            if (obj.id === 'affichage_parking' && obj.freeSpots < obj.totalSpots) {
+              return { ...obj, freeSpots: obj.freeSpots + 1 };
+            }
+            return obj;
+          case 'simulate_fire_alarm':
+            console.log(`Action: simulate_fire_alarm for ${id}`); // Debug log
+            return { ...obj, status: 'Alarme Incendie' };
+          case 'reset_fire_alarm':
+            console.log(`Action: reset_fire_alarm for ${id}`); // Debug log
+            return { ...obj, status: 'Normal' };
+          case 'simulate_smoke_detection':
+            console.log(`Action: simulate_smoke_detection for ${id}`); // Debug log
+            return { ...obj, status: 'Fumée détectée' };
+          case 'reset_smoke_detector':
+            console.log(`Action: reset_smoke_detector for ${id}`); // Debug log
+            return { ...obj, status: 'Normal' };
+          case 'simulate_charge_start':
+            console.log(`Action: simulate_charge_start for ${id}`);
+            return { ...obj, status: 'En charge' };
+          case 'simulate_charge_end':
+            console.log(`Action: simulate_charge_end for ${id}`);
+            return { ...obj, status: 'Libre' };
+          case 'toggle_service_status':
+            console.log(`Action: toggle_service_status for ${id}`);
+            const newChargerStatus = obj.status === 'Hors service' ? 'Libre' : 'Hors service';
+            return { ...obj, status: newChargerStatus };
           default:
             return obj;
         }
@@ -190,53 +379,61 @@ const Dashboard = () => {
   };
 
   const handleEquipmentControl = (id, action, value) => {
+    if (isFireAlarmActive()) {
+      console.warn(`Action équipement '${action}' bloquée pour '${id}': Alarme Incendie active.`);
+      return; // Prevent state update
+    }
+
     setRoomEquipments(prev => {
       const currentRoom = selectedRoom;
-      const updatedEquipments = { ...prev };
-      
-      if (!updatedEquipments[currentRoom]) {
-        updatedEquipments[currentRoom] = [...equipments[currentRoom]];
+      if (!currentRoom || !prev[currentRoom]) {
+        return prev;
       }
 
-      // Mise à jour de l'équipement spécifique
-      updatedEquipments[currentRoom] = updatedEquipments[currentRoom].map(equip => {
+      const updatedEquipmentsForRoom = prev[currentRoom].map(equip => {
         if (equip.id === id) {
           switch (action) {
             case 'light':
-              // Ne modifier le statut que de l'équipement spécifique
-              if (equip.id === 'score_board') {
+              const currentBrightness = equip.brightness;
                 return { 
                   ...equip, 
                   status: value ? 'Allumé' : 'Éteint',
-                  score: { ...equip.score } // Conserver le score actuel
+                brightness: value ? (equip.previousBrightness > 0 ? equip.previousBrightness : 1) : 0,
+                previousBrightness: !value && currentBrightness > 0 ? currentBrightness : (equip.previousBrightness || 1)
                 };
-              }
-              return { ...equip, status: value ? 'Allumé' : 'Éteint' };
             case 'temperature':
+              const newTemp = parseInt(value);
               return { 
                 ...equip, 
-                targetTemp: parseInt(value),
-                status: parseInt(value) === 0 ? 'Inactif' : 'Actif'
+                targetTemp: newTemp,
+                status: newTemp <= 0 ? 'Inactif' : 'Actif',
+                previousTargetTemp: newTemp > 0 ? newTemp : equip.previousTargetTemp
               };
             case 'mode':
               return { ...equip, mode: value };
             case 'brightness':
+              const newBrightness = parseInt(value);
               return { 
                 ...equip, 
-                brightness: parseInt(value),
-                status: value > 0 ? 'Allumé' : 'Éteint'
+                brightness: newBrightness,
+                status: newBrightness <= 0 ? 'Éteint' : 'Allumé',
+                previousBrightness: newBrightness > 0 ? newBrightness : equip.previousBrightness
               };
             case 'volume':
+              const newVolume = parseInt(value);
               return { 
                 ...equip, 
-                volume: parseInt(value),
-                status: equip.status  // Garder le même statut
+                volume: newVolume,
+                status: newVolume === 0 ? 'Mute' : 'Allumé',
+                previousVolume: newVolume > 0 ? newVolume : equip.previousVolume // Ne change pas si 0
               };
             case 'audio':
+              const currentVolume = equip.volume;
               return {
                 ...equip,
                 status: value ? 'Allumé' : 'Mute',
-                volume: equip.volume   
+                volume: value ? (equip.previousVolume > 0 ? equip.previousVolume : 1) : 0, // Retourne à 1 si previousVolume était 0
+                previousVolume: !value && currentVolume > 0 ? currentVolume : (equip.previousVolume || 1) // Sauvegarde si > 0, sinon garde ou met 1
               };
             case 'store':
               return {
@@ -252,15 +449,47 @@ const Dashboard = () => {
                 status: newPosition > 0 ? 'Ouvert' : 'Fermé'
               };
             case 'ventilation_speed':
-              return { ...equip, speed: parseInt(value) };
-            case 'ventilation_mode':
-              return { ...equip, mode: value };
-            case 'dishwasher_program':
+              if (equip.id === 'hotte_labo' && equip.status === 'Actif') {
+                const hotteSpeed = Math.max(equip.minSpeed, Math.min(equip.maxSpeed, parseInt(value)));
+                return { ...equip, speed: hotteSpeed };
+              }
+              if (equip.id === 'ventilation_gym' && equip.mode === 'Manual') {
+                const gymSpeed = parseInt(value);
+                const effectiveGymSpeed = gymSpeed < equip.minSpeed ? 0 : gymSpeed;
               return {
                 ...equip,
-                program: value,
-                status: 'En cours',
-                timeRemaining: 60 // Exemple: 60 minutes
+                  speed: Math.min(equip.maxSpeed, effectiveGymSpeed),
+                  status: effectiveGymSpeed > 0 ? 'Actif' : 'Inactif' 
+                };
+              }
+              return equip;
+            case 'ventilation_gym_mode':
+              const gymMode_newMode = value;
+              let gymMode_newSpeed = equip.speed;
+              let gymMode_newStatus = equip.status;
+              if (gymMode_newMode === 'Off') {
+                gymMode_newSpeed = 0;
+                gymMode_newStatus = 'Inactif';
+              } else if (gymMode_newMode === 'Manual' && (equip.status === 'Inactif' || equip.mode === 'Off')) {
+                gymMode_newSpeed = equip.minSpeed;
+                gymMode_newStatus = 'Actif';
+              } else if (gymMode_newMode === 'Auto' && (equip.status === 'Inactif' || equip.mode === 'Off')) {
+                gymMode_newStatus = 'Actif';
+                gymMode_newSpeed = 40; // Vitesse auto simulée
+              } else if (equip.mode === 'Auto' && gymMode_newMode === 'Manual') {
+                 gymMode_newSpeed = equip.speed >= equip.minSpeed ? equip.speed : equip.minSpeed;
+                 gymMode_newStatus = 'Actif';
+              } else if (equip.mode === 'Manual' && gymMode_newMode === 'Auto'){
+                  gymMode_newStatus = 'Actif';
+                  gymMode_newSpeed = 40; // Vitesse auto simulée
+              }
+              if (gymMode_newMode !== 'Off') gymMode_newStatus = 'Actif';
+              
+              return {
+                ...equip,
+                mode: gymMode_newMode,
+                speed: gymMode_newSpeed,
+                status: gymMode_newStatus
               };
             case 'scanner_status':
             case 'borne_status':
@@ -282,12 +511,6 @@ const Dashboard = () => {
                 ...equip,
                 mode: value,
                 status: value === 'Veille' ? 'Inactif' : 'Actif'
-              };
-            case 'appliance_status':
-              return {
-                ...equip,
-                status: value ? 'En cours' : 'Disponible',
-                timeRemaining: value ? 60 : 0 // 60 minutes par défaut
               };
             case 'ventilation_status':
               return {
@@ -335,37 +558,144 @@ const Dashboard = () => {
             case 'score_reset':
               return {
                 ...equip,
-                score: { home: 0, away: 0 },
-                status: 'Allumé'  // Garder le tableau allumé
-              };
-              
-            case 'ventilation_gym':
-              const newSpeed = parseInt(value);
-              return {
-                ...equip,
-                speed: newSpeed,
-                status: newSpeed > 0 ? 'Actif' : 'Veille'
-              };
-  
-            case 'ventilation_gym_mode':
-              return {
-                ...equip,
-                mode: value,
-                speed: value === 'auto' ? equip.speed : equip.speed  // Garder la vitesse actuelle au lieu de la réinitialiser
+                score: { home: 0, away: 0 }
               };
             case 'score_increment':
-              if (equip.status === 'Allumé') {  // Vérifier si le tableau est allumé
-                const [team, points] = value.split(':');
-                return {
-                  ...equip,
-                  status: 'Allumé',  // Garder le tableau allumé
-                  score: {
-                    ...equip.score,
-                    [team]: (equip.score[team] || 0) + parseInt(points)  // Utiliser l'opérateur || pour éviter NaN
-                  }
-                };
+              if (equip.status !== 'Allumé') return equip;
+              const [team, pointsStr] = value.split(':');
+              const points = parseInt(pointsStr);
+              const currentScore = equip.score[team] || 0;
+              return {
+                ...equip,
+                score: { ...equip.score, [team]: currentScore + points }
+              };
+            case 'scoreboard_toggle':
+               if (equip.id === 'score_board') {
+                  return { ...equip, status: value ? 'Allumé' : 'Éteint' };
+               }
+               return equip;
+            case 'scoreboard_timer':
+              if (equip.id === 'score_board') {
+                console.log(`Scoreboard Timer Update: Received value = ${value}`);
+                const newTimer = Math.max(0, parseInt(value) || 0); // Ensure non-negative integer
+                return { ...equip, timer: newTimer };
               }
               return equip;
+            case 'scoreboard_period':
+               if (equip.id === 'score_board') {
+                 console.log(`Scoreboard Period Update: Received value = ${value}`);
+                 const newPeriod = Math.max(1, parseInt(value) || 1); // Ensure integer >= 1
+                 return { ...equip, period: newPeriod };
+               }
+               return equip;
+            case 'sono_input':
+              return { ...equip, input: value };
+            case 'ventilate_room':
+              const newCO2 = Math.max(400, equip.co2Level - 200);
+              const newHumidity = Math.max(30, equip.humidity - 5);
+              return {
+                ...equip,
+                co2Level: newCO2,
+                humidity: newHumidity,
+                lastMeasure: new Date().toISOString()
+              };
+            case 'ventilation_toggle':
+              const minSpeed = equip.minSpeed || 20;
+              return {
+                ...equip,
+                status: value ? 'Actif' : 'Éteint',
+                speed: value ? minSpeed : 0
+              };
+            case 'replace_filter':
+              return {
+                ...equip,
+                filterStatus: 'OK',
+                filterLife: 100,
+                lastMaintenance: new Date().toISOString()
+              };
+            case 'simulate_gas_detection':
+              if (equip.status === 'Inactif') return equip;
+              const detectedGas = value || 'Ammonia';
+              return {
+                ...equip,
+                status: 'Alerte',
+                detectedGases: [...equip.detectedGases, detectedGas],
+                lastAlert: new Date().toISOString()
+              };
+            case 'reset_gas_alert':
+              const nextStatus = equip.status === 'Inactif' ? 'Inactif' : 'Actif';
+              return {
+                ...equip,
+                status: nextStatus,
+                detectedGases: [],
+                lastAlert: null
+              };
+            case 'detector_toggle':
+              return {
+                ...equip,
+                status: value ? 'Actif' : 'Inactif'
+              };
+            case 'fill_water':
+              return {
+                ...equip,
+                waterLevel: 100
+              };
+            case 'fill_beans':
+              return {
+                ...equip,
+                beansLevel: 100
+              };
+            case 'simulate_scan':
+              const scanSuccess = Math.random() > 0.2;
+              const scannedItem = scanSuccess
+                ? { id: `ISBN${Math.floor(Math.random() * 1000)}`, title: 'Livre Aléatoire' }
+                : null;
+              const result = scanSuccess ? 'success' : (Math.random() > 0.5 ? 'not_found' : 'error');
+
+              return {
+                ...equip,
+                status: 'Disponible',
+                lastScan: new Date().toISOString(),
+                lastScannedItem: scannedItem,
+                scanResult: result
+              };
+            case 'simulate_auth':
+              const authSuccess = value;
+                return {
+                  ...equip,
+                authState: authSuccess ? 'authenticated' : 'failed',
+                status: authSuccess ? 'Authentifié' : 'Échec Authentification'
+              };
+            case 'simulate_transaction':
+              const transactionType = value;
+              const transactionItem = `ISBN${Math.floor(Math.random() * 1000)}`;
+              const transactionUser = 'user123';
+              return {
+                ...equip,
+                status: 'Actif',
+                authState: 'idle',
+                lastTransaction: new Date().toISOString(),
+                lastTransactionDetails: {
+                  type: transactionType,
+                  itemId: transactionItem,
+                  userId: transactionUser
+                }
+              };
+            case 'simulate_rfid_alarm':
+              const alarmItem = { id: `ISBN${Math.floor(Math.random() * 1000)}`, title: 'Objet suspect' };
+              return {
+                ...equip,
+                status: 'Alarme',
+                lastDetection: new Date().toISOString(),
+                alarmTriggerItem: alarmItem
+              };
+            case 'reset_rfid_alarm':
+              return {
+                ...equip,
+                status: 'Actif',
+                lastDetection: null,
+                alarmTriggerItem: null
+              };
             default:
               return equip;
           }
@@ -373,22 +703,14 @@ const Dashboard = () => {
         return equip;
       });
 
-      return updatedEquipments;
+      return {
+        ...prev,
+        [currentRoom]: updatedEquipmentsForRoom
+      };
     });
   };
 
-  // Modifier useEffect pour initialiser correctement les équipements
-  useEffect(() => {
-    if (selectedRoom && equipments[selectedRoom]) {
-      setRoomEquipments(prev => ({
-        ...prev,
-        [selectedRoom]: equipments[selectedRoom].map(equip => ({ ...equip }))
-      }));
-    }
-  }, [selectedRoom]);
-
   const renderControls = (obj, isEquipment = false) => {
-    // Définir les objets qui doivent rester actifs quand la grille est fermée
     const alwaysActiveObjects = [
       'detecteur_fumee',
       'alarme_incendie', 
@@ -400,7 +722,6 @@ const Dashboard = () => {
       'acces_parking'
     ];
 
-    // Si la grille est fermée et ce n'est pas un objet devant rester actif
     if (obj.id !== 'grille_ecole' && isSchoolClosed() && !alwaysActiveObjects.includes(obj.id)) {
       return (
         <ObjectControls>
@@ -409,7 +730,6 @@ const Dashboard = () => {
       );
     }
 
-    // Si c'est un équipement et que la salle n'est pas disponible, ne pas rendre les contrôles
     if (isEquipment && selectedRoom) {
       const room = objects.find(r => r.id === selectedRoom);
       if (room.status === 'Occupée') {
@@ -421,7 +741,14 @@ const Dashboard = () => {
       }
     }
 
-    // Si c'est une salle, toujours montrer les contrôles
+    if (isFireAlarmActive() && obj.id !== 'alarme_incendie') {
+      return (
+        <ObjectControls>
+          <ValueDisplay style={{color: 'red', fontWeight: 'bold'}}>ALARME INCENDIE - CONTRÔLES BLOQUÉS</ValueDisplay>
+        </ObjectControls>
+      );
+    }
+
     if (obj.type === 'Salle') {
       return (
         <ObjectControls>
@@ -445,19 +772,25 @@ const Dashboard = () => {
       case 'Thermostat':
         return (
           <ObjectControls>
-            <ValueDisplay>{obj.targetTemp}°C</ValueDisplay>
+            <ValueDisplay>{obj.status === 'Inactif' ? 'Inactif' : `${obj.targetTemp}°C`}</ValueDisplay>
             <RangeSlider
               type="range"
               min="0"
               max="30"
               step="1"
-              value={obj.targetTemp}
+              value={obj.status === 'Inactif' ? 0 : obj.targetTemp}
               onChange={(e) => handler(obj.id, 'temperature', e.target.value)}
-              disabled={obj.mode === 'auto'}
+              disabled={obj.status === 'Inactif' || obj.mode === 'auto'}
             />
+            <ToggleButton
+              active={obj.status === 'Actif'}
+              onClick={() => handler(obj.id, 'thermo_toggle', obj.status !== 'Actif')}>
+              {obj.status === 'Actif' ? 'Désactiver' : 'Activer'}
+            </ToggleButton>
             <ToggleButton 
               active={obj.mode === 'auto'}
-              onClick={() => handler(obj.id, 'mode', obj.mode === 'auto' ? 'manual' : 'auto')}>
+              onClick={() => handler(obj.id, 'mode', obj.mode === 'auto' ? 'manual' : 'auto')}
+              disabled={obj.status === 'Inactif'}>
               {obj.mode === 'auto' ? 'Mode Auto' : 'Mode Manuel'}
             </ToggleButton>
           </ObjectControls>
@@ -506,6 +839,23 @@ const Dashboard = () => {
         );
 
       case 'Capteur':
+        if (obj.id === 'air_quality') {
+            const co2High = obj.co2Level > obj.co2Threshold;
+            return (
+                <ObjectControls>
+                <ValueDisplay style={{ color: co2High ? 'red' : 'inherit' }}>
+                    CO2: {obj.co2Level} ppm {co2High && <FaExclamationTriangle title="Niveau élevé" />}
+                </ValueDisplay>
+                <ValueDisplay>Humidité: {obj.humidity}%</ValueDisplay>
+                <ValueDisplay>Dernière mesure: {new Date(obj.lastMeasure).toLocaleTimeString()}</ValueDisplay>
+                <ControlButton
+                    onClick={() => handler(obj.id, 'ventilate_room')}
+                    style={{ marginTop: '10px' }}>
+                    <FaWind /> Aérer la pièce
+                </ControlButton>
+                </ObjectControls>
+            );
+        }
         return (
           <ObjectControls>
             <ToggleButton 
@@ -523,15 +873,15 @@ const Dashboard = () => {
               type="range"
               min="0"
               max="100"
-              value={obj.volume}
+              value={obj.status === 'Mute' ? 0 : obj.volume}
               onChange={(e) => handler(obj.id, 'volume', e.target.value)}
               disabled={obj.status === 'Mute'}
             />
-            <ValueDisplay>{obj.volume}%</ValueDisplay>
+            <ValueDisplay>{obj.status === 'Mute' ? '0' : obj.volume}%</ValueDisplay>
             <ToggleButton 
               active={obj.status === 'Allumé'}
               onClick={() => handler(obj.id, 'audio', obj.status !== 'Allumé')}>
-              {obj.status === 'Allumé' ? 'Mute' : 'Allumer'}
+              {obj.status === 'Allumé' ? 'Mute' : 'Démute'}
             </ToggleButton>
           </ObjectControls>
         );
@@ -542,102 +892,243 @@ const Dashboard = () => {
             <div>
               <h4>Niveaux de Stock:</h4>
               {Object.entries(obj.stock).map(([item, level]) => (
-                <div key={item}>
-                  <span>{item}: {level}%</span>
+                <div key={item} style={{ marginBottom: '5px', display: 'flex', alignItems: 'center' }}>
+                  <span style={{ display: 'inline-block', width: '80px' }}>{item}:</span>
+                  <progress value={level} max={obj.capacity[item]} style={{ width: '50%', marginRight: '5px' }}></progress>
+                  <span style={{ marginRight: '10px' }}>{level}/{obj.capacity[item]}</span>
+                  <ControlButton
+                    onClick={() => handler(obj.id, 'take_provision', item)}
+                    disabled={level === 0 || obj.status === 'Maintenance'}
+                    title={`Prendre un(e) ${item}`}
+                    style={{ padding: '2px 5px', minWidth: 'auto' }}>
+                    <FaMinus />
+                  </ControlButton>
                 </div>
               ))}
             </div>
             <ValueDisplay>Température: {obj.temperature}°C</ValueDisplay>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+              <ControlButton onClick={() => handler(obj.id, 'refill_stock')}>
+                Réapprovisionner
+              </ControlButton>
             <ToggleButton
-              active={obj.status === 'Actif'}
+                active={obj.needsMaintenance}
               onClick={() => handler(obj.id, 'maintenance', !obj.needsMaintenance)}>
-              {obj.status === 'Maintenance' ? 'Maintenance Requise' : 'Fonctionnel'}
+                {obj.needsMaintenance ? 'Maintenance Requise' : 'Fonctionnel'}
             </ToggleButton>
+            </div>
           </ObjectControls>
         );
 
       case 'Cafetiere':
+        const waterLow = obj.waterLevel < obj.waterLowThreshold;
+        const beansLow = obj.beansLevel < obj.beansLowThreshold;
         return (
           <ObjectControls>
-            <ValueDisplay>Eau: {obj.waterLevel}%</ValueDisplay>
-            <ValueDisplay>Grains: {obj.beansLevel}%</ValueDisplay>
+            <ValueDisplay>État: {obj.status}</ValueDisplay>
+            <ValueDisplay>Mode: {obj.mode}</ValueDisplay>
+            <div style={{ margin: '5px 0' }}>
+              <span style={{ color: waterLow ? 'orange' : 'inherit' }}>
+                Eau: {waterLow && <FaExclamationTriangle title="Niveau bas" />}
+              </span>
+              <progress value={obj.waterLevel} max="100" style={{ width: '60%' }}></progress>
+              <span> {obj.waterLevel}% </span>
+              <ControlButton
+                onClick={() => handler(obj.id, 'fill_water')}
+                disabled={obj.waterLevel === 100}
+                title="Remplir Eau">
+                <FaTint />
+              </ControlButton>
+            </div>
+            <div style={{ margin: '5px 0' }}>
+              <span style={{ color: beansLow ? 'orange' : 'inherit' }}>
+                Grains: {beansLow && <FaExclamationTriangle title="Niveau bas" />}
+              </span>
+              <progress value={obj.beansLevel} max="100" style={{ width: '60%' }}></progress>
+              <span> {obj.beansLevel}% </span>
+              <ControlButton
+                onClick={() => handler(obj.id, 'fill_beans')}
+                disabled={obj.beansLevel === 100}
+                title="Remplir Grains">
+                <FaSeedling />
+              </ControlButton>
+            </div>
             <ValueDisplay>Température: {obj.temperature}°C</ValueDisplay>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
             <ToggleButton
-              active={obj.mode !== 'Veille'}
-              onClick={() => handler(obj.id, 'cafetiere_mode', obj.mode === 'Veille' ? 'Actif' : 'Veille')}>
-              {obj.mode === 'Veille' ? 'Activer' : 'Mettre en Veille'}
+                active={obj.status === 'Actif' || obj.status === 'Prêt'}
+                onClick={() => handler(obj.id, 'cafetiere_toggle', obj.status === 'Inactif' || obj.status === 'Veille')}
+                disabled={obj.isCleaning || waterLow || beansLow}>
+                {obj.status === 'Inactif' || obj.status === 'Veille' ? 'Allumer' : 'Éteindre'}
             </ToggleButton>
+              <ControlButton
+                onClick={() => handler(obj.id, 'cafetiere_clean', !obj.isCleaning)}
+                disabled={obj.status === 'Inactif' || obj.status === 'Veille'}>
+                {obj.isCleaning ? <><FaBroom /> Arrêter Nettoyage</> : <><FaBroom /> Nettoyer</>}
+              </ControlButton>
+            </div>
           </ObjectControls>
         );
 
       case 'Microwave':
-      case 'Dishwasher':
-        const isRunning = obj.status === 'En cours';
         return (
           <ObjectControls>
-            <ValueDisplay>Programme: {obj.program || 'Standard'}</ValueDisplay>
-            {obj.timeRemaining > 0 && (
-              <ValueDisplay>Temps restant: {obj.timeRemaining}min</ValueDisplay>
+            <ValueDisplay>État: {obj.status}</ValueDisplay>
+            <ValueDisplay>Porte: {obj.doorStatus}</ValueDisplay>
+            <div style={{ margin: '10px 0' }}>
+              <label>Temps (sec): </label>
+              <RangeSlider
+                type="range"
+                min="0"
+                max={obj.maxTime}
+                step="10"
+                value={obj.timer}
+                onChange={(e) => handler(obj.id, 'microwave_timer', e.target.value)}
+                disabled={obj.status === 'En cours' || obj.doorStatus === 'Ouverte'}
+              />
+              <ValueDisplay>{obj.timer}s</ValueDisplay>
+            </div>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+              <ToggleButton
+                active={obj.status === 'En cours'}
+                onClick={() => handler(obj.id, 'microwave_start_stop', obj.status !== 'En cours')}
+                disabled={obj.timer === 0 || obj.doorStatus === 'Ouverte'}>
+                {obj.status === 'En cours' ? 'Arrêter' : 'Démarrer'}
+              </ToggleButton>
+              <ToggleButton
+                active={obj.doorStatus === 'Ouverte'}
+                onClick={() => handler(obj.id, 'microwave_door', obj.doorStatus !== 'Ouverte')}>
+                {obj.doorStatus === 'Ouverte' ? 'Fermer Porte' : 'Ouvrir Porte'}
+              </ToggleButton>
+            </div>
+          </ObjectControls>
+        );
+
+      case 'AirSensor':
+        const co2High = obj.co2Level > obj.co2Threshold;
+        return (
+          <ObjectControls>
+            <ValueDisplay style={{ color: co2High ? 'red' : 'inherit' }}>
+              CO2: {obj.co2Level} ppm {co2High && <FaExclamationTriangle title="Niveau élevé" />}
+            </ValueDisplay>
+            <ValueDisplay>Humidité: {obj.humidity}%</ValueDisplay>
+            <ValueDisplay>Dernière mesure: {new Date(obj.lastMeasure).toLocaleTimeString()}</ValueDisplay>
+            <ControlButton
+              onClick={() => handler(obj.id, 'ventilate_room')}
+              style={{ marginTop: '10px' }}>
+              <FaWind /> Aérer la pièce
+            </ControlButton>
+          </ObjectControls>
+        );
+
+      case 'Dishwasher':
+        const rinseAidLow = obj.rinseAidLevel < obj.rinseAidLowThreshold;
+        return (
+          <ObjectControls>
+            <ValueDisplay>État: {obj.status}</ValueDisplay>
+            {obj.status === 'En cours' && obj.timeRemaining > 0 && (
+              <ValueDisplay>Temps restant: {obj.timeRemaining} min</ValueDisplay>
             )}
+            <div style={{ margin: '10px 0' }}>
+              <label>Programme: </label>
+              <select
+                value={obj.program}
+                onChange={(e) => handler(obj.id, 'dishwasher_select_program', e.target.value)}
+                disabled={obj.status === 'En cours'}>
+                {obj.availablePrograms.map(prog => (
+                  <option key={prog} value={prog}>{prog}</option>
+                ))}
+              </select>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+              <ValueDisplay style={{ color: rinseAidLow ? 'orange' : 'inherit', marginRight: '10px' }}>
+                Liquide Rinçage: {obj.rinseAidLevel}% {rinseAidLow && <FaExclamationTriangle title="Niveau bas" />}
+              </ValueDisplay>
+              <ControlButton
+                onClick={() => handler(obj.id, 'fill_rinse_aid')}
+                disabled={obj.rinseAidLevel === obj.rinseAidMaxCapacity}
+                title="Remplir liquide de rinçage">
+                <FaFillDrip />
+              </ControlButton>
+            </div>
             <ToggleButton
-              active={isRunning}
-              onClick={() => handler(obj.id, 'appliance_status', !isRunning)}>
-              {isRunning ? 'Arrêter' : 'Démarrer'}
+              active={obj.status === 'En cours'}
+              onClick={() => handler(obj.id, 'dishwasher_start_stop', obj.status !== 'En cours')}>
+              {obj.status === 'En cours' ? 'Arrêter' : 'Démarrer'}
             </ToggleButton>
           </ObjectControls>
         );
 
       case 'Ventilation':
         if (obj.id === 'hotte_labo') {
+          const filterLow = obj.filterLife < obj.filterChangeThreshold;
           return (
             <ObjectControls>
+              <ValueDisplay>État: {obj.status}</ValueDisplay>
+              <div style={{ margin: '10px 0' }}>
+                <label>Vitesse: </label>
               <RangeSlider
                 type="range"
                 min="0"
-                max="100"
+                  max={obj.maxSpeed}
                 value={obj.speed}
                 onChange={(e) => handler(obj.id, 'ventilation_speed', e.target.value)}
-                disabled={obj.status === 'Inactif'}
+                  disabled={obj.status === 'Éteint'}
               />
-              <ValueDisplay>Vitesse: {obj.status === 'Inactif' ? 0 : obj.speed}%</ValueDisplay>
-              <div style={{ margin: '10px 0' }}>
+                <ValueDisplay>{obj.speed}%</ValueDisplay>
+              </div>
                 <ToggleButton
                   active={obj.status === 'Actif'}
-                  onClick={() => handler(obj.id, 'ventilation_status', obj.status !== 'Actif')}>
-                  {obj.status === 'Actif' ? 'Arrêter' : 'Démarrer'}
+                onClick={() => handler(obj.id, 'ventilation_toggle', obj.status !== 'Actif')}>
+                {obj.status === 'Actif' ? 'Éteindre' : 'Allumer'}
                 </ToggleButton>
-              </div>
-              <div style={{ margin: '10px 0' }}>
-                <ValueDisplay>Filtre: {obj.filterStatus}</ValueDisplay>
-                <ToggleButton
-                  active={obj.filterStatus === 'OK'}
-                  onClick={() => handler(obj.id, 'ventilation_filter', obj.filterStatus !== 'OK')}>
-                  {obj.filterStatus === 'OK' ? 'Filtre OK' : 'Remplacer Filtre'}
-                </ToggleButton>
-              </div>
-              <ValueDisplay>
+              <div style={{ marginTop: '15px' }}>
+                <ValueDisplay style={{ color: filterLow ? 'orange' : 'inherit' }}>
+                  Filtre: {obj.filterStatus} ({obj.filterLife}%) {filterLow && <FaExclamationTriangle title="Remplacement requis" />}
+                </ValueDisplay>
+                <ControlButton
+                  onClick={() => handler(obj.id, 'replace_filter')}
+                  disabled={obj.filterStatus === 'OK' && obj.filterLife === 100}>
+                  <FaFilter /> Remplacer Filtre
+                </ControlButton>
+                <ValueDisplay style={{ fontSize: '0.8em', marginTop: '5px' }}>
                 Dernière maintenance: {new Date(obj.lastMaintenance).toLocaleDateString()}
               </ValueDisplay>
+              </div>
             </ObjectControls>
           );
         }
         if (obj.id === 'ventilation_gym') {
+          const isManual = obj.mode === 'Manual';
+          const isOff = obj.mode === 'Off' || obj.status === 'Inactif';
           return (
             <ObjectControls>
               <ValueDisplay>État: {obj.status}</ValueDisplay>
+              <ValueDisplay>Mode: {obj.mode}</ValueDisplay>
+              <div style={{ margin: '15px 0', display: 'flex', justifyContent: 'center', gap: '10px' }}>
+                <label style={{ alignSelf: 'center' }}>Mode:</label>
+                {obj.availableModes.map(mode => (
+                  <ControlButton
+                    key={mode}
+                    active={obj.mode === mode}
+                    onClick={() => handler(obj.id, 'ventilation_gym_mode', mode)}
+                    style={{ flexGrow: 1, textAlign: 'center' }} // Make buttons fill space
+                  >
+                    {mode}
+                  </ControlButton>
+                ))}
+              </div>
+              <div style={{ margin: '10px 0' }}>
+                <label>Vitesse:</label>
               <RangeSlider
                 type="range"
                 min="0"
-                max="100"
-                value={obj.speed || 0}
-                onChange={(e) => handler(obj.id, 'ventilation_gym', e.target.value)}
-              />
-              <ValueDisplay>Vitesse: {obj.speed || 0}%</ValueDisplay>
-              <div style={{ margin: '10px 0' }}>
-                <ControlButton 
-                  onClick={() => handler(obj.id, 'ventilation_gym', obj.speed === 0 ? (obj.lastSpeed || 60) : 0)}>
-                  {obj.speed === 0 ? 'Démarrer' : 'Arrêter'}
-                </ControlButton>
+                  max={obj.maxSpeed}
+                  value={isOff ? 0 : obj.speed}
+                  onChange={(e) => handler(obj.id, 'ventilation_speed', e.target.value)}
+                  disabled={!isManual}
+                />
+                <ValueDisplay>{isOff ? 0 : obj.speed}%</ValueDisplay>
               </div>
             </ObjectControls>
           );
@@ -646,48 +1137,153 @@ const Dashboard = () => {
 
       case 'Scanner':
         if (obj.id === 'scanner_biblio') {
+          let resultText = 'Inconnu';
+          let resultColor = 'grey';
+          if (obj.scanResult === 'success') { resultText = 'Succès'; resultColor = 'green'; }
+          else if (obj.scanResult === 'not_found') { resultText = 'Non trouvé'; resultColor = 'orange'; }
+          else if (obj.scanResult === 'error') { resultText = 'Erreur Scan'; resultColor = 'red'; }
+          
           return (
             <ObjectControls>
-              <div style={{ margin: '10px 0' }}>
                 <ValueDisplay>État: {obj.status}</ValueDisplay>
+              <ControlButton
+                onClick={() => handler(obj.id, 'simulate_scan')}
+                disabled={obj.status === 'Scanning'}> 
+                <FaBarcode /> Simuler Scan
+              </ControlButton>
                 {obj.lastScan && (
-                  <ValueDisplay>
+                <ValueDisplay style={{ fontSize: '0.8em', marginTop: '5px' }}>
                     Dernier scan: {new Date(obj.lastScan).toLocaleString()}
                   </ValueDisplay>
                 )}
-                <div style={{ marginTop: '10px' }}>
-                  <ToggleButton 
-                    active={obj.status === 'En cours'}
-                    onClick={() => handler(obj.id, 'scanner_action', obj.status !== 'En cours')}
-                    style={{ width: '100%' }}>
-                    {obj.status === 'En cours' ? 'Arrêter le scan' : 'Démarrer un scan'}
-                  </ToggleButton>
+              {obj.scanResult && (
+                <div style={{ marginTop: '5px' }}>
+                  Résultat: <span style={{ color: resultColor, fontWeight: 'bold' }}>{resultText}</span>
+                  {obj.scanResult === 'success' && obj.lastScannedItem && (
+                    <div style={{ fontSize: '0.8em' }}>
+                      Item: {obj.lastScannedItem.title} ({obj.lastScannedItem.id})
                 </div>
+                  )}
               </div>
+              )}
             </ObjectControls>
           );
         }
         return null;
 
       case 'Borne':
-        if (obj.id === 'bornes_pret') {
+        if (obj.id === 'borne_recharge') {
+          const isCharging = obj.status === 'En charge';
+          const isOutOfService = obj.status === 'Hors service';
+          let statusColor = isOutOfService ? 'grey' : (isCharging ? 'orange' : 'green');
+
           return (
             <ObjectControls>
-              <div style={{ margin: '10px 0' }}>
-                <ValueDisplay>État: {obj.status}</ValueDisplay>
-                {obj.lastTransaction && (
+              <ValueDisplay style={{ color: statusColor, fontWeight: 'bold' }}>État: {obj.status}</ValueDisplay>
+              <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                <ControlButton onClick={() => handler(obj.id, 'simulate_charge_start')} disabled={isCharging || isOutOfService}>
+                  <FaChargingStation /> Démarrer Charge
+                </ControlButton>
+                <ControlButton onClick={() => handler(obj.id, 'simulate_charge_end')} disabled={!isCharging || isOutOfService}>
+                  Arrêter Charge
+                </ControlButton>
+                <ControlButton onClick={() => handler(obj.id, 'toggle_service_status')} style={{backgroundColor: isOutOfService ? '#4CAF50' : '#ffcc00'}}>
+                  {isOutOfService ? 'Remettre en service' : 'Mettre Hors Service'}
+                </ControlButton>
+              </div>
+            </ObjectControls>
+          );
+        }
+        if (obj.id === 'bornes_pret') {
+          const isAuthenticated = obj.authState === 'authenticated';
+          let authStateText = 'Inactif';
+          if (obj.authState === 'authenticated') authStateText = 'Authentifié';
+          else if (obj.authState === 'failed') authStateText = 'Échec';
+
+          return (
+            <ObjectControls>
+              <ValueDisplay>État Borne: {obj.status}</ValueDisplay>
                   <ValueDisplay>
-                    Dernière transaction: {new Date(obj.lastTransaction).toLocaleString()}
+                Authentification: <span style={{ fontWeight: 'bold', color: isAuthenticated ? 'green' : (obj.authState === 'failed' ? 'red' : 'grey') }}>{authStateText}</span>
                   </ValueDisplay>
-                )}
-                <div style={{ marginTop: '10px' }}>
-                  <ToggleButton 
-                    active={obj.status === 'En cours'}
-                    onClick={() => handler(obj.id, 'borne_transaction', obj.status !== 'En cours')}
-                    style={{ width: '100%' }}>
-                    {obj.status === 'En cours' ? 'Terminer transaction' : 'Nouvelle transaction'}
-                  </ToggleButton>
+              {!isAuthenticated && (
+                <div style={{ display: 'flex', gap: '10px', margin: '10px 0' }}>
+                  <ControlButton onClick={() => handler(obj.id, 'simulate_auth', true)}>
+                    <FaUserCheck /> Simuler Auth Réussie
+                  </ControlButton>
+                  <ControlButton onClick={() => handler(obj.id, 'simulate_auth', false)}>
+                    <FaUserTimes /> Simuler Auth Échouée
+                  </ControlButton>
                 </div>
+              )}
+              {isAuthenticated && (
+                <div style={{ display: 'flex', gap: '10px', margin: '10px 0' }}>
+                  <ControlButton onClick={() => handler(obj.id, 'simulate_transaction', 'loan')}>
+                    <FaBookReader /> Simuler Prêt
+                  </ControlButton>
+                  <ControlButton onClick={() => handler(obj.id, 'simulate_transaction', 'return')}>
+                    <FaBookMedical /> Simuler Retour
+                  </ControlButton>
+                </div>
+              )}
+              {obj.lastTransactionDetails && obj.lastTransactionDetails.type && (
+                 <ValueDisplay style={{ fontSize: '0.8em', marginTop: '5px', borderTop: '1px solid #eee', paddingTop: '5px' }}>
+                  Dernière transac: {obj.lastTransactionDetails.type === 'loan' ? 'Prêt' : 'Retour'} de {obj.lastTransactionDetails.itemId} par {obj.lastTransactionDetails.userId} le {new Date(obj.lastTransaction).toLocaleString()}
+                </ValueDisplay>
+              )}
+            </ObjectControls>
+          );
+        }
+        return null;
+
+      case 'Securite':
+        if (obj.id === 'detecteur_rfid') {
+          const isAlarm = obj.status === 'Alarme';
+          return (
+            <ObjectControls>
+              <ValueDisplay style={{ color: isAlarm ? 'red' : 'inherit', fontWeight: isAlarm ? 'bold' : 'normal' }}>
+                État: {obj.status} {isAlarm && <FaBell title="Alarme Antivol!" />}
+              </ValueDisplay>
+              {isAlarm && obj.lastDetection && (
+                <ValueDisplay style={{ fontSize: '0.8em', color: 'red' }}>
+                  Alarme déclenchée: {new Date(obj.lastDetection).toLocaleString()}
+                </ValueDisplay>
+              )}
+              {isAlarm && obj.alarmTriggerItem && (
+                <div style={{ color: 'red', marginTop: '5px' }}>
+                  Objet suspecté: {obj.alarmTriggerItem.title} ({obj.alarmTriggerItem.id})
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                <ControlButton
+                  onClick={() => handler(obj.id, 'simulate_rfid_alarm')}
+                  disabled={isAlarm}>
+                  Simuler Alarme
+                </ControlButton>
+                <ControlButton
+                  onClick={() => handler(obj.id, 'reset_rfid_alarm')}
+                  disabled={!isAlarm}
+                  style={{ backgroundColor: isAlarm ? '#4CAF50' : '#cccccc' }}>
+                  Réinitialiser Alarme
+                </ControlButton>
+              </div>
+            </ObjectControls>
+          );
+        }
+        if (obj.id === 'alarme_incendie') {
+          const isAlarm = obj.status === 'Alarme Incendie';
+          return (
+            <ObjectControls>
+              <ValueDisplay style={{ color: isAlarm ? 'red' : 'green', fontWeight: 'bold' }}>
+                État: {obj.status} {isAlarm && <FaFire title="Alarme Incendie!" />}
+              </ValueDisplay>
+              <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                <ControlButton onClick={() => handler(obj.id, 'simulate_fire_alarm')} disabled={isAlarm}>
+                  Simuler Alarme Incendie
+                </ControlButton>
+                <ControlButton onClick={() => handler(obj.id, 'reset_fire_alarm')} disabled={!isAlarm} style={{ backgroundColor: isAlarm ? '#4CAF50' : '#cccccc' }}>
+                  Réinitialiser Alarme
+                </ControlButton>
               </div>
             </ObjectControls>
           );
@@ -697,23 +1293,39 @@ const Dashboard = () => {
       case 'Barriere':
         return (
           <ObjectControls>
-            <ToggleButton
-              active={obj.status === 'Ouverte'}
-              onClick={() => handleObjectControl(obj.id, 'barriere', obj.status !== 'Ouverte')}>
-              {obj.status === 'Ouverte' ? 'Fermer' : 'Ouvrir'}
-            </ToggleButton>
+            <ValueDisplay style={{ marginBottom: '10px', fontWeight: 'bold' }}>
+              État actuel : {obj.status}
+            </ValueDisplay>
+            <ControlButton
+              onClick={() => handleObjectControl(obj.id, 'barriere', obj.status !== 'Ouverte')}
+              style={{ width: '100%', padding: '10px', fontSize: '1em' }} // Larger button
+            >
+              {obj.status === 'Ouverte' ? 
+                <><FaCarAlt style={{ marginRight: '8px' }} /> Fermer la barrière</> : 
+                <><FaCarAlt style={{ marginRight: '8px' }} /> Ouvrir la barrière</>
+              }
+            </ControlButton>
           </ObjectControls>
         );
+
       case 'Grille':
         return (
           <ObjectControls>
-            <ToggleButton
-              active={obj.status === 'Ouverte'}
-              onClick={() => handleObjectControl(obj.id, 'grille', obj.status !== 'Ouverte')}>
-              {obj.status === 'Ouverte' ? 'Fermer' : 'Ouvrir'}
-            </ToggleButton>
+            <ValueDisplay style={{ marginBottom: '10px', fontWeight: 'bold' }}>
+              État actuel : {obj.status}
+            </ValueDisplay>
+            <ControlButton
+              onClick={() => handleObjectControl(obj.id, 'grille', obj.status !== 'Ouverte')}
+              style={{ width: '100%', padding: '10px', fontSize: '1em' }} // Larger button
+            >
+              {obj.status === 'Ouverte' ? 
+                <><FaDoorClosed style={{ marginRight: '8px' }} /> Fermer la grille principale</> : 
+                <><FaDoorOpen style={{ marginRight: '8px' }} /> Ouvrir la grille principale</>
+              }
+            </ControlButton>
           </ObjectControls>
         );
+
       case 'Projecteur':
         return (
           <ObjectControls>
@@ -732,113 +1344,166 @@ const Dashboard = () => {
               type="range"
               min="0"
               max="100"
-              step="1"  // Pour un mouvement plus fluide
+              step="1"
               value={obj.position || 0}
               onChange={(e) => handler(obj.id, 'store_position', e.target.value)}
             />
             <ValueDisplay>Position: {obj.position || 0}%</ValueDisplay>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
-              <ControlButton 
-                onClick={() => handler(obj.id, 'store_position', 0)}>
+              <ControlButton onClick={() => handler(obj.id, 'store_position', 0)}>
                 Fermer complètement
               </ControlButton>
-              <ControlButton 
-                onClick={() => handler(obj.id, 'store_position', 100)}>
+              <ControlButton onClick={() => handler(obj.id, 'store_position', 100)}>
                 Ouvrir complètement
               </ControlButton>
             </div>
           </ObjectControls>
         );
-      case 'AirSensor':
-        return (
-          <ObjectControls>
-            <ValueDisplay>CO2: {obj.co2Level} ppm</ValueDisplay>
-            <ValueDisplay>Humidité: {obj.humidity}%</ValueDisplay>
-            <ValueDisplay>Dernière mesure: {new Date(obj.lastMeasure).toLocaleTimeString()}</ValueDisplay>
-          </ObjectControls>
-        );
 
       case 'Detecteur':
+        if (obj.id === 'detecteur_fumee') {
+          const isSmokeDetected = obj.status === 'Fumée détectée';
+        return (
+          <ObjectControls>
+              <ValueDisplay style={{ color: isSmokeDetected ? 'orange' : 'green', fontWeight: 'bold' }}>
+                État: {obj.status} {isSmokeDetected && <FaSmog title="Fumée détectée!" />}
+              </ValueDisplay>
+              <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                <ControlButton onClick={() => handler(obj.id, 'simulate_smoke_detection')} disabled={isSmokeDetected}>
+                  Simuler Détection Fumée
+                </ControlButton>
+                <ControlButton onClick={() => handler(obj.id, 'reset_smoke_detector')} disabled={!isSmokeDetected} style={{ backgroundColor: isSmokeDetected ? '#4CAF50' : '#cccccc' }}>
+                  Réinitialiser Détecteur
+                </ControlButton>
+              </div>
+          </ObjectControls>
+        );
+        }
         if (obj.id === 'detecteur_gaz') {
+          const batteryLow = obj.batteryLevel < obj.batteryLowThreshold;
+          const isAlert = obj.status === 'Alerte';
+          const isInactive = obj.status === 'Inactif';
+
+          let statusColor = 'inherit';
+          if (isAlert) statusColor = 'red';
+          else if (isInactive) statusColor = 'grey';
+          else if (batteryLow) statusColor = 'orange';
+
           return (
             <ObjectControls>
-              <div style={{ margin: '10px 0' }}>
-                <ValueDisplay>Batterie: {obj.batteryLevel}%</ValueDisplay>
-                <RangeSlider
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={obj.batteryLevel}
-                  onChange={(e) => handler(obj.id, 'detector_battery', e.target.value)}
-                />
+              <ValueDisplay style={{ color: statusColor }}>
+                État: {obj.status}
+                {isAlert && <FaSkullCrossbones title="Alerte Gaz!" />}
+                {isInactive && <span> (Désactivé)</span>}
+              </ValueDisplay>
+              <ValueDisplay style={{ color: batteryLow ? 'orange' : 'inherit' }}>
+                Batterie: {obj.batteryLevel}% {batteryLow && <FaExclamationTriangle title="Batterie faible" />}
+              </ValueDisplay>
+              {isAlert && obj.detectedGases.length > 0 && (
+                 <div style={{ color: 'red', marginTop: '5px' }}>
+                   Gaz détecté(s): {obj.detectedGases.join(', ')}
               </div>
-              <div style={{ margin: '10px 0' }}>
-                <ValueDisplay>État: {obj.status}</ValueDisplay>
-                {obj.lastAlert && (
-                  <ValueDisplay style={{ color: 'red' }}>
-                    Dernière alerte: {new Date(obj.lastAlert).toLocaleString()}
+               )}
+               {isAlert && obj.lastAlert && (
+                 <ValueDisplay style={{ fontSize: '0.8em', color: 'red' }}>
+                   Alerte depuis: {new Date(obj.lastAlert).toLocaleString()}
                   </ValueDisplay>
                 )}
+               <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                 <ToggleButton
-                  active={obj.status === 'Alerte'}
-                  onClick={() => handler(obj.id, 'detector_alert', obj.status !== 'Alerte')}
-                  style={{ backgroundColor: obj.status === 'Alerte' ? '#ff4444' : '#4CAF50' }}>
-                  {obj.status === 'Alerte' ? 'Réinitialiser Alerte' : 'Simuler Alerte'}
+                   active={obj.status !== 'Inactif'}
+                   onClick={() => handler(obj.id, 'detector_toggle', obj.status === 'Inactif')}>
+                   {obj.status === 'Inactif' ? 'Activer' : 'Désactiver'}
                 </ToggleButton>
+                 <ControlButton
+                   onClick={() => handler(obj.id, 'simulate_gas_detection')}
+                   disabled={isAlert || isInactive}>
+                   <FaGasPump /> Simuler Détection
+                 </ControlButton>
+                 <ControlButton
+                   onClick={() => handler(obj.id, 'reset_gas_alert')}
+                   disabled={!isAlert}
+                   style={{ backgroundColor: isAlert ? '#4CAF50' : '#cccccc' }}>
+                   Réinitialiser Alerte
+                 </ControlButton>
               </div>
             </ObjectControls>
           );
         }
+        else {
         return (
           <ObjectControls>
-            <ValueDisplay>Batterie: {obj.batteryLevel}%</ValueDisplay>
             <ValueDisplay>État: {obj.status}</ValueDisplay>
-            {obj.lastAlert && (
-              <ValueDisplay>Dernière alerte: {new Date(obj.lastAlert).toLocaleString()}</ValueDisplay>
-            )}
           </ObjectControls>
         );
+        }
 
       case 'Affichage':
-        if (obj.id === 'score_board') {
+        if (obj.id === 'affichage_parking') {
+          const free = obj.freeSpots !== undefined ? obj.freeSpots : 'N/A';
+          const total = obj.totalSpots !== undefined ? obj.totalSpots : 'N/A';
+          const color = (free === 0 || free === 'N/A') ? 'red' : 'green';
+
           return (
             <ObjectControls>
-              <div style={{ margin: '10px 0' }}>
+              <ValueDisplay style={{ fontSize: '1.2em', fontWeight: 'bold', color: color }}>
+                Places Libres: {free} / {total}
+              </ValueDisplay>
+              <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                <ControlButton onClick={() => handler(obj.id, 'simulate_car_enter')} disabled={free === 0 || free === 'N/A'}>
+                  <FaCar /> Entrée Voiture
+                </ControlButton>
+                <ControlButton onClick={() => handler(obj.id, 'simulate_car_leave')} disabled={free === total || free === 'N/A'}>
+                  <FaCar style={{transform: 'scaleX(-1)'}}/> Sortie Voiture
+                </ControlButton>
+              </div>
+            </ObjectControls>
+          );
+        }
+        if (obj.id === 'score_board') {
+          const isOn = obj.status === 'Allumé';
+          return (
+            <ObjectControls>
+              <ValueDisplay>État: {obj.status}</ValueDisplay>
                 <ToggleButton
-                  active={obj.status === 'Allumé'}
-                  onClick={() => handler(obj.id, 'light', obj.status !== 'Allumé')}
+                active={isOn}
+                onClick={() => handler(obj.id, 'scoreboard_toggle', !isOn)}
                   style={{ width: '100%', marginBottom: '20px' }}>
-                  {obj.status === 'Allumé' ? 'Éteindre' : 'Allumer'}
+                {isOn ? 'Éteindre Tableau' : 'Allumer Tableau'}
                 </ToggleButton>
 
-                {obj.status === 'Allumé' && (
+              {isOn && (
                   <>
                     <div style={{ display: 'flex', justifyContent: 'space-around', margin: '20px 0' }}>
                       <div style={{ flex: 1, textAlign: 'center', padding: '10px', backgroundColor: '#f0f0f0', borderRadius: '8px', margin: '0 5px' }}>
-                        <h3>LOCAUX</h3>
-                        <div style={{ fontSize: '3em', fontWeight: 'bold', margin: '15px 0' }}>
+                      <h3 style={{ margin: '0 0 10px 0' }}>LOCAUX</h3>
+                      <div style={{ fontSize: '3.5em', fontWeight: 'bold', margin: '10px 0', color: '#333' }}>
                           {obj.score.home || 0}
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                          <ControlButton onClick={() => handler(obj.id, 'score_increment', 'home:3')}>+3</ControlButton>
-                          <ControlButton onClick={() => handler(obj.id, 'score_increment', 'home:2')}>+2</ControlButton>
-                          <ControlButton onClick={() => handler(obj.id, 'score_increment', 'home:1')}>+1</ControlButton>
+                      <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
+                        <ControlButton onClick={() => handler(obj.id, 'score_increment', 'home:1')} style={{ padding: '8px 12px' }}>+1</ControlButton>
+                        <ControlButton onClick={() => handler(obj.id, 'score_increment', 'home:2')} style={{ padding: '8px 12px' }}>+2</ControlButton>
+                        <ControlButton onClick={() => handler(obj.id, 'score_increment', 'home:3')} style={{ padding: '8px 12px' }}>+3</ControlButton>
                         </div>
                       </div>
-
                       <div style={{ flex: 1, textAlign: 'center', padding: '10px', backgroundColor: '#f0f0f0', borderRadius: '8px', margin: '0 5px' }}>
-                        <h3>VISITEURS</h3>
-                        <div style={{ fontSize: '3em', fontWeight: 'bold', margin: '15px 0' }}>
+                      <h3 style={{ margin: '0 0 10px 0' }}>VISITEURS</h3>
+                      <div style={{ fontSize: '3.5em', fontWeight: 'bold', margin: '10px 0', color: '#333' }}>
                           {obj.score.away || 0}
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                          <ControlButton onClick={() => handler(obj.id, 'score_increment', 'away:3')}>+3</ControlButton>
-                          <ControlButton onClick={() => handler(obj.id, 'score_increment', 'away:2')}>+2</ControlButton>
-                          <ControlButton onClick={() => handler(obj.id, 'score_increment', 'away:1')}>+1</ControlButton>
+                      <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
+                        <ControlButton onClick={() => handler(obj.id, 'score_increment', 'away:1')} style={{ padding: '8px 12px' }}>+1</ControlButton>
+                        <ControlButton onClick={() => handler(obj.id, 'score_increment', 'away:2')} style={{ padding: '8px 12px' }}>+2</ControlButton>
+                        <ControlButton onClick={() => handler(obj.id, 'score_increment', 'away:3')} style={{ padding: '8px 12px' }}>+3</ControlButton>
                         </div>
                       </div>
                     </div>
-
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', margin: '25px 0', alignItems: 'center', padding: '10px', backgroundColor: '#f8f8f8', borderRadius: '8px' }}>
+                     <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><FaStopwatch /> Timer:</label>
+                     <input type="number" value={obj.timer} onChange={e => handler(obj.id, 'scoreboard_timer', e.target.value)} style={{width: '70px', padding: '5px', border: '1px solid #ccc', borderRadius: '4px'}}/> sec
+                     <label style={{ display: 'flex', alignItems: 'center', gap: '5px', marginLeft: '15px' }}><FaRegClock /> Période:</label>
+                     <input type="number" min="1" value={obj.period} onChange={e => handler(obj.id, 'scoreboard_period', e.target.value)} style={{width: '50px', padding: '5px', border: '1px solid #ccc', borderRadius: '4px'}}/>
+                   </div>
                     <ControlButton
                       onClick={() => handler(obj.id, 'score_reset')}
                       style={{ width: '100%', marginTop: '15px', backgroundColor: '#ff4444', color: 'white' }}>
@@ -846,123 +1511,66 @@ const Dashboard = () => {
                     </ControlButton>
                   </>
                 )}
-              </div>
             </ObjectControls>
           );
         }
+        const currentInputValue = tempInputValues[obj.id] !== undefined ? tempInputValues[obj.id] : (obj.message || '');
+
         return (
           <ObjectControls>
-            <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '10px' }}>
-              <div>
-                <label>Équipe 1</label>
+            <ValueDisplay>Message actuel: "{obj.message || 'Aucun'}"</ValueDisplay>
                 <input
-                  type="number"
-                  min="0"
-                  value={obj.score.home}
-                  onChange={(e) => handler(obj.id, 'score', { home: parseInt(e.target.value) })}
-                />
-              </div>
-              <div>
-                <label>Équipe 2</label>
-                <input
-                  type="number"
-                  min="0"
-                  value={obj.score.away}
-                  onChange={(e) => handler(obj.id, 'score', { away: parseInt(e.target.value) })}
-                />
-              </div>
-            </div>
-            <ToggleButton
-              active={obj.status === 'Allumé'}
-              onClick={() => handler(obj.id, 'light', obj.status !== 'Allumé')}>
-              {obj.status === 'Allumé' ? 'Éteindre' : 'Allumer'}
-            </ToggleButton>
+              type="text" 
+              value={currentInputValue}
+              onChange={(e) => setTempInputValues(prev => ({ ...prev, [obj.id]: e.target.value }))} 
+              placeholder="Nouveau message..." 
+              style={{ margin: '10px 0', padding: '8px', width: 'calc(100% - 16px)', border: '1px solid #ccc', borderRadius: '4px' }}
+            />
+            <ControlButton onClick={() => { 
+              handler(obj.id, 'update_message', currentInputValue); 
+            }}>
+              Mettre à jour le message
+            </ControlButton>
           </ObjectControls>
         );
 
-      case 'Scanner':
-        if (obj.id === 'scanner_biblio') {
-          return (
-            <ObjectControls>
-              <div style={{ margin: '10px 0' }}>
-                <ValueDisplay>État: {obj.status}</ValueDisplay>
-                {obj.lastScan && (
-                  <ValueDisplay>
-                    Dernier scan: {new Date(obj.lastScan).toLocaleString()}
-                  </ValueDisplay>
-                )}
-                <div style={{ marginTop: '10px' }}>
-                  <ToggleButton 
-                    active={obj.status === 'En cours'}
-                    onClick={() => handler(obj.id, 'scanner_action', obj.status !== 'En cours')}
-                    style={{ width: '100%' }}>
-                    {obj.status === 'En cours' ? 'Arrêter le scan' : 'Démarrer un scan'}
-                  </ToggleButton>
-                </div>
-              </div>
-            </ObjectControls>
-          );
-        }
-        return null;
-
-      case 'Borne':
-        if (obj.id === 'bornes_pret') {
-          return (
-            <ObjectControls>
-              <div style={{ margin: '10px 0' }}>
-                <ValueDisplay>État: {obj.status}</ValueDisplay>
-                {obj.lastTransaction && (
-                  <ValueDisplay>
-                    Dernière transaction: {new Date(obj.lastTransaction).toLocaleString()}
-                  </ValueDisplay>
-                )}
-                <div style={{ marginTop: '10px' }}>
-                  <ToggleButton 
-                    active={obj.status === 'En cours'}
-                    onClick={() => handler(obj.id, 'borne_transaction', obj.status !== 'En cours')}
-                    style={{ width: '100%' }}>
-                    {obj.status === 'En cours' ? 'Terminer transaction' : 'Nouvelle transaction'}
-                  </ToggleButton>
-                </div>
-              </div>
-            </ObjectControls>
-          );
-        }
-        return null;
-
-      case 'Securite':
-        if (obj.id === 'detecteur_rfid') {
-          return (
-            <ObjectControls>
-              <div style={{ margin: '10px 0' }}>
-                <ValueDisplay>État: {obj.status}</ValueDisplay>
-                {obj.lastDetection && (
-                  <ValueDisplay style={{ color: 'red' }}>
-                    Dernière détection: {new Date(obj.lastDetection).toLocaleString()}
-                  </ValueDisplay>
-                )}
-                <div style={{ marginTop: '10px' }}>
-                  <ToggleButton 
-                    active={obj.status === 'Actif'}
-                    onClick={() => handler(obj.id, 'rfid_status', obj.status !== 'Actif')}
-                    style={{ width: '100%', backgroundColor: obj.status === 'Actif' ? '#4CAF50' : '#ff4444' }}>
-                    {obj.status === 'Actif' ? 'Désactiver Portique' : 'Activer Portique'}
-                  </ToggleButton>
-                </div>
-              </div>
-            </ObjectControls>
-          );
-        }
-        return null;
-
       default:
-        return null;
+        if (obj.id === 'detecteur_parking') {
+          const statusText = obj.status === 'Actif' ? 'Place Occupée' : 'Place Libre';
+          const statusColor = obj.status === 'Actif' ? 'orange' : 'green';
+          return <ObjectControls><ValueDisplay style={{ color: statusColor, fontWeight: 'bold' }}>État: {statusText}</ValueDisplay></ObjectControls>;
+        }
+        if (obj.id === 'acces_parking') {
+          return (
+            <ObjectControls>
+                <ValueDisplay>État: {obj.status}</ValueDisplay>
+              <ControlButton onClick={() => handler(obj.id, 'simulate_access_request')}>
+                Simuler Demande d'Accès
+              </ControlButton>
+            </ObjectControls>
+          );
+        }
+        return <ObjectControls><ValueDisplay>État: {obj.status}</ValueDisplay></ObjectControls>;
     }
   };
 
   const renderCategoryContent = () => {
     if (selectedRoom) {
       const room = objects.find(obj => obj.id === selectedRoom);
+
+      if (!room) {
+        console.error(`Salle avec ID '${selectedRoom}' non trouvée.`);
+        setSelectedRoom(null); // Revenir à la vue par défaut pour éviter des erreurs répétées
+        return (
+          <div>
+            <ControlButton onClick={() => setSelectedRoom(null)}>
+              ← Retour
+            </ControlButton>
+            <p style={{color: 'red', marginTop: '20px'}}>Erreur: Salle non trouvée.</p>
+          </div>
+        );
+      }
+
       const isOccupied = room.status === 'Occupée';
       const currentEquipments = roomEquipments[selectedRoom] || equipments[selectedRoom] || [];
 
@@ -984,7 +1592,10 @@ const Dashboard = () => {
           </ObjectItem>
           <SubItemContainer>
             {currentEquipments.map(equip => (
-              <ObjectItem key={equip.id}>
+              <ObjectItem 
+                key={equip.id} 
+                id={`equipment-${equip.id}`}
+              >
                 <ObjectHeader>
                   <IconWrapper>{getIcon(equip.type)}</IconWrapper>
                   <div>
@@ -1016,10 +1627,11 @@ const Dashboard = () => {
       <ObjectGrid>
         {objects
           .filter(obj => categories[selectedCategory].items.includes(obj.id))
-          .sort((a, b) => a.id === 'grille_ecole' ? -1 : b.id === 'grille_ecole' ? 1 : 0)  // Mettre la grille en premier
+          .sort((a, b) => a.id === 'grille_ecole' ? -1 : b.id === 'grille_ecole' ? 1 : 0)
           .map(obj => (
             <ObjectItem 
               key={obj.id} 
+              id={`equipment-${obj.id}`}
               onClick={() => obj.type === 'Salle' ? setSelectedRoom(obj.id) : null}
               style={{ cursor: obj.type === 'Salle' ? 'pointer' : 'default' }}
             >

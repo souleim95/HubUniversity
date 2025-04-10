@@ -119,6 +119,29 @@ export const ObjectItem = styled.div`
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   }
+
+  &.highlight-equipment {
+    animation: highlight-pulse 2s ease-in-out;
+    border: 2px solid #1976d2;
+    box-shadow: 0 0 15px rgba(25, 118, 210, 0.5);
+  }
+
+  @keyframes highlight-pulse {
+    0% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(25, 118, 210, 0.7);
+    }
+    
+    50% {
+      transform: scale(1.02);
+      box-shadow: 0 0 0 10px rgba(25, 118, 210, 0);
+    }
+    
+    100% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(25, 118, 210, 0);
+    }
+  }
 `;
 
 export const ObjectHeader = styled.div`

@@ -14,7 +14,6 @@ const http = require("http");
 const { Pool } = require("pg");
 const bcrypt = require('bcrypt');
 
-// Express et WebSocket
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
@@ -27,7 +26,6 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: false, // Désactive le SSL
 });
-// Vérification de la connexion PostgreSQL
 pool.connect()
   .then(() => console.log("✅ Connexion PostgreSQL réussie"))
   .catch(err => console.error("❌ Erreur de connexion à PostgreSQL :", err));
@@ -39,42 +37,74 @@ pool.connect()
 // Route de test de l'API
 app.get("/api", (req, res) => res.send("Backend API is running 🚀"));
 
-// Route pour récupérer les utilisateurs
+// Route pour récupérer les utilisateurs avec leur rôle
 app.get("/api/users", async (req, res) => {
   try {
-    const { rows } = await pool.query("SELECT * FROM users");
+    const query = `
+      SELECT u.id, u.name, u.email, r.nomRole as role, u.created_at 
+      FROM users u 
+      JOIN role r ON u.idRole = r.idRole
+      ORDER BY u.id
+    `;
+    const { rows } = await pool.query(query);
     res.json(rows);
   } catch (err) {
     console.error("Erreur de récupération des utilisateurs :", err);
     res.status(500).send("Erreur serveur");
   }
 });
-// Route pour ajouter un nouvel utilisateur
+
+// Route pour ajouter un nouvel utilisateur (code corrigé)
 app.post("/api/users", async (req, res) => {
   const { name, email, role, password } = req.body;
-
-  // Vérifier que tous les champs nécessaires sont présents
+  // Vérification des champs obligatoires
   if (!name || !email || !role || !password) {
-    return res.status(400).json({ error: "Les champs name, email, role et password sont obligatoires." });
+    return res.status(400).json({ 
+      error: "Les champs name, email, role et password sont obligatoires." 
+    });
   }
 
   try {
-    // Hacher le mot de passe
+    // 1. Vérifier que le rôle existe et récupérer son id
+    const roleResult = await pool.query(
+      "SELECT idRole FROM role WHERE nomRole = $1",
+      [role]
+    );
+    if (roleResult.rows.length === 0) {
+      return res.status(400).json({ error: `Le rôle '${role}' est invalide.` });
+    }
+    const idRole = roleResult.rows[0].idrole || roleResult.rows[0].idRole; // adapter selon la casse du champ retourné
+
+    // 2. Hacher le mot de passe
     const saltRounds = 10;
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
-    const result = await pool.query(
-      "INSERT INTO users (name, email, role, password) VALUES ($1, $2, $3, $4) RETURNING *",
-      [name, email, role, passwordHash]
+    // 3. Insérer le nouvel utilisateur avec l’idRole récupéré
+    const insertResult = await pool.query(
+      "INSERT INTO users (name, email, idRole, password) VALUES ($1, $2, $3, $4) RETURNING *",
+      [name, email, idRole, passwordHash]
     );
-    console.log("Nouvel utilisateur ajouté :", result);
-    res.status(201).json(result.rows[0]);
+    const newUser = insertResult.rows[0];
+
+    // 4. Log pour vérification (optionnel)
+    console.log("Nouvel utilisateur ajouté :", newUser);
+
+    // 5. Retourner l’utilisateur (sans le mot de passe)
+    res.status(201).json({
+      id: newUser.id,
+      name: newUser.name,
+      email: newUser.email,
+      role: role  // on peut renvoyer le nom de rôle initial pour info
+    });
   } catch (err) {
     console.error("Erreur lors de l'ajout d'un utilisateur :", err);
     res.status(500).json({ error: "Erreur interne du serveur." });
   }
 });
-//Connexion : Route pour se connecter
+
+
+
+// Connexion : Route pour se connecter
 app.post("/api/login", async (req, res) => {
   const { email, password } = req.body;
 
@@ -83,7 +113,14 @@ app.post("/api/login", async (req, res) => {
   }
 
   try {
-    const { rows } = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+    // Requête jointe pour récupérer le nom du rôle (r.nomRole as role)
+    const query = `
+      SELECT u.id, u.name, u.email, u.password, r.nomRole as role
+      FROM users u 
+      JOIN role r ON u.idRole = r.idRole
+      WHERE u.email = $1
+    `;
+    const { rows } = await pool.query(query, [email]);
     const user = rows[0];
     console.log("Utilisateur trouvé :", rows);
 
@@ -94,7 +131,16 @@ app.post("/api/login", async (req, res) => {
     const match = await bcrypt.compare(password, user.password);
 
     if (match) {
-      res.json({ message: "Connexion réussie", user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+      // On renvoie l'objet utilisateur sans le mot de passe.
+      res.json({ 
+        message: "Connexion réussie", 
+        user: { 
+          id: user.id, 
+          name: user.name, 
+          email: user.email, 
+          role: user.role
+        }
+      });
     } else {
       res.status(401).json({ error: "Email ou mot de passe incorrect." });
     }

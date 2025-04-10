@@ -24,9 +24,10 @@ export const fakeObjects = [
         id: 'thermo123',
         name: 'Thermostat Salle A',
         type: 'Thermostat',
-        status: 'Actif',
+        status: 'Inactif',
         temperature: 21,
-        targetTemp: 22,
+        targetTemp: 0,
+        previousTargetTemp: 20,
         mode: 'auto'
     },
     {
@@ -49,8 +50,9 @@ export const fakeObjects = [
         id: 'light001',
         name: 'Éclairage Hall Principal',
         type: 'Éclairage',
-        status: 'Allumé',
-        brightness: 80,
+        status: 'Éteint',
+        brightness: 0,
+        previousBrightness: 80,
         autoMode: true
     },
     {
@@ -132,6 +134,7 @@ export const fakeObjects = [
         type: 'Éclairage',
         status: 'Éteint',
         brightness: 0,
+        previousBrightness: 70,
         autoMode: true
     },
     {
@@ -169,7 +172,9 @@ export const fakeObjects = [
         id: 'eclairage_urgence',
         name: 'Éclairage Secours',
         type: 'Éclairage',
-        status: 'Actif'
+        status: 'Éteint',
+        brightness: 0,
+        previousBrightness: 100
     },
     {
         id: 'detecteur_fumee',
@@ -206,17 +211,19 @@ export const equipments = {
       id: 'thermo_salle101',
       name: 'Chauffage',
       type: 'Thermostat',
-      status: 'Actif',
+      status: 'Inactif',
       temperature: 21,
-      targetTemp: 22,
+      targetTemp: 0,
+      previousTargetTemp: 22,
       mode: 'auto'
     },
     {
       id: 'light_salle101',
       name: 'Éclairage',
       type: 'Éclairage',
-      status: 'Allumé',
-      brightness: 80
+      status: 'Éteint',
+      brightness: 0,
+      previousBrightness: 80
     },
     {
       id: 'store_salle101',
@@ -236,17 +243,19 @@ export const equipments = {
       id: 'thermo_amphiA',
       name: 'Chauffage',
       type: 'Thermostat',
-      status: 'Actif',
+      status: 'Inactif',
       temperature: 21,
-      targetTemp: 22,
+      targetTemp: 0,
+      previousTargetTemp: 22,
       mode: 'auto'
     },
     {
       id: 'light_amphiA',
       name: 'Éclairage',
       type: 'Éclairage',
-      status: 'Allumé',
-      brightness: 80
+      status: 'Éteint',
+      brightness: 0,
+      previousBrightness: 80
     },
     {
       id: 'store_amphiA',
@@ -258,8 +267,9 @@ export const equipments = {
       id: 'audio_amphiA',
       name: 'Système Audio',
       type: 'Audio',
-      status: 'Éteint',
-      volume: 50,
+      status: 'Mute',
+      volume: 0,
+      previousVolume: 50,
       mode: 'Stéréo'
     }
   ],
@@ -275,6 +285,12 @@ export const equipments = {
         café: 90,
         thé: 95
       },
+      capacity: {
+        eau: 100,
+        soda: 100,
+        café: 100,
+        thé: 100
+      },
       temperature: 4,
       needsMaintenance: false,
       lastMaintenance: '2024-01-15'
@@ -289,6 +305,11 @@ export const equipments = {
         snacks: 75,
         desserts: 85
       },
+      capacity: {
+        sandwichs: 100,
+        snacks: 100,
+        desserts: 100
+      },
       temperature: 6,
       needsMaintenance: false,
       lastMaintenance: '2024-01-15'
@@ -297,11 +318,14 @@ export const equipments = {
       id: 'cafetiere_auto',
       name: 'Cafetière Automatique',
       type: 'Cafetiere',
-      status: 'Actif',
+      status: 'Inactif',
       waterLevel: 90,
+      waterLowThreshold: 10,
       beansLevel: 85,
+      beansLowThreshold: 15,
       temperature: 92,
       mode: 'Veille',
+      isCleaning: false,
       lastCleaning: '2024-01-18'
     },
     {
@@ -312,23 +336,26 @@ export const equipments = {
       power: 900,
       mode: 'Veille',
       timer: 0,
+      maxTime: 300,
       doorStatus: 'Fermée'
     },
     {
       id: 'thermo_ref',
       name: 'Chauffage',
       type: 'Thermostat',
-      status: 'Actif',
+      status: 'Inactif',
       temperature: 21,
-      targetTemp: 22,
+      targetTemp: 0,
+      previousTargetTemp: 22,
       mode: 'auto'
     },
     {
       id: 'light_ref',
       name: 'Éclairage',
       type: 'Éclairage',
-      status: 'Allumé',
-      brightness: 80,
+      status: 'Éteint',
+      brightness: 0,
+      previousBrightness: 80,
       mode: 'Auto',
       autoSchedule: true
     },
@@ -337,7 +364,7 @@ export const equipments = {
       name: 'Store',
       type: 'Store',
       status: 'Ouvert',
-      position: 100 // 0 = fermé, 100 = ouvert
+      position: 100
     },
     {
       id: 'air_quality',
@@ -345,6 +372,7 @@ export const equipments = {
       type: 'AirSensor',
       status: 'Actif',
       co2Level: 450,
+      co2Threshold: 1000,
       humidity: 45,
       lastMeasure: '2024-01-19T10:30:00'
     },
@@ -354,9 +382,12 @@ export const equipments = {
       type: 'Dishwasher',
       status: 'Disponible',
       program: 'Standard',
+      availablePrograms: ['Eco', 'Standard', 'Intensif'],
       timeRemaining: 0,
       waterTemp: 65,
-      rinseAidLevel: 80
+      rinseAidLevel: 80,
+      rinseAidMaxCapacity: 100,
+      rinseAidLowThreshold: 20
     }
   ],
   'labo_chimie': [
@@ -364,9 +395,13 @@ export const equipments = {
       id: 'hotte_labo',
       name: 'Hotte Aspirante',
       type: 'Ventilation',
-      status: 'Actif',
-      speed: 50,
+      status: 'Éteint',
+      speed: 0,
+      minSpeed: 20,
+      maxSpeed: 100,
       filterStatus: 'OK',
+      filterLife: 95,
+      filterChangeThreshold: 10,
       lastMaintenance: '2024-01-10'
     },
     {
@@ -374,7 +409,10 @@ export const equipments = {
       name: 'Détecteur de Gaz',
       type: 'Detecteur',
       status: 'Actif',
+      detectedGases: [],
+      alertThreshold: 50,
       batteryLevel: 95,
+      batteryLowThreshold: 15,
       lastAlert: null
     }
   ],
@@ -384,21 +422,26 @@ export const equipments = {
       name: 'Scanner de Livres',
       type: 'Scanner',
       status: 'Disponible',
-      lastScan: '2024-01-19T15:30:00'
+      lastScan: '2024-01-19T15:30:00',
+      lastScannedItem: null,
+      scanResult: null
     },
     {
       id: 'bornes_pret',
-      name: 'Borne de Prêt',
+      name: 'Borne de Prêt/Retour',
       type: 'Borne',
       status: 'Actif',
-      lastTransaction: '2024-01-19T16:45:00'
+      lastTransaction: '2024-01-19T16:45:00',
+      lastTransactionDetails: { type: null, itemId: null, userId: null },
+      authState: 'idle'
     },
     {
       id: 'detecteur_rfid',
-      name: 'Portique RFID',
+      name: 'Portique RFID Antivol',
       type: 'Securite',
       status: 'Actif',
-      lastDetection: null
+      lastDetection: null,
+      alarmTriggerItem: null
     }
   ],
   'salle_sport': [
@@ -406,9 +449,12 @@ export const equipments = {
       id: 'ventilation_gym',
       name: 'Système de Ventilation',
       type: 'Ventilation',
-      status: 'Actif',
-      speed: 60,
-      mode: 'auto'
+      status: 'Inactif',
+      speed: 0,
+      minSpeed: 10,
+      maxSpeed: 100,
+      mode: 'Off',
+      availableModes: ['Off', 'Auto', 'Manual']
     },
     {
       id: 'score_board',
@@ -418,15 +464,19 @@ export const equipments = {
       score: {
         home: 0,
         away: 0
-      }
+      },
+      timer: 0,
+      period: 1
     },
     {
       id: 'sono_gym',
       name: 'Sonorisation',
       type: 'Audio',
-      status: 'Éteint',
-      volume: 50,
-      input: 'bluetooth'
+      status: 'Mute',
+      volume: 0,
+      previousVolume: 60,
+      input: 'bluetooth',
+      availableInputs: ['bluetooth', 'aux', 'radio']
     }
   ]
 };
