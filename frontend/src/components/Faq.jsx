@@ -13,123 +13,100 @@ const Faq = () => {
   const [openIndex, setOpenIndex] = useState(null);
 
   const faqData = [
-    // Questions générales sur la navigation et les fonctionnalités de base
+    // Questions générales - Accès Visiteur
     {
-        question: "Comment naviguer sur le Dashboard ?",
-        answer: <div>
-        Le Dashboard propose :
+      question: "Qu'est-ce que je peux faire en tant que visiteur ?",
+      answer: <p>En tant que visiteur, vous pouvez explorer la page d'accueil, consulter les informations publiques et vous inscrire ou vous connecter pour accéder à plus de fonctionnalités.</p>
+    },
+    {
+      question: "Comment puis-je effectuer une recherche sur le site en tant que visiteur ?",
+      answer: <p>Tous les visiteurs peuvent utiliser la barre de recherche située en haut de chaque page pour trouver rapidement des informations spécifiques.</p>
+    },
+
+    // Questions - Accès Étudiant
+    {
+      question: "À quelles salles et ressources ai-je accès en tant qu'étudiant ?",
+      answer: <div>
+        En tant qu'étudiant, vous avez accès à :
         <ul>
-            <li>🏅 Votre niveau et points</li>
-            <li>📡 Accès aux objets connectés</li>
-            <li>📅 Réservation de salles</li>
-            <li>⚡ Suivi énergétique</li>
+          <li>Salles de classe</li>
+          <li>Réfectoire (totalité)</li>
+          <li>Bibliothèque (totalité sauf Portique RFID)</li>
+          <li>Amphithéâtre (totalité sauf Système Audio)</li>
         </ul>
-        </div>
+        Vous ne pouvez pas réserver de salles.
+      </div>
     },
     {
-        question: "Comment utiliser le plan interactif du campus ?",
-        answer: <div>
-        Le plan interactif permet de :
+      question: "Comment puis-je consulter les informations sur l'école en tant qu'étudiant ?",
+      answer: <div>
+        Vous pouvez consulter les informations sur :
         <ul>
-            <li>🏫 Localiser les bâtiments</li>
-            <li>📚 Trouver les bibliothèques</li>
-            <li>🎓 Voir les points d'intérêt</li>
-            <li>📍 Obtenir des itinéraires</li>
+          <li>Alarme incendie</li>
+          <li>Éclairage du Hall Principal</li>
         </ul>
-        </div>
-    },
-    
-    // Questions pratiques sur l'utilisation quotidienne
-    {
-        question: "Comment accéder aux bâtiments avec ma carte étudiante ?",
-        answer: <p>
-            Votre carte étudiante sert de badge d'accès. 
-            Présentez-la devant les lecteurs aux entrées. <br />
-            ⚠️Les accès sont limités selon vos horaires de cours et votre niveau d'autorisation.
-        </p>
+      </div>
     },
     {
-        question: "Comment puis-je réserver une salle d'étude ?",
-        answer: <p>
-            Les étudiants peuvent réserver une salle via leur espace personnel dans le module 'Gestion des salles'.<br /> 
-            ⚠️La réservation est limitée à 3 fois par semaine et rapporte 1 point.
-        </p>
-    },
-    {
-        question: "Comment réserver une salle d'étude ?",
-        answer: <div>
-        Processus de réservation :
+      question: "Quels sont mes accès concernant le parking en tant qu'étudiant ?",
+      answer: <div>
+        Vous pouvez consulter les informations sur :
         <ul>
-            <li>📅 Choisir date et horaire</li>
-            <li>🏫 Sélectionner une salle disponible</li>
-            <li>👥 Indiquer nombre de participants</li>
-            <li>✅ Confirmer la réservation</li>
+          <li>Éclairage du Parking</li>
+          <li>Barrière du Parking</li>
+          <li>Borne de recharge</li>
         </ul>
-        <p>Limite : 3 réservations par semaine</p>
-        </div>
+      </div>
+    },
+
+    // Questions - Accès Professeur
+    {
+      question: "À quels objets ai-je accès en tant que professeur ?",
+      answer: <p>En tant que professeur, vous avez accès à la plupart des objets connectés, sauf : Grille principale, Caméra Issue de Secours, Détecteur de Fumée et objets du Parking & extérieur (sauf Barrière & éclairage Parking, Borne de recharge, Capteur de présence).</p>
     },
     {
-        question: "Comment signaler un incident dans une salle ?",
-        answer: <p>
-          Dans votre espace personnel, accédez à la section 'Signalement d'incidents'. <br/>
-          🏫Sélectionnez la salle concernée et décrivez le problème.<br/> 
-          ⚠️Vous pouvez signaler jusqu'à 3 incidents par jour.
-        </p>
-    },
-    
-    // Questions sur le suivi et la gestion
-    {
-        question: "Comment suivre mes incidents signalés ?",
-        answer: <div>
-        Dans votre espace personnel :
-        <ul>
-            <li>📋 Liste complète des signalements</li>
-            <li>🔄 Statut actualisé en direct</li>
-            <li>📅 Historique des résolutions</li>
-            <li>📬 Notifications de suivi</li>
-        </ul>
-        </div>
+      question: "Quelles actions puis-je effectuer sur les objets en tant que professeur ?",
+      answer: <p>Vous pouvez créer une alerte sur un objet, solliciter la suppression d'un objet connecté, réserver une salle et ajouter un objet avec configuration des services.</p>
     },
     {
-        question: "Comment gérer les objets connectés ?",
-        answer: <div>
-        Fonctionnalités disponibles :
-        <ul>
-            <li>🔥 Contrôle température par salle</li>
-            <li>💡 Gestion éclairage intelligent</li>
-            <li>📊 Suivi consommation en temps réel</li>
-            <li>⚙️ Programmation automatique</li>
-        </ul>
-        </div>
-    },
-    
-    // Questions sur le système de points et niveaux (moins prioritaires pour les nouveaux)
-    {
-        question: "Comment fonctionne le système de points ?",
-        answer: <div>
-        Points gagnés par action :
-        <ul>
-            <li>🎯 Connexion quotidienne : +0.5pt</li>
-            <li>📝 Signalement d'incident : +2pts</li>
-            <li>🏫 Réservation de salle : +1pt</li>
-            <li>🎓 Participation événement : +3pts</li>
-        </ul>
-        </div>
+      question: "Comment puis-je associer des objets connectés à des pièces ou zones en tant que professeur ?",
+      answer: <p>Vous pouvez associer des objets connectés à des pièces ou zones spécifiques et configurer les paramètres d'utilisation des objets connectés (par ex. température cible, horaire de fonctionnement).</p>
     },
     {
-        question: "Quels sont les différents niveaux d'utilisateur ?",
-        answer: <div>
-        Il existe 4 niveaux :
-            <ul>
-                <li>Débutant (0 pts)</li>
-                <li>Intermédiaire (10 pts)</li>
-                <li>Avancé (30 pts)</li>
-                <li>Expert (50 pts)</li>
-            </ul>
-            <p>✅Chaque niveau débloque de nouvelles fonctionnalités.</p>
-        </div>
-    }
-];
+      question: "Comment puis-je surveiller et optimiser les ressources en tant que professeur ?",
+      answer: <p>Vous pouvez consulter et générer des rapports d'utilisation des objets, identifier les objets inefficaces ou nécessitant une maintenance, et accéder aux historiques des données des objets connectés.</p>
+    },
+
+    // Questions - Accès Directeur
+    {
+      question: "À quels objets ai-je accès en tant que directeur ?",
+      answer: <p>En tant que directeur, vous avez accès à tous les objets connectés.</p>
+    },
+    {
+      question: "Quelles actions puis-je effectuer en tant que directeur ?",
+      answer: <p>Vous pouvez résoudre les alertes, gérer les accès aux objets, gérer les utilisateurs, gérer les objets et outils/services, assurer la sécurité et la maintenance, personnaliser la plateforme et générer des rapports avancés.</p>
+    },
+    {
+      question: "Comment puis-je gérer les utilisateurs en tant que directeur ?",
+      answer: <p>Vous pouvez ajouter, modifier ou supprimer des utilisateurs, attribuer ou révoquer des niveaux d'accès, superviser les points accumulés et consulter les historiques de connexion et d'actions.</p>
+    },
+    {
+      question: "Comment puis-je gérer les objets et outils/services en tant que directeur ?",
+      answer: <p>Vous pouvez ajouter ou supprimer des catégories d'objets et d'outils/services, ajouter ou supprimer des objets et des outils/services, et définir les règles de fonctionnement globales.</p>
+    },
+    {
+      question: "Comment puis-je assurer la sécurité et la maintenance de la plateforme en tant que directeur ?",
+      answer: <p>Vous pouvez mettre à jour le système de gestion des accès, effectuer des sauvegardes régulières de la base de données et vérifier l'intégrité des données.</p>
+    },
+    {
+      question: "Comment puis-je personnaliser la plateforme en tant que directeur ?",
+      answer: <p>Vous pouvez modifier l'apparence et la structure des modules, et configurer des règles de validation pour les inscriptions.</p>
+    },
+    {
+      question: "Quels types de rapports avancés puis-je générer en tant que directeur ?",
+      answer: <p>Vous pouvez générer des rapports détaillés sur l'utilisation globale de la plateforme, des statistiques sur la consommation énergétique totale, le taux de connexion des utilisateurs et les services les plus utilisés, et accéder aux historiques des données des objets connectés.</p>
+    },
+  ];
 
   const toggleQuestion = (index) => {
     setOpenIndex(openIndex === index ? null : index);

@@ -1,16 +1,20 @@
 import styled from 'styled-components';
 
 export const FaqTitle = styled.h2`
-  color: rgb(0, 1, 1);
+  color: #333;
   margin-bottom: 30px;
   writing-mode: vertical-lr;
   transform: rotate(180deg);
   position: absolute;
-  left: -27px;
+  left: -3px;
+  top: 17px;
   font-size: 2em;
-  padding: 20px 0;
-  border-right: 4px solid rgb(15, 110, 173);
+  padding: 0.7px 4px;
+  border-right: 7px solid rgb(15, 110, 173);
   border-left: none;
+  font-family: 'Roboto', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 
   @media (max-width: 768px) {
     position: static;
@@ -27,14 +31,15 @@ export const FaqContainer = styled.div`
   margin: 40px auto;
   padding: 20px 20px 20px 100px;
   position: relative;
-  background-color: #f5f5f5;
-  border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
+  border: 1px solid #eee;
 
   @media (max-width: 768px) {
     padding: 20px;
@@ -63,22 +68,23 @@ export const FaqColumn = styled.div`
 
 export const FaqItem = styled.div`
   margin-bottom: 15px;
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.08);
   background-color: #fff;
   transition: box-shadow 0.3s ease;
   display: flex;
   flex-direction: column;
+  border: 1px solid #f0f0f0;
   
   &:hover {
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
   }
 `;
 
 export const Question = styled.div`
-  padding: 15px 20px;
-  background-color: rgb(15, 110, 173);
+  padding: 18px 22px;
+  background-color:rgb(33, 86, 140);
   color: white;
   cursor: pointer;
   display: flex;
@@ -86,18 +92,26 @@ export const Question = styled.div`
   align-items: center;
   transition: background-color 0.3s ease, transform 0.3s ease;
   border-bottom: 1px solid #ddd;
-  height: 100%; /* Remplir toute la hauteur du conteneur */
-  display: flex;
-  align-items: center;
+  font-weight: 500;
+  font-size: 16px;
+  border-radius: 8px 8px 0 0;
+
+  &:hover {
+    background-color: #34495e;
+  }
 `;
 
 export const Answer = styled.div`
-  padding: ${props => props.isOpen ? '15px 20px' : '0 20px'};
-  background-color: #fafafa;
+  padding: ${props => props.isOpen ? '18px 22px' : '0 22px'};
+  background-color: #f9f9f9;
   max-height: ${props => props.isOpen ? '500px' : '0'};
   overflow: hidden;
-  transition: max-height 0.3s ease, padding 0.3s ease;
-  box-shadow: ${props => props.isOpen ? '0 4px 10px rgba(0, 0, 0, 0.1)' : 'none'};
+  transition: max-height 0.4s ease, padding 0.4s ease;
+  box-shadow: ${props => props.isOpen ? '0 4px 10px rgba(0, 0, 0, 0.05)' : 'none'};
   margin-bottom: 0; /* Éliminer l'espace en bas */
+  border-top: 1px solid #eee;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #555;
 `;
 
