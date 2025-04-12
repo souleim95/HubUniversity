@@ -46,6 +46,7 @@ const FiltersContainer = styled.div`
   flex-wrap: wrap;
   animation: fadeIn 0.3s ease;
   
+  
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(-5px); }
     to { opacity: 1; transform: translateY(0); }
@@ -59,7 +60,7 @@ const FilterSelect = styled.select`
   border: 1px solid #ddd;
   background-color: white;
   flex: 1;
-  min-width: 120px;
+  min-width: 166px;
   appearance: none;
   background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
   background-repeat: no-repeat;
@@ -146,15 +147,30 @@ const SearchButton = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  
+
   &:hover {
     background-color: rgba(0, 0, 0, 0.08);
-    transform: scale(1.05);
   }
   
   &:active {
     transform: scale(0.95);
   }
+
+  transition: transform 0.3s ease-in-out; // Add a transition for a smooth effect
+
+  ${props => props.isOpen && `
+    transform: rotate(360deg); // Rotate the icon when search is opened
+  `}
+`;
+
+const StyledFaTimes = styled(FaTimes)`
+  transition: transform 0.3s ease-in-out;
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  ${props => props.isOpen && `
+    transform: rotate(360deg);
+  `}
 `;
 
 const ResultsHeader = styled.h3`
@@ -360,13 +376,14 @@ const SearchBox = ({ onSelectObject }) => {
   return (
     <SearchWrapper ref={searchContainerRef}>
       <SearchContainer isOpen={isOpen}>
-        <SearchButton onClick={toggleSearch} aria-label="Ouvrir la recherche">
+        <SearchButton 
+          onClick={toggleSearch} 
+          aria-label="Ouvrir la recherche" 
+          style={{width: '40px', height: '40px'}}
+          isOpen={isOpen} // Pass the isOpen state to SearchButton
+        >
           {isOpen ? (
-            <FaTimes 
-              size={22} 
-              style={{ transform: 'rotate(0deg)', transition: 'transform 0.3s' }} 
-              aria-label="Fermer la recherche"
-            />
+            <StyledFaTimes size={22} aria-label="Fermer la recherche" isOpen={isOpen}/>
           ) : (
             <FaSearch size={22} aria-label="Ouvrir la recherche" />
           )}
@@ -380,9 +397,13 @@ const SearchBox = ({ onSelectObject }) => {
             onChange={(e) => setSearchText(e.target.value)}
             placeholder="Rechercher par nom ou identifiant..."
             style={{ 
-              transition: 'width 0.3s ease, opacity 0.3s ease',
+              transition: 'width 0.3s ease, opacity 0.3s ease, top 0.3s ease', // Added top transition
               opacity: isOpen ? '1' : '0',
-              boxShadow: isOpen ? '0 2px 6px rgba(0,0,0,0.1)' : 'none'
+              width: isOpen ? 'calc(100% - 50px)' : '0',
+              boxShadow: isOpen ? '0 2px 6px rgba(0,0,0,0.1)' : 'none',
+              top: isOpen ? '2px' : '-50px', // Adjusted top position
+              position: 'relative', // Ensure relative positioning
+              right: '0'
             }}
           />
           {isOpen && (
