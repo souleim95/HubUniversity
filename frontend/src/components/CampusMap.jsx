@@ -56,7 +56,14 @@ const CampusMap = () => {
 
   return (
     <MapSection>
-      <h2 style={{ textAlign: 'center' }}>Campus Connecté</h2>
+      <h2 style={{ 
+        textAlign: 'center',
+        fontSize: '2.5em',
+        fontWeight: 'bold',
+        color: '#333',
+        marginBottom: '20px',
+        textShadow: '2px 2px 4px rgba(0, 0, 0, 0.2)'
+       }}>Campus Connecté</h2>
 
       {/* Onglets */}
       <TabsWrapper>

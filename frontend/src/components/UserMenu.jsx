@@ -38,7 +38,7 @@ const UserMenu = ({ user, role, onLogout }) => {
       {/* Menu déroulant affiché uniquement si ouvert */}
       {open && (
         <DropdownMenu>
-          <DropdownItem onClick={() => handleNavigate('/dashboard')}>Tableau de bord</DropdownItem>
+          <DropdownItem className="dashboard" onClick={() => handleNavigate('/dashboard')}>Tableau de bord</DropdownItem>
           <DropdownItem onClick={() => handleNavigate('/profil')}>Profil</DropdownItem>
 
           {/* Options conditionnelles selon le rôle de l'utilisateur */}
@@ -50,7 +50,7 @@ const UserMenu = ({ user, role, onLogout }) => {
             <DropdownItem onClick={() => handleNavigate('/admin')}>Administration</DropdownItem>
           )}
 
-          <DropdownItem onClick={onLogout}>Déconnexion</DropdownItem>
+          <DropdownItem className="logout" onClick={onLogout}>Déconnexion</DropdownItem>
         </DropdownMenu>
       )}
     </MenuContainer>

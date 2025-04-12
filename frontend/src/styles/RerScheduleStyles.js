@@ -63,6 +63,7 @@ export const DirectionTitle = styled.h3`
 
   &:hover {
     color: #4a90e2; // Couleur plus claire au survol
+    cursor: pointer;
   }
 
   @media (max-width: 768px) {

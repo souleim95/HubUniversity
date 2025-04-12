@@ -1,215 +1,201 @@
 import styled from 'styled-components';
 
 export const ProfileContainer = styled.div`
-  max-width: 1400px;  // Augmentez la largeur maximale du conteneur
-  margin: 40px auto;  // Augmentez la marge pour plus d'espace autour
-  padding: 40px;  // Augmentez l'espacement interne
-  background-color: #f5f7fa;
-  border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
-  width: 95%;
-  
-  @media (max-width: 768px) {
-    padding: 25px;  // Augmentez l'espacement sur mobile également
-  }
+  font-family: 'Arial', sans-serif;
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 `;
 
-export const Header = styled.header`
-  background: linear-gradient(45deg, #6a82fb, #fc5c7d);
-  color: white;
-  padding: 20px;
-  border-radius: 15px;
-  text-align: center;
+export const Header = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
 
   h2 {
-    font-size: 2.2rem;
-    margin: 0;
-  }
-
-  p {
-    font-size: 1rem;
-    margin: 10px 0;
+    color: #333;
   }
 `;
 
-export const InfoSection = styled.section`
-  display: flex;
-  justify-content: space-between;
-  gap: 30px;  // Augmenter l'espace entre les cartes
-  flex-wrap: nowrap;
-  width: 100%;
-  align-items: stretch;
-  height: 100%;
-  
-  @media (max-width: 768px) {
-    flex-direction: column;
-  }
-`;
-
-
-
-export const ProfileCard = styled.div`
-  flex: 1;
-  min-width: 0;
-  min-height: 400px;  // Augmentez la hauteur minimale de la carte
-  background-color: white;
-  padding: 25px;  // Augmentez l'espacement interne
-  border-radius: 15px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  text-align: center;
+export const InfoSection = styled.div`
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-  height: 100%;
-  
-  p {
-    margin: 10px 0;  // Ajoutez un peu plus d'espace entre les paragraphes
-    font-size: 1.1rem;  // Augmentez la taille de la police pour plus de lisibilité
-  }
 `;
 
-
-export const LevelBox = styled.div`
-  margin-top: 10px;
-  padding: 10px;
-  background-color: rgb(15, 110, 173);
-  color: white;
-  border-radius: 5px;
-`;
-
-export const ProgressBar = styled.div`
-  background-color: #e0e0e0;
+export const ProfileCard = styled.div`
+  padding: 20px;
+  margin-bottom: 20px;
   border-radius: 10px;
-  height: 20px;
-  margin-top: 15px;
-  width: 100%;
-  
-  div {
-    background-color: #4caf50;
-    height: 100%;
-    border-radius: 10px;
-  }
-`;
-
-export const ObjectGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 20px;
-  text-align: left;
-
-  h3 {
-    grid-column: span 2;
-  }
-`;
-
-export const ObjectItem = styled.div`
-  padding: 15px;
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  &:hover {
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    transform: translateY(-2px);
-  }
-`;
-
-export const IconWrapper = styled.div`
-  font-size: 2rem;
-  margin-right: 15px;
-  color: rgb(49, 137, 196);
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 `;
 
 export const InputField = styled.input`
-  margin: 20px 0;  // Augmenter l'espacement entre les champs
-  padding: 18px;  // Augmenter l'espacement interne pour un champ plus grand
+  padding: 15px;
+  margin: 10px 0;
   width: 100%;
-  border-radius: 10px;
-  border: 1px solid #e1e1e1;
-  font-size: 1.2rem;  // Augmenter la taille de la police des champs
-  transition: all 0.3s ease;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 1.1rem;
+  background-color: #fefefe;
 
   &:focus {
-    border-color: rgb(15, 110, 173);
+    border-color: #007bff;
     outline: none;
-    box-shadow: 0 0 8px rgba(15, 110, 173, 0.3);
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.25);
   }
 `;
 
-
-export const SaveButton = styled(LevelBox)`
-  width: 100%;
-  margin-top: 20px;
-  cursor: pointer;
-  text-align: center;
-  background-color: rgb(49, 137, 196);
-  font-size: 1.1rem;
+export const SaveButton = styled.button`
+  background-color: #5cb85c;
+  color: white;
+  padding: 15px 20px;
+  border: none;
   border-radius: 8px;
-  padding: 12px;
-  transition: 0.3s ease;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: background-color 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
   &:hover {
-    background-color: rgb(67, 143, 228);
+    background-color: #4cae4c;
+    cursor: pointer;
   }
 
   &.changed {
-    background-color: rgb(238, 78, 78);
+    background-color: #d9534f;
 
     &:hover {
-      background-color: rgb(230, 60, 60);
+      background-color: #c9302c;
     }
   }
 `;
 
 export const ChangePasswordSection = styled.div`
-  flex: 1;
-  min-width: 0;
-  min-height: 400px;  // Augmentez la hauteur de la section
-  background-color: white;
-  padding: 25px;  // Augmentez l'espacement interne
+  padding: 20px;
+  margin-bottom: 20px;
   border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-  height: 100%;
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  h3 {
+    margin-bottom: 15px;
+    color: #333;
+  }
 `;
 
-export const PasswordInputField = styled(InputField)`
-  width: 100%;
+export const PasswordInputField = styled.input`
+  padding: 15px;
   margin: 10px 0;
-`;
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 1.1rem;
+  background-color: #fefefe;
 
-export const ChangePasswordButton = styled(SaveButton)`
-  margin-top: 15px;
-  background-color: rgb(238, 78, 78);
-  text-align: center;
-
-  &:hover {
-    background-color: rgb(230, 60, 60);
+  &:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.25);
   }
 `;
 
 export const ToggleViewButton = styled.button`
-  background-color: #4caf50;
+  background-color: #007bff;
   color: white;
   border: none;
-  padding: 12px 20px;
-  margin-top: 15px;
-  border-radius: 10px;
-  font-size: 1rem;
+  padding: 10px 15px;
+  border-radius: 5px;
   cursor: pointer;
+  font-size: 1rem;
   transition: background-color 0.3s ease;
 
   &:hover {
-    background-color: #45a049;
+    background-color: #0056b3;
+    cursor: pointer;
   }
+`;
+
+
+export const ProfilePictureContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+  background-color: #f9f9f9; /* Subtle background */
+  padding: 15px;
+  border-radius: 10px;
+`;
+
+// Styled component for the profile picture
+export const ProfilePicture = styled.img`
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 10px;
+  border: 3px solid #ddd;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add shadow */
+
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+  }
+`;
+
+// Styled component for the delete button
+export const DeleteButton = styled.button`
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #c0392b;
+  }
+`;
+
+export const FileInputContainer = styled.div`
+  position: relative;
+  display: inline-block;
+  width: 100%;
+`;
+
+export const FileInputLabel = styled.label`
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #3b82f6;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  text-align: center;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #2563eb;
+  }
+`;
+
+export const HiddenFileInput = styled.input`
+  display: none;
+`;
+
+export const FileNameDisplay = styled.span`
+  display: block;
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: #374151;
+  text-align: center;
 `;

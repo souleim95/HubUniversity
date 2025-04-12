@@ -44,6 +44,7 @@ export const Names = styled.div`
     &:hover {
       color: rgb(49, 137, 196);
       transform: scale(1.1);
+      cursor: pointer;
     }
   }
 
@@ -59,7 +60,15 @@ export const About = styled.div`
   h6 {
     text-transform: uppercase;
     margin-bottom: 10px;
-    font-weight: bold;
+    font-size: 0.8rem;
+    color: rgb(15, 110, 173);
+    transition: transform 0.3s ease;
+
+    &:hover {
+      color: rgb(49, 137, 196);
+      transform: scale(1.1);
+      cursor: pointer;
+    }
   }
 
   p {

@@ -13,6 +13,7 @@ export const WeatherContainer = styled.div`
   &:hover {
     transform: translateY(-5px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
   }
 `;
 
@@ -41,6 +42,7 @@ export const WeatherIcon = styled.img`
 
   &:hover {
     transform: scale(1.1);
+    cursor: pointer;
   }
 `;
 
@@ -97,6 +99,7 @@ export const ForecastDay = styled.div`
   &:hover {
     transform: translateY(-5px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    cursor: pointer;
   }
 `;
 

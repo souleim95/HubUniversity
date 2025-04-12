@@ -80,6 +80,7 @@ export const ActionButton = styled.button`
   &:hover {
     background-color: #2563eb;
     transform: translateY(-1px);
+    cursor: pointer;
   }
 
   &:active {
@@ -392,4 +393,4 @@ export const ExportButton = styled.button`
   &:hover {
     background-color: #059669;
   }
-`; 
+`;

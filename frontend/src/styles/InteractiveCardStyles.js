@@ -16,6 +16,7 @@ export const CardInner = styled.div`
 
   ${ObjectCard}:hover & {
     transform: rotateY(180deg);
+    cursor: pointer;
   }
 `;
 

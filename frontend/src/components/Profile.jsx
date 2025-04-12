@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
 import {
   ProfileContainer,
   Header,
@@ -9,11 +10,21 @@ import {
   ChangePasswordSection,
   PasswordInputField,
   ToggleViewButton,
+  ProfilePictureContainer,
+  ProfilePicture,
+  DeleteButton,
+  FileInputContainer,
+  FileInputLabel,
+  HiddenFileInput,
+  FileNameDisplay
 } from '../styles/ProfileStyles';
+import { FaLock, FaGlobe, FaTrashAlt, FaUser, FaCalendar, FaVenusMars } from 'react-icons/fa';
+
 
 const Profile = () => {
   const [isPublic, setIsPublic] = useState(true);
   const [age, setAge] = useState('');
+  const [photoUrl, setPhotoUrl] = useState(localStorage.getItem('photoUrl') || null);
 
   const initialFormData = {
     pseudonyme: localStorage.getItem('user') || '',
@@ -30,6 +41,13 @@ const Profile = () => {
 
   const [formData, setFormData] = useState(initialFormData);
   const [isModified, setIsModified] = useState(false);
+
+  useEffect(() => {
+    const storedPhotoUrl = localStorage.getItem('photoUrl');
+    if (storedPhotoUrl) {
+      setPhotoUrl(storedPhotoUrl);
+    }
+  }, []);
 
   useEffect(() => {
     if (formData.dateNaissance) {
@@ -65,11 +83,21 @@ const Profile = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         localStorage.setItem('photoUrl', reader.result);
+        setPhotoUrl(reader.result);
       };
       reader.readAsDataURL(formData.photo);
     }
   }, [formData.photo]);
-  
+
+  const handleDeletePhoto = () => {
+    localStorage.removeItem('photoUrl');
+    setPhotoUrl(null);
+    setFormData((prevData) => ({
+      ...prevData,
+      photo: null,
+    }));
+    setIsModified(true);
+  };
 
   const handleSave = () => {
     if (formData.newPassword || formData.confirmNewPassword || formData.oldPassword) {
@@ -99,24 +127,52 @@ const Profile = () => {
       <Header>
         <h2>{isPublic ? 'Profil Public 🌐' : 'Profil Privé 🔒'}</h2>
         <ToggleViewButton onClick={toggleView}>
-          {isPublic ? 'Voir les infos privées 🔒' : 'Voir les infos publiques 🌐'}
+          {isPublic ? (
+            <>
+              Voir les infos privées <FaLock />
+            </>
+          ) : (
+            <>
+              Voir les infos publiques <FaGlobe />
+            </>
+          )}
         </ToggleViewButton>
       </Header>
 
       <InfoSection>
         {isPublic ? (
           <ProfileCard>
+            <ProfilePictureContainer>
+              {photoUrl && <ProfilePicture src={photoUrl} alt="Profile" />}
+              <FileInputContainer>
+                <FileInputLabel htmlFor="photoInput">Choisir une photo</FileInputLabel>
+                <HiddenFileInput
+                  id="photoInput"
+                  name="photo"
+                  type="file"
+                  onChange={handleInputChange}
+                />
+                {formData.photo && <FileNameDisplay>{formData.photo.name}</FileNameDisplay>}
+              </FileInputContainer>
+              {photoUrl && (
+                <DeleteButton onClick={handleDeletePhoto}>
+                  Supprimer la photo <FaTrashAlt />
+                </DeleteButton>
+              )}
+            </ProfilePictureContainer>
             <InputField
               name="pseudonyme"
               placeholder="Pseudonyme"
               value={formData.pseudonyme}
               onChange={handleInputChange}
+              prefix={<FaUser />}
             />
             <InputField
               name="dateNaissance"
               type="date"
               value={formData.dateNaissance}
               onChange={handleInputChange}
+              prefix={<FaCalendar />}
             />
             <InputField name="age" placeholder="Âge" type="number" value={age} readOnly />
 
@@ -134,20 +190,17 @@ const Profile = () => {
               }}
             >
               <option value="">Sélectionner un genre</option>
-              <option value="Homme">Homme</option>
-              <option value="Femme">Femme</option>
+              <option value="Homme">Homme <FaVenusMars /></option>
+              <option value="Femme">Femme <FaVenusMars /></option>
             </select>
 
             <InputField name="typeMembre" value={formData.typeMembre} readOnly />
             
-            <label style={{ margin: '10px 0', fontSize: '1.1rem' }}>
-              Photo de profil :
-              <InputField name="photo" type="file" onChange={handleInputChange} />
-            </label>
           </ProfileCard>
         ) : (
           <>
             <ProfileCard>
+              <h3>Modifier vos identifiants</h3>
               <InputField
                 name="nom"
                 placeholder="Nom"

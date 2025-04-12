@@ -25,6 +25,7 @@ export const MapContainer = styled.div`
   &:hover {
     transform: scale(1.05); /* Agrandissement au survol */
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2); /* Ombre plus marquée au survol */
+    cursor: pointer;
   }
 
   /* Adaptation sur petits écrans */

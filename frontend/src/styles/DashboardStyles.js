@@ -79,6 +79,7 @@ export const ChangeLevelButton = styled.button`
 
   &:hover {
     background-color: rgb(67, 143, 228);
+    cursor: pointer;
   }
 `;
 

@@ -76,5 +76,6 @@ export const ControlButton = styled.button`
 
   &:hover {
     background: ${props => props.active ? '#45a049' : '#e0e0e0'};
+    cursor: pointer;
   }
 `;

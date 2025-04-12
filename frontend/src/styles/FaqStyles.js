@@ -98,6 +98,7 @@ export const Question = styled.div`
 
   &:hover {
     background-color: #34495e;
+    cursor: pointer;
   }
 `;
 

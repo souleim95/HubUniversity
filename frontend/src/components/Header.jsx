@@ -24,6 +24,8 @@ const Header = () => {
   const [selectedCategory, setSelectedCategory] = useState('salles');
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [selectedEquipment, setSelectedEquipment] = useState(null);
+  const [scrollDirection, setScrollDirection] = useState(null);
+  const [lastScrollTop, setLastScrollTop] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -52,6 +54,26 @@ const Header = () => {
       clearInterval(interval);
     };
   }, [userPoints, role]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+      if (scrollTop > lastScrollTop) {
+        setScrollDirection('down');
+      } else if (scrollTop < lastScrollTop) {
+        setScrollDirection('up');
+      }
+
+      setLastScrollTop(scrollTop <= 0 ? 0 : scrollTop);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [lastScrollTop]);
 
   const getRoleTitle = (roleKey) => {
     switch(roleKey) {
@@ -168,7 +190,10 @@ const Header = () => {
   };
 
   return (
-    <HeaderContainer>
+    <HeaderContainer style={{
+      top: scrollDirection === 'down' ? '-100px' : '0',
+      transition: 'top 0.3s'
+    }}>
       <WelcomeChoices>
         <a href="/">
           <img src={hubCyLogo} alt="HubCY" />

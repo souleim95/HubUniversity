@@ -80,6 +80,13 @@ const POINTS_CONFIG = {
   ADJUST_SETTING: 15,      // Pour ajuster des paramètres (thermostat, volume)
   SPECIAL_TASK: 25,        // Pour des tâches spéciales (préparer café, utiliser microonde)
   
+  // Multiplicateurs de points par rôle
+  ROLE_MULTIPLIERS: {
+    'eleve': 1,          // Élève : multiplicateur de base
+    'professeur': 1.5,     // Professeur : 1.5x les points
+    'directeur': 2         // Directeur : 2x les points
+  },
+
   // Seuils de niveau
   LEVEL_THRESHOLDS: {
     'eleve': 0,
@@ -92,13 +99,18 @@ const POINTS_CONFIG = {
 const updateUserPoints = (pointsToAdd) => {
   // Récupérer les points actuels
   const currentPoints = parseInt(localStorage.getItem('points') || '0');
-  const newPoints = currentPoints + pointsToAdd;
+  const currentRole = localStorage.getItem('role') || 'eleve'; // Rôle par défaut : élève
+  
+  // Appliquer le multiplicateur de points basé sur le rôle
+  const roleMultiplier = POINTS_CONFIG.ROLE_MULTIPLIERS[currentRole] || 1;
+  const adjustedPointsToAdd = pointsToAdd * roleMultiplier;
+  
+  const newPoints = currentPoints + adjustedPointsToAdd;
   
   // Mettre à jour les points dans localStorage
   localStorage.setItem('points', newPoints.toString());
   
   // Vérifier si l'utilisateur a atteint un nouveau niveau
-  const currentRole = localStorage.getItem('role');
   let newRole = currentRole;
   
   if (currentRole === 'eleve' && newPoints >= POINTS_CONFIG.LEVEL_THRESHOLDS.professeur) {

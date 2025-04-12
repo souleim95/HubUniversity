@@ -65,6 +65,12 @@ function AdminPage() {
         status: 'Actif',
         priority: 'normal'
     });
+    const [newCategory, setNewCategory] = useState('');
+    const [showCategoryModal, setShowCategoryModal] = useState(false);
+    const [globalRules, setGlobalRules] = useState({
+        energyPriority: 'balanced',
+        alertThreshold: 80
+    });
 
     // États pour les rapports et statistiques
     const [reports, setReports] = useState({
@@ -217,6 +223,31 @@ function AdminPage() {
             priority: 'normal'
         });
         setShowObjectModal(true);
+    };
+
+    const handleAddCategory = () => {
+        setShowCategoryModal(true);
+    };
+
+    const handleCategorySubmit = (e) => {
+        e.preventDefault();
+        if (newCategory && !categoryList.includes(newCategory)) {
+            setCategoryList([...categoryList, newCategory]);
+            setNewCategory('');
+        }
+        setShowCategoryModal(false);
+    };
+
+    const handleDeleteCategory = (categoryToDelete) => {
+        if (window.confirm(`Êtes-vous sûr de vouloir supprimer la catégorie "${categoryToDelete}" ?`)) {
+            setCategoryList(categoryList.filter(category => category !== categoryToDelete));
+            // Also update objects to remove the category from their types
+            setObjects(objects.map(obj => obj.type === categoryToDelete ? { ...obj, type: categoryList[0] || '' } : obj));
+        }
+    };
+
+    const handleGlobalRulesChange = (e) => {
+        setGlobalRules({ ...globalRules, [e.target.name]: e.target.value });
     };
 
     // Ouvre la modal pour modifier un objet existant
@@ -403,9 +434,14 @@ function AdminPage() {
                 <Section>
                     <SectionHeader>
                         <SectionTitle><FaTools /> Gestion des Objets</SectionTitle>
+                        <ButtonGroup>
                         <ActionButton onClick={handleAddObject}>
                             <FaPlus /> Ajouter un objet
                         </ActionButton>
+                            <ActionButton onClick={handleAddCategory}>
+                                <FaPlus /> Ajouter une catégorie
+                            </ActionButton>
+                        </ButtonGroup>
                     </SectionHeader>
                     
                     {/* Vue d'ensemble - Stats rapides */}
@@ -457,6 +493,9 @@ function AdminPage() {
                                         }}>
                                             {objects.filter(obj => obj.type === category).length}
                                         </span>
+                                        <PrimaryButton onClick={() => handleDeleteCategory(category)} style={{ marginLeft: '10px', padding: '5px 10px', fontSize: '0.8rem' }}>
+                                            <FaTrash style={{ marginRight: '5px' }} />
+                                        </PrimaryButton>
                                     </li>
                                 ))}
                             </ul>
@@ -613,6 +652,33 @@ function AdminPage() {
                         <SectionTitle><FaShieldAlt /> Sécurité et Maintenance</SectionTitle>
                     </SectionHeader>
                     <Grid>
+                        <Card>
+                            <CardTitle>Priorités Énergétiques</CardTitle>
+                            <FormGroup>
+                                <Label>Priorité</Label>
+                                <Select
+                                    name="energyPriority"
+                                    value={globalRules.energyPriority}
+                                    onChange={handleGlobalRulesChange}
+                                >
+                                    <option value="performance">Performance</option>
+                                    <option value="balanced">Équilibré</option>
+                                    <option value="economy">Économie</option>
+                                </Select>
+                            </FormGroup>
+                        </Card>
+                        <Card>
+                            <CardTitle>Seuil d'Alerte</CardTitle>
+                            <FormGroup>
+                                <Label>Seuil (%)</Label>
+                                <Input
+                                    type="number"
+                                    name="alertThreshold"
+                                    value={globalRules.alertThreshold}
+                                    onChange={handleGlobalRulesChange}
+                                />
+                            </FormGroup>
+                        </Card>
                         <Card>
                             <CardTitle>Mise à jour du système</CardTitle>
                             <ActionButton>Vérifier les mises à jour</ActionButton>
@@ -1045,6 +1111,34 @@ function AdminPage() {
                                 Marquer comme résolu
                             </PrimaryButton>
                         </ButtonGroup>
+                    </ModalContent>
+                </ModalOverlay>
+            )}
+
+            {/* Modal pour la gestion des catégories */}
+            {showCategoryModal && (
+                <ModalOverlay onClick={() => setShowCategoryModal(false)}>
+                    <ModalContent onClick={e => e.stopPropagation()}>
+                        <SectionTitle>Ajouter une catégorie</SectionTitle>
+                        <form onSubmit={handleCategorySubmit}>
+                            <FormGroup>
+                                <Label>Nom de la catégorie</Label>
+                                <Input
+                                    type="text"
+                                    value={newCategory}
+                                    onChange={(e) => setNewCategory(e.target.value)}
+                                    required
+                                />
+                            </FormGroup>
+                            <ButtonGroup>
+                                <SecondaryButton type="button" onClick={() => setShowCategoryModal(false)}>
+                                    Annuler
+                                </SecondaryButton>
+                                <PrimaryButton type="submit">
+                                    Ajouter
+                                </PrimaryButton>
+                            </ButtonGroup>
+                        </form>
                     </ModalContent>
                 </ModalOverlay>
             )}

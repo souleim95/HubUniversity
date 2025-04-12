@@ -84,6 +84,7 @@ export const ConnectButton = styled.button`
   &:hover {
     background-color: rgb(49, 137, 196);
     transform: translateY(-2px);
+    cursor: pointer;
   }
 
   @media (max-width: 768px) {

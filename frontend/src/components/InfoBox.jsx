@@ -12,14 +12,20 @@ import {
 export default function InfoBox() {
   return (
     <InfoContainer>
-      <InfoTitle>Informations</InfoTitle>
+      <InfoTitle style={{
+        fontSize: '2em',
+        fontWeight: 'bold',
+        color: '#333',
+        marginBottom: '15px',
+        textShadow: '1px 1px 2px rgba(0, 0, 0, 0.2)'
+      }}>Informations</InfoTitle>
       <InfoContent>
+        
         <TrainBox>
           <RerSchedule />
         </TrainBox>
-        <WeatherBox>
-          <WeatherInfo /> {/* La boîte météo unique */}
-        </WeatherBox>
+
+        <WeatherInfo />
       </InfoContent>
     </InfoContainer>
   );
