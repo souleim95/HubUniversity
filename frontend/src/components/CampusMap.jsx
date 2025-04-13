@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { fakeObjects } from '../data/fakeData';
+import { useNavigate } from 'react-router-dom';
+import { fakeObjects, equipments, categories } from '../data/fakeData';
 import {
   MapSection,
   MapContainer,
@@ -13,13 +14,10 @@ import { ObjectCard, CardInner, ObjectFront, ObjectBack } from '../styles/Intera
 
 import salleImage from '../assets/salle.jpg';
 import thermostatImage from '../assets/thermostat.jpg';
-//import capteurImage from '../assets/capteur.jpg';
-//import cameraImage from '../assets/camera.jpg';
-//import borneImage from '../assets/borne.jpg';
-
 
 const CampusMap = () => {
-  // Groupe les objets par type
+  const navigate = useNavigate();
+
   const groupObjectsByType = () => {
     const grouped = {};
     fakeObjects.forEach((object) => {
@@ -33,8 +31,6 @@ const CampusMap = () => {
 
   const groupedObjects = groupObjectsByType();
   const objectTypes = Object.keys(groupedObjects);
-
-  // État de l'onglet actif
   const [selectedType, setSelectedType] = useState(objectTypes[0]);
 
   const getImageForType = (type) => {
@@ -43,29 +39,48 @@ const CampusMap = () => {
         return salleImage;
       case 'thermostat':
         return thermostatImage;
-      case 'capteur':
-        //return capteurImage;
-      case 'camera':
-        //return cameraImage;
-      case 'borne':
-       // return borneImage;
       default:
-        //return salleImage; // fallback
+        return salleImage;
     }
+  };
+
+  const handleCardClick = (obj) => {
+    let targetCategory = null;
+    let targetRoom = null;
+    let targetEquipment = null;
+
+    if (obj.type === 'Salle') {
+      targetRoom = obj.id;
+      targetCategory = 'salles';
+    } else {
+      targetEquipment = obj.id;
+      for (const [roomId, roomEquips] of Object.entries(equipments)) {
+        if (roomEquips.some(e => e.id === obj.id)) {
+          targetRoom = roomId;
+          break;
+        }
+      }
+      for (const [key, value] of Object.entries(categories)) {
+        if (value.items && value.items.includes(obj.id)) {
+          targetCategory = key;
+          break;
+        }
+      }
+    }
+
+    navigate('/dashboard', {
+      state: {
+        category: targetCategory,
+        room: targetRoom,
+        equipment: targetEquipment
+      }
+    });
   };
 
   return (
     <MapSection>
-      <h2 style={{ 
-        textAlign: 'center',
-        fontSize: '2.5em',
-        fontWeight: 'bold',
-        color: '#333',
-        marginBottom: '20px',
-        textShadow: '2px 2px 4px rgba(0, 0, 0, 0.2)'
-       }}>Campus Connecté</h2>
+      <h2 style={{ textAlign: 'center', fontSize: '2.5em', fontWeight: 'bold', color: '#333', marginBottom: '20px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.2)' }}>Campus Connecté</h2>
 
-      {/* Onglets */}
       <TabsWrapper>
         <Tabs>
           {objectTypes.map((type) => (
@@ -76,36 +91,29 @@ const CampusMap = () => {
         </Tabs>
       </TabsWrapper>
 
-
-      {/* Contenu de l'onglet actif */}
-      <h3 style={{ textAlign: 'center' }}>
-        {selectedType.charAt(0).toUpperCase() + selectedType.slice(1)}s
-      </h3>
+      <h3 style={{ textAlign: 'center' }}>{selectedType.charAt(0).toUpperCase() + selectedType.slice(1)}s</h3>
       <MapContainer>
         {groupedObjects[selectedType].map((object) => (
-          <ObjectCard key={object.id}>
-          <CardInner>
-            <ObjectFront>
-              <img
-                src={getImageForType(object.type)}
-                alt={object.name}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-              <h4>{object.name}</h4>
-            </ObjectFront>
-            <ObjectBack>
-              <p>{object.description || 'Ajoutez une note personnalisée ici'}</p>
-            </ObjectBack>
-          </CardInner>
-        </ObjectCard>
-        
-        
-          ))}
+          <ObjectCard key={object.id} onClick={() => handleCardClick(object)}>
+            <CardInner>
+              <ObjectFront>
+                <img
+                  src={getImageForType(object.type)}
+                  alt={object.name}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+                <h4>{object.name}</h4>
+              </ObjectFront>
+              <ObjectBack>
+                <p>{object.description || 'Ajoutez une note personnalisée ici'}</p>
+              </ObjectBack>
+            </CardInner>
+          </ObjectCard>
+        ))}
       </MapContainer>
 
       <EventsList>
         <h3>Événements à venir</h3>
-        {/* Liste des événements à venir */}
       </EventsList>
     </MapSection>
   );
