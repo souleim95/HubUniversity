@@ -291,7 +291,7 @@ const Header = () => {
                     <option value="">Sélectionnez votre rôle</option>
                     <option value="eleve">Étudiant</option>
                     <option value="professeur">Enseignant</option>
-                    <option value="directeur">Administrateur</option>
+                    {/*<option value="directeur">Administrateur</option>*/}
                   </select>
                 </>
               )}
