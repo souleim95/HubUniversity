@@ -73,7 +73,7 @@ app.post("/api/users", async (req, res) => {
     if (roleResult.rows.length === 0) {
       return res.status(400).json({ error: `Le rôle '${role}' est invalide.` });
     }
-    const idRole = roleResult.rows[0].idrole || roleResult.rows[0].idRole; // adapter selon la casse du champ retourné
+    const idRole = roleResult.rows[0].idrole || roleResult.rows[0].idRole;
 
     // 2. Hacher le mot de passe
     const saltRounds = 10;
@@ -94,13 +94,18 @@ app.post("/api/users", async (req, res) => {
       id: newUser.id,
       name: newUser.name,
       email: newUser.email,
-      role: role  // on peut renvoyer le nom de rôle initial pour info
+      role: role  
     });
   } catch (err) {
     console.error("Erreur lors de l'ajout d'un utilisateur :", err);
+    // Vérifier le code d'erreur pour une violation de contrainte unique (duplicate email)
+    if (err.code === '23505') {
+      return res.status(400).json({ error: "Un utilisateur utilise déjà cette adresse e-mail. Veuillez la changer." });
+    }
     res.status(500).json({ error: "Erreur interne du serveur." });
   }
 });
+
 
 
 
