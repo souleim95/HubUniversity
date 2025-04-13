@@ -264,10 +264,13 @@ export const Select = styled.select`
 
 export const ButtonGroup = styled.div`
   display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 2rem;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
 `;
+
 
 export const SecondaryButton = styled.button`
   padding: 0.75rem 1.5rem;

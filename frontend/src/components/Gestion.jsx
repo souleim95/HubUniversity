@@ -1,6 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { fakeObjects, categories } from '../data/fakeData';
 import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+} from 'recharts';
+
+
+import {
   AdminContainer,
   AdminHeader,
   AdminTitle,
@@ -38,17 +49,42 @@ import {
 } from '../styles/AdminStyles.js';
 import { FaTools, FaCalendar, FaExclamationTriangle, FaPlus, FaTrash, FaChartBar } from 'react-icons/fa';
 
+const categoryToTypeMap = {
+  salles: ['Salle', 'Thermostat', 'Éclairage', 'Audio', 'Ventilation'],
+  ecole: ['Caméra', 'Porte', 'Éclairage', 'Panneau', 'Securite'],
+  parking: ['Caméra', 'Capteur', 'Éclairage', 'Panneau', 'Borne']
+};
+
+
+
 function GestionPage() {
   // --------- États pour la gestion des objets ---------
   const [objects, setObjects] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('salles');
   const [showObjectModal, setShowObjectModal] = useState(false);
+  const [inactiveCount, setInactiveCount] = useState(0);
+  const [objectHistories, setObjectHistories] = useState({});
+  const [selectedForChart, setSelectedForChart] = useState(null);
+  const [globalFilterCategory, setGlobalFilterCategory] = useState('all');
+  const [globalFilterPeriod, setGlobalFilterPeriod] = useState('jour');
+  
+
   const [objectFormData, setObjectFormData] = useState({
     name: '',
-    category: 'Salle',
+    category: selectedCategory,
     status: 'active',
-    priority: 'normal'
+    priority: 'normal',
+    type: categoryToTypeMap[selectedCategory][0],
+    numero: '',
+    targetTemp: '',             // pour les Thermostats
+  brightnessSchedule: '',     // pour Éclairage (horaire fonctionnement)
+
   });
+  const [objectSettings, setObjectSettings] = useState({});
+const [editingSettingsFor, setEditingSettingsFor] = useState(null);
+
+  
+  
 
   // --------- États pour la gestion des réservations ---------
   const [reservations, setReservations] = useState([]);
@@ -70,26 +106,96 @@ function GestionPage() {
     objectUsage: [],
   });
 
-
-  useEffect(() => {
-    // Filtrage des objets pour exclure ceux spécifiés
-    const filteredObjects = fakeObjects.filter(object => {
-      // Exclure certains objets par leur ID
-      return !['grille_ecole', 'cam_urgence', 'detecteur_fumee', 'acces_parking', 'eclairage_parking', 'borne_recharge', 'detecteur_parking','capteur789'].includes(object.id);
+  const generateReports = (objectsToAnalyze) => {
+    const today = new Date().toISOString().split('T')[0];
+  
+    const energyData = objectsToAnalyze.map(obj => ({
+      id: obj.id,
+      date: today,
+      value: obj.status === 'active' ? 50 : 20
+    }));
+  
+    const inefficients = objectsToAnalyze.filter(obj => {
+      if (obj.type === 'Thermostat') {
+        return parseInt(obj.settings?.temperature) > 24;
+      }
+      if (obj.type === 'Éclairage') {
+        const [start, end] = [obj.settings?.startTime, obj.settings?.endTime];
+        return start === '00:00' && end === '23:59';
+      }
+      return false;
     });
   
-    // Filtrer selon la catégorie sélectionnée
-    const categoryObjects = filteredObjects.filter(object => categories[selectedCategory]?.items.includes(object.id));
+    // Mise à jour des historiques individuels
+    setObjectHistories(prev => {
+      const updated = { ...prev };
+      energyData.forEach(({ id, date, value }) => {
+        if (!updated[id]) updated[id] = [];
+        updated[id].push({ date, value });
+      });
+      return updated;
+    });
   
-    // Mettre à jour l'état avec les objets filtrés et triés par catégorie
+    setReports({
+      energyConsumption: energyData,
+      objectUsage: inefficients
+    });
+  
+    const inactifs = objectsToAnalyze.filter(obj => obj.status === 'inactive');
+    setInactiveCount(inactifs.length);
+  };
+  
+  const getFilteredEnergyData = () => {
+    const allData = reports.energyConsumption;
+  
+    const grouped = allData.reduce((acc, entry) => {
+      const cat = fakeObjects.find(obj => obj.id === entry.id)?.category || 'autres';
+      const key = globalFilterCategory === 'all' || cat === globalFilterCategory;
+      const date = entry.date;
+  
+      if (key) {
+        if (!acc[date]) acc[date] = 0;
+        acc[date] += entry.value;
+      }
+  
+      return acc;
+    }, {});
+  
+    return Object.entries(grouped).map(([date, total]) => ({ date, total }));
+  };
+  
+  
+  
+  useEffect(() => {
+    const filteredObjects = fakeObjects
+      .filter(obj => !['grille_ecole', 'cam_urgence', 'detecteur_fumee', 'acces_parking', 'eclairage_parking', 'borne_recharge', 'detecteur_parking','capteur789'].includes(obj.id))
+      .map(obj => ({
+        ...obj,
+        settings: obj.settings || {
+          temperature: obj.targetTemp || null,
+          startTime: obj.schedule?.split('-')[0] || '',
+          endTime: obj.schedule?.split('-')[1] || ''
+        }
+      }));
+  
+    const categoryObjects = filteredObjects.filter(object =>
+      categories[selectedCategory]?.items.includes(object.id)
+    );
+  
     setObjects(categoryObjects);
-  }, [selectedCategory]); // Exécution à chaque changement de catégorie
+    generateReports(categoryObjects); // <-- c'est CET appel qu'il faut garder
+  }, [selectedCategory]);
+  
+  
 
   // --------- Gestion des objets ---------
   const handleCategoryChange = (category) => {
     setSelectedCategory(category);
   };
 
+
+  
+  
   
 
   const handleAddObject = () => {
@@ -97,12 +203,15 @@ function GestionPage() {
     setShowObjectModal(true);
   };
 
-  const handleObjectSubmit = (e) => {
-    e.preventDefault();
-    const newObject = { id: Date.now(), ...objectFormData };
-    setObjects(prevObjects => [...prevObjects, newObject]);
-    setShowObjectModal(false);
+  const prefixMap = {
+    salles: 'salle',
+    ecole: 'ecole',
+    parking: 'parking'
   };
+  
+
+  
+  
 
   // --------- Gestion des réservations ---------
   const handleAddReservation = () => {
@@ -125,17 +234,55 @@ function GestionPage() {
     }
   };
 
-  const handleReservationSubmit = (e) => {
+  const handleObjectSubmit = (e) => {
     e.preventDefault();
-    if (reservationFormData.id) {
-      setReservations(reservations.map(reservation => 
-        reservation.id === reservationFormData.id ? { ...reservation, ...reservationFormData } : reservation
-      ));
-    } else {
-      setReservations([...reservations, { id: Date.now(), ...reservationFormData }]);
+  
+    const prefixMap = {
+      salles: 'salle',
+      ecole: 'ecole',
+      parking: 'parking'
+    };
+  
+    const prefix = prefixMap[objectFormData.category] || 'obj';
+    const fullId = `${prefix}${objectFormData.numero}`;
+  
+    const idExists =
+      fakeObjects.some((obj) => obj.id === fullId) ||
+      objects.some((obj) => obj.id === fullId);
+  
+    if (idExists) {
+      alert("Cet identifiant existe déjà ! Choisissez un autre numéro.");
+      return;
     }
-    setShowReservationModal(false);
+  
+    const newObject = {
+      id: fullId,
+      name: objectFormData.name,
+      type: objectFormData.type,
+      status: objectFormData.status,
+      location: fullId,
+      ...(objectFormData.type === 'Thermostat' && {
+        targetTemp: parseInt(objectFormData.targetTemp) || 0
+      }),
+      ...(objectFormData.type === 'Éclairage' && {
+        schedule: objectFormData.brightnessSchedule || ''
+      }),
+      settings: {
+        temperature: objectFormData.targetTemp || null,
+        startTime: objectFormData.brightnessSchedule?.split('-')[0] || '',
+        endTime: objectFormData.brightnessSchedule?.split('-')[1] || ''
+      }
+    };
+  
+    const updatedObjects = [...objects, newObject];
+    setObjects(updatedObjects);
+    generateReports(updatedObjects); // 🟢 Maintenant c’est bon ✅
+    setShowObjectModal(false);
   };
+  
+  
+    
+  
 
 // --------- Gestion des objets ---------
 const handleRequestDeletion = (object) => {
@@ -151,7 +298,6 @@ const handleRequestDeletion = (object) => {
 
 
  
-
 
 
   // --------- Gestion des alertes ---------
@@ -174,6 +320,52 @@ const handleRequestDeletion = (object) => {
     setSelectedAlert(alert);
     setShowAlertModal(true);
   };
+
+  const handleOpenSettings = (object) => {
+    setEditingSettingsFor(object);
+  
+    setObjectSettings({
+      temperature: object.settings?.temperature || '',
+      startTime: object.settings?.startTime || '',
+      endTime: object.settings?.endTime || ''
+    });
+  
+    setObjects(prev => {
+      const updated = prev.map(obj =>
+        obj.id === object.id
+          ? { ...obj, settings: { ...objectSettings } }
+          : obj
+      );
+      generateReports(updated);
+      return updated;
+    });
+  };
+  
+  
+  const handleReservationSubmit = (e) => {
+    e.preventDefault();
+  
+    if (reservationFormData.id) {
+      // Modification d'une réservation existante
+      setReservations(prev =>
+        prev.map(res =>
+          res.id === reservationFormData.id
+            ? { ...res, ...reservationFormData }
+            : res
+        )
+      );
+    } else {
+      // Nouvelle réservation
+      const newReservation = {
+        id: Date.now(),
+        ...reservationFormData
+      };
+      setReservations(prev => [...prev, newReservation]);
+    }
+  
+    setShowReservationModal(false);
+  };
+  
 
   return (
     <AdminContainer>
@@ -224,14 +416,23 @@ const handleRequestDeletion = (object) => {
   {objects.map((object) => (
     <Card key={object.id}>
       <CardTitle>{object.name}</CardTitle>
-      <StatusBadge status={object.status}>{object.status}</StatusBadge>
+      <p><strong>Zone :</strong> {object.id}</p>
+      <br></br>
+      <p><strong>Statut :</strong> <StatusBadge status={object.status}>{object.status}</StatusBadge></p>
+      
       <ButtonGroup>
         <SecondaryButton onClick={() => handleCreateAlert(object)}>Créer une alerte</SecondaryButton>
         <PrimaryButton onClick={() => handleRequestDeletion(object)}>
           <FaTrash /> Demander la suppression
         </PrimaryButton>
+        <SecondaryButton onClick={() => handleOpenSettings(object)}>
+  Configurer
+</SecondaryButton>
+
+
       </ButtonGroup>
     </Card>
+    
   ))}
 </Grid>
 
@@ -298,6 +499,45 @@ const handleRequestDeletion = (object) => {
   </Table>
 </Section>
 
+<Section>
+  <SectionHeader>
+    <SectionTitle>
+      <FaChartBar /> Rapports d'Utilisation & Efficacité
+    </SectionTitle>
+  </SectionHeader>
+
+  
+
+  <StatsGrid>
+    <StatCard>
+      <StatValue>
+        {reports.energyConsumption.reduce((sum, e) => sum + e.value, 0)} kWh
+      </StatValue>
+      <StatLabel>Consommation Totale</StatLabel>
+    </StatCard>
+    <StatCard>
+  <StatValue>{inactiveCount}</StatValue>
+  <StatLabel>Objets Inactifs</StatLabel>
+</StatCard>
+
+  </StatsGrid>
+  <SectionTitle style={{ marginTop: '2rem' }}>Graphique de consommation</SectionTitle>
+
+
+<ResponsiveContainer width="100%" height={300}>
+  <LineChart data={reports.energyConsumption}>
+    <CartesianGrid strokeDasharray="3 3" />
+    <XAxis dataKey="date" />
+    <YAxis />
+    <Tooltip />
+    <Line type="monotone" dataKey="value" stroke="#8884d8" strokeWidth={2} />
+  </LineChart>
+</ResponsiveContainer>
+
+
+</Section>
+
+
 
       {/* Modal de création d'objet */}
       {showObjectModal && (
@@ -315,16 +555,28 @@ const handleRequestDeletion = (object) => {
                 />
               </FormGroup>
               <FormGroup>
-                <Label>Catégorie</Label>
-                <Select
-                  value={objectFormData.category}
-                  onChange={(e) => setObjectFormData({ ...objectFormData, category: e.target.value })}
-                >
-                  {Object.keys(categories).map(categoryKey => (
-                    <option key={categoryKey} value={categoryKey}>{categories[categoryKey].name}</option>
-                  ))}
-                </Select>
-              </FormGroup>
+  <Label>Catégorie</Label>
+  <Select
+    value={objectFormData.category}
+    onChange={(e) => {
+      const selectedCategory = e.target.value;
+      const validTypes = categoryToTypeMap[selectedCategory] || [];
+      setObjectFormData({
+        ...objectFormData,
+        category: selectedCategory,
+        type: validTypes[0] || '',
+      });
+    }}
+  >
+    {Object.keys(categories).map((categoryKey) => (
+      <option key={categoryKey} value={categoryKey}>
+        {categories[categoryKey].name}
+      </option>
+    ))}
+  </Select>
+</FormGroup>
+
+
               <FormGroup>
                 <Label>Statut</Label>
                 <Select
@@ -336,10 +588,61 @@ const handleRequestDeletion = (object) => {
                   <option value="maintenance">Maintenance</option>
                 </Select>
               </FormGroup>
-              <ButtonGroup>
-                <SecondaryButton type="button" onClick={() => setShowObjectModal(false)}>Annuler</SecondaryButton>
-                <PrimaryButton type="submit">Ajouter</PrimaryButton>
-              </ButtonGroup>
+              <FormGroup>
+  <Label>Type d’objet</Label>
+  <Select
+    value={objectFormData.type}
+    onChange={(e) => setObjectFormData({ ...objectFormData, type: e.target.value })}
+  >
+    {(categoryToTypeMap[objectFormData.category] || []).map((type) => (
+      <option key={type} value={type}>{type}</option>
+    ))}
+  </Select>
+</FormGroup>
+
+
+
+<FormGroup>
+  <Label>Numéro</Label>
+  <Input
+    type="text"
+    placeholder="Ex : 102"
+    value={objectFormData.numero}
+    onChange={(e) => setObjectFormData({ ...objectFormData, numero: e.target.value })}
+    required
+  />
+</FormGroup>
+
+{objectFormData.type === 'Thermostat' && (
+  <FormGroup>
+    <Label>Température cible (°C)</Label>
+    <Input
+      type="number"
+      min="10"
+      max="30"
+      value={objectFormData.targetTemp}
+      onChange={(e) => setObjectFormData({ ...objectFormData, targetTemp: e.target.value })}
+    />
+  </FormGroup>
+)}
+
+{objectFormData.type === 'Éclairage' && (
+  <FormGroup>
+    <Label>Plage horaire (ex: 08:00-18:00)</Label>
+    <Input
+      type="text"
+      value={objectFormData.brightnessSchedule}
+      onChange={(e) => setObjectFormData({ ...objectFormData, brightnessSchedule: e.target.value })}
+      placeholder="08:00-18:00"
+    />
+  </FormGroup>
+)}
+
+<ButtonGroup>
+  <SecondaryButton type="button" onClick={() => setShowObjectModal(false)}>Annuler</SecondaryButton>
+  <PrimaryButton type="submit">Ajouter</PrimaryButton>
+</ButtonGroup>
+
             </form>
           </ModalContent>
         </ModalOverlay>
@@ -413,8 +716,102 @@ const handleRequestDeletion = (object) => {
           </ModalContent>
         </ModalOverlay>
       )}
+
+{editingSettingsFor && (
+  <ModalOverlay onClick={() => setEditingSettingsFor(null)}>
+    <ModalContent onClick={(e) => e.stopPropagation()}>
+      <SectionTitle>Configurer {editingSettingsFor.name}</SectionTitle>
+
+      {editingSettingsFor.type === 'Thermostat' && (
+  <FormGroup>
+    <Label>Température cible (°C)</Label>
+    <Input
+      type="number"
+      value={objectSettings.temperature}
+      onChange={(e) =>
+        setObjectSettings((prev) => ({ ...prev, temperature: e.target.value }))
+      }
+      placeholder="Ex : 22"
+    />
+  </FormGroup>
+)}
+
+{editingSettingsFor.type === 'Éclairage' && (
+  <>
+    <FormGroup>
+      <Label>Heure de début</Label>
+      <Input
+        type="time"
+        value={objectSettings.startTime}
+        onChange={(e) =>
+          setObjectSettings((prev) => ({ ...prev, startTime: e.target.value }))
+        }
+      />
+    </FormGroup>
+
+    <FormGroup>
+      <Label>Heure de fin</Label>
+      <Input
+        type="time"
+        value={objectSettings.endTime}
+        onChange={(e) =>
+          setObjectSettings((prev) => ({ ...prev, endTime: e.target.value }))
+        }
+      />
+    </FormGroup>
+  </>
+)}
+
+
+      <ButtonGroup>
+        <SecondaryButton onClick={() => setEditingSettingsFor(null)}>Annuler</SecondaryButton>
+        <PrimaryButton onClick={() => {
+  const updatedObjects = objects.map(obj =>
+    obj.id === editingSettingsFor.id
+      ? { ...obj, settings: { ...objectSettings } }
+      : obj
+  );
+
+  setObjects(updatedObjects);
+  generateReports(updatedObjects); // Mets à jour les rapports ici aussi
+  setEditingSettingsFor(null);
+}}>
+  Enregistrer
+</PrimaryButton>
+
+      </ButtonGroup>
+    </ModalContent>
+  </ModalOverlay>
+)}
+
+
+{selectedForChart && (
+  <ModalOverlay onClick={() => setSelectedForChart(null)}>
+    <ModalContent onClick={(e) => e.stopPropagation()}>
+      <SectionTitle>Consommation de {selectedForChart.name}</SectionTitle>
+
+      {objectHistories[selectedForChart.id]?.length > 0 ? (
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={objectHistories[selectedForChart.id]}>
+            <XAxis dataKey="date" />
+            <YAxis />
+            <Tooltip />
+            <Line type="monotone" dataKey="value" stroke="#8884d8" strokeWidth={2} />
+          </LineChart>
+        </ResponsiveContainer>
+      ) : (
+        <p>Aucune donnée disponible pour cet objet.</p>
+      )}
+
+      <ButtonGroup>
+        <PrimaryButton onClick={() => setSelectedForChart(null)}>Fermer</PrimaryButton>
+      </ButtonGroup>
+    </ModalContent>
+  </ModalOverlay>
+)}
+
+
     </AdminContainer>
   );
 }
-
 export default GestionPage;
