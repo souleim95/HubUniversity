@@ -45,9 +45,10 @@ import {
   Table,
   TableHeaderCell,
   TableHeader,
-  TableRow
+  TableRow,
+  ExportButton
 } from '../styles/AdminStyles.js';
-import { FaTools, FaCalendar, FaExclamationTriangle, FaPlus, FaTrash, FaChartBar } from 'react-icons/fa';
+import { FaTools, FaCalendar, FaExclamationTriangle, FaPlus, FaTrash, FaChartBar,FaDownload } from 'react-icons/fa';
 
 const categoryToTypeMap = {
   salles: ['Salle', 'Thermostat', 'Éclairage', 'Audio', 'Ventilation'],
@@ -65,8 +66,7 @@ function GestionPage() {
   const [inactiveCount, setInactiveCount] = useState(0);
   const [objectHistories, setObjectHistories] = useState({});
   const [selectedForChart, setSelectedForChart] = useState(null);
-  const [globalFilterCategory, setGlobalFilterCategory] = useState('all');
-  const [globalFilterPeriod, setGlobalFilterPeriod] = useState('jour');
+ 
   
 
   const [objectFormData, setObjectFormData] = useState({
@@ -145,25 +145,29 @@ const [editingSettingsFor, setEditingSettingsFor] = useState(null);
     setInactiveCount(inactifs.length);
   };
   
-  const getFilteredEnergyData = () => {
-    const allData = reports.energyConsumption;
+
+  const handleExportReport = (type) => {
+    const data = reports[type];
+    if (!data || data.length === 0) return alert("Aucune donnée à exporter");
   
-    const grouped = allData.reduce((acc, entry) => {
-      const cat = fakeObjects.find(obj => obj.id === entry.id)?.category || 'autres';
-      const key = globalFilterCategory === 'all' || cat === globalFilterCategory;
-      const date = entry.date;
-  
-      if (key) {
-        if (!acc[date]) acc[date] = 0;
-        acc[date] += entry.value;
-      }
-  
-      return acc;
-    }, {});
-  
-    return Object.entries(grouped).map(([date, total]) => ({ date, total }));
+    const csv = convertToCSV(data);
+    downloadCSV(csv, `${type}_report.csv`);
   };
   
+  const convertToCSV = (data) => {
+    const headers = Object.keys(data[0]);
+    const rows = data.map(obj => headers.map(key => obj[key]));
+    return [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  };
+  
+  const downloadCSV = (csv, filename) => {
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+  };
   
   
   useEffect(() => {
@@ -203,11 +207,7 @@ const [editingSettingsFor, setEditingSettingsFor] = useState(null);
     setShowObjectModal(true);
   };
 
-  const prefixMap = {
-    salles: 'salle',
-    ecole: 'ecole',
-    parking: 'parking'
-  };
+
   
 
   
@@ -428,6 +428,9 @@ const handleRequestDeletion = (object) => {
         <SecondaryButton onClick={() => handleOpenSettings(object)}>
   Configurer
 </SecondaryButton>
+<SecondaryButton onClick={() => setSelectedForChart(object)}>
+  Voir l’historique
+</SecondaryButton>
 
 
       </ButtonGroup>
@@ -500,11 +503,23 @@ const handleRequestDeletion = (object) => {
 </Section>
 
 <Section>
-  <SectionHeader>
+<SectionHeader style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '1rem' }}>
+  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap' }}>
     <SectionTitle>
       <FaChartBar /> Rapports d'Utilisation & Efficacité
     </SectionTitle>
-  </SectionHeader>
+    <ButtonGroup>
+      <ExportButton onClick={() => handleExportReport('energyConsumption')}>
+        <FaDownload /> Exporter conso
+      </ExportButton>
+      <ExportButton onClick={() => handleExportReport('objectUsage')}>
+        <FaDownload /> Exporter objets inefficaces
+      </ExportButton>
+    </ButtonGroup>
+  </div>
+
+</SectionHeader>
+
 
   
 
