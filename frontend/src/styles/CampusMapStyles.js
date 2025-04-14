@@ -34,39 +34,6 @@ export const MapContainer = styled.div`
   }
 `;
 
-export const EventsList = styled.div`
-  margin-top: 2rem;
-  padding: 1rem 10px; /* Espacement interne pour plus de confort visuel */
-  background-color: #f9f9f9; /* Fond léger pour séparer visuellement des autres sections */
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Ajout d'ombre pour plus de profondeur */
-
-  h3 {
-    font-size: 1.5rem;
-    color: #2C5282; /* Couleur bleue pour le titre */
-    font-weight: 600;
-    margin-bottom: 1rem;
-  }
-
-  ul {
-    list-style-type: none;
-    padding: 0;
-    
-    li {
-      background-color: #ffffff;
-      margin-bottom: 1rem;
-      padding: 1rem;
-      border-radius: 8px;
-      transition: background-color 0.3s ease;
-
-      &:hover {
-        background-color: #e2e8f0; /* Changement de fond au survol */
-      }
-    }
-  }
-`;
-
-
 export const TabsWrapper = styled.div`
 
   overflow-x: auto;
@@ -98,7 +65,3 @@ export const Tab = styled.button`
     color: white;
   }
 `;
-
-
-
-

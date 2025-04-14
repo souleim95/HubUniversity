@@ -25,7 +25,7 @@ export const ProfileContainer = styled.div`
   max-width: 800px;
   margin: 20px auto;
   padding: 20px;
-  background-color: rgba(255, 255, 255, 0.83);
+  background-color: rgba(29, 18, 78, 0.94);
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   position: relative;
@@ -43,7 +43,7 @@ export const Header = styled.div`
   border-bottom: 1px solid #eee;
 
   h2 {
-    color: #333;
+    color: rgb(255, 255, 255);
   }
 `;
 
@@ -56,8 +56,9 @@ export const ProfileCard = styled.div`
   padding: 20px;
   margin-bottom: 20px;
   border-radius: 10px;
-  background-color: #f9f9f9;
+  background-color:rgb(54, 94, 141);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  color: rgb(255, 255, 255);
 `;
 
 export const InputField = styled.input`
@@ -105,12 +106,12 @@ export const ChangePasswordSection = styled.div`
   padding: 20px;
   margin-bottom: 20px;
   border-radius: 10px;
-  background-color: #f9f9f9;
+  background-color: rgb(96, 80, 139);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 
   h3 {
     margin-bottom: 15px;
-    color: #333;
+    color: rgb(255, 255, 255);
   }
 `;
 
@@ -152,7 +153,7 @@ export const ProfilePictureContainer = styled.div`
   flex-direction: column;
   align-items: center;
   margin-bottom: 20px;
-  background-color: #f9f9f9; /* Subtle background */
+  background-color:rgba(255, 255, 255, 0.94); /* Subtle background */
   padding: 15px;
   border-radius: 10px;
 `;
@@ -165,7 +166,7 @@ export const ProfilePicture = styled.img`
   object-fit: cover;
   margin-bottom: 10px;
   border: 3px solid #ddd;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add shadow */
+  box-shadow: 0 4px 8px rgba(2, 2, 2, 0.94); /* Add shadow */
 
   &:hover {
     transform: scale(1.1);

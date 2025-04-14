@@ -4,7 +4,6 @@ import { fakeObjects, equipments, categories } from '../data/fakeData';
 import {
   MapSection,
   MapContainer,
-  EventsList,
   TabsWrapper,
   Tabs,
   Tab
@@ -111,10 +110,6 @@ const CampusMap = () => {
           </ObjectCard>
         ))}
       </MapContainer>
-
-      <EventsList>
-        <h3>Événements à venir</h3>
-      </EventsList>
     </MapSection>
   );
 };

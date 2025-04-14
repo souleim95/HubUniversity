@@ -18,9 +18,9 @@ import { categories } from '../data/fakeData';
 const Header = () => {
   const [isFormOpen, setIsFormOpen] = useState(null); 
   const [formData, setFormData] = useState({ name: '', email: '', role: '', password: '' });
-  const [userName, setUserName] = useState(localStorage.getItem('user') || null);
-  const [role, setRole] = useState(localStorage.getItem('role') || null);
-  const [userPoints, setUserPoints] = useState(parseInt(localStorage.getItem('points') || '0'));
+  const [userName, setUserName] = useState(sessionStorage.getItem('user') || null);
+  const [role, setRole] = useState(sessionStorage.getItem('role') || null);
+  const [userPoints, setUserPoints] = useState(parseInt(sessionStorage.getItem('points') || '0'));
   const [selectedCategory, setSelectedCategory] = useState('salles');
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [selectedEquipment, setSelectedEquipment] = useState(null);
@@ -30,15 +30,15 @@ const Header = () => {
 
   useEffect(() => {
     const handleStorageChange = () => {
-      setUserPoints(parseInt(localStorage.getItem('points') || '0'));
-      setRole(localStorage.getItem('role'));
+      setUserPoints(parseInt(sessionStorage.getItem('points') || '0'));
+      setRole(sessionStorage.getItem('role'));
     };
 
     window.addEventListener('storage', handleStorageChange);
 
     const interval = setInterval(() => {
-      const storedPoints = parseInt(localStorage.getItem('points') || '0');
-      const storedRole = localStorage.getItem('role');
+      const storedPoints = parseInt(sessionStorage.getItem('points') || '0');
+      const storedRole = sessionStorage.getItem('role');
       
       if (storedPoints !== userPoints) {
         setUserPoints(storedPoints);
@@ -47,13 +47,14 @@ const Header = () => {
       if (storedRole !== role) {
         setRole(storedRole);
       }
-    }, 1000);
+    }, 200);
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       clearInterval(interval);
     };
   }, [userPoints, role]);
+  //supprime les données lors de la fermeture de la page 
 
   useEffect(() => {
     const handleScroll = () => {
@@ -104,34 +105,38 @@ const Header = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Préparer les données à envoyer
     let requestData = isFormOpen === 'signup'
       ? { name: formData.name, email: formData.email, role: formData.role, password: formData.password }
       : { email: formData.email, password: formData.password };
-
+  
     const url = isFormOpen === 'signup'
       ? 'http://localhost:5001/api/users'
       : 'http://localhost:5001/api/login';
-
+  
     try {
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestData),
       });
-
+  
       if (response.ok) {
         const data = await response.json();
-
+  
         if (isFormOpen === 'login') {
-          localStorage.setItem('user', data.user.name);
-          localStorage.setItem('role', data.user.role);
-          localStorage.setItem('points', '0');
+          sessionStorage.setItem('user', data.user.name);
+          sessionStorage.setItem('role', data.user.role);
+          sessionStorage.setItem('userId', data.user.id);
+          sessionStorage.setItem('points', data.user.score);
           setUserName(data.user.name);
           setRole(data.user.role);
-          setUserPoints(0);
+          setUserPoints(parseInt(data.user.score, 10));
           window.location.reload();
         }
-
+        
+  
         setIsFormOpen(null);
       } else {
         const errorData = await response.json();
@@ -141,11 +146,12 @@ const Header = () => {
       alert('Erreur réseau. Vérifiez votre connexion.');
     }
   };
+  
 
   const handleLogout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('role');
-    localStorage.removeItem('points');
+    sessionStorage.removeItem('user');
+    sessionStorage.removeItem('role');
+    sessionStorage.removeItem('points');
     setUserName(null);
     setRole(null);
     setUserPoints(0);

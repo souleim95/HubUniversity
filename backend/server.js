@@ -41,7 +41,7 @@ app.get("/api", (req, res) => res.send("Backend API is running 🚀"));
 app.get("/api/users", async (req, res) => {
   try {
     const query = `
-      SELECT u.id, u.name, u.email, r.nomRole as role, u.created_at 
+      SELECT u.id, u.name, u.email, COALESCE(u.score, 0) as score, r.nomRole as role, u.created_at 
       FROM users u 
       JOIN role r ON u.idRole = r.idRole
       ORDER BY u.id
@@ -120,7 +120,7 @@ app.post("/api/login", async (req, res) => {
   try {
     // Requête jointe pour récupérer le nom du rôle (r.nomRole as role)
     const query = `
-      SELECT u.id, u.name, u.email, u.password, r.nomRole as role
+      SELECT u.id, u.name, u.email, u.password, COALESCE(u.score, 0) as score, r.nomRole as role
       FROM users u 
       JOIN role r ON u.idRole = r.idRole
       WHERE u.email = $1
@@ -143,7 +143,8 @@ app.post("/api/login", async (req, res) => {
           id: user.id, 
           name: user.name, 
           email: user.email, 
-          role: user.role
+          role: user.role, 
+          score: user.score
         }
       });
     } else {
@@ -200,6 +201,49 @@ app.get("/api/rer-schedule", async (req, res) => {
   } catch (err) {
     console.error("Erreur lors de la récupération des horaires RER :", err);
     res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+// Route pour augmenter le score d'un utilisateur
+app.patch("/api/users/:id/score", async (req, res) => {
+  // Récupération de l'id de l'utilisateur depuis l'URL
+  const { id } = req.params;
+  
+  // Dans le corps de la requête, on attend une propriété "increment"
+  // qui indique combien le score doit être augmenté.
+  // Par exemple, { "increment": 1 } pour ajouter 1 point.
+  const { increment } = req.body;
+  
+  if (increment === undefined) {
+    return res.status(400).json({ error: "Le champ 'increment' est requis." });
+  }
+  
+  try {
+    // La requête SQL met à jour le score en s'assurant que
+    // s'il est NULL (non défini), on le considère comme 0 avec COALESCE.
+    const updateQuery = `
+      UPDATE users
+      SET score = COALESCE(score, 0) + $1
+      WHERE id = $2
+      RETURNING score
+    `;
+    
+    const { rows } = await pool.query(updateQuery, [increment, id]);
+    
+    // Si aucun utilisateur n'est trouvé, retourner une erreur 404.
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Utilisateur non trouvé." });
+    }
+    
+    // Retourner le nouveau score en réponse.
+    res.json({
+      message: "Score mis à jour avec succès.",
+      score: rows[0].score
+    });
+    
+  } catch (err) {
+    console.error("Erreur lors de la mise à jour du score :", err);
+    res.status(500).json({ error: "Erreur interne du serveur." });
   }
 });
 

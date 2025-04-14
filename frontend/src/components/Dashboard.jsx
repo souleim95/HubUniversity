@@ -97,43 +97,59 @@ const POINTS_CONFIG = {
   }
 };
 
-// Fonction utilitaire pour mettre à jour les points de l'utilisateur
-const updateUserPoints = (pointsToAdd) => {
-  // Récupérer les points actuels
-  const currentPoints = parseInt(localStorage.getItem('points') || '0');
-  const currentRole = localStorage.getItem('role') || 'eleve'; // Rôle par défaut : élève
-  
-  // Appliquer le multiplicateur de points basé sur le rôle
+// Fonction utilitaire pour mettre à jour les points en communiquant avec le backend
+const updateUserPoints = async (pointsToAdd) => {
+  // Récupérer le rôle actuel et appliquer le multiplicateur de points
+  const currentRole = localStorage.getItem('role') || 'eleve';
   const roleMultiplier = POINTS_CONFIG.ROLE_MULTIPLIERS[currentRole] || 1;
   const adjustedPointsToAdd = pointsToAdd * roleMultiplier;
   
-  const newPoints = currentPoints + adjustedPointsToAdd;
-  
-  // Mettre à jour les points dans localStorage
-  localStorage.setItem('points', newPoints.toString());
-  
-  // Vérifier si l'utilisateur a atteint un nouveau niveau
-  let newRole = currentRole;
-  
-  if (currentRole === 'eleve' && newPoints >= POINTS_CONFIG.LEVEL_THRESHOLDS.professeur) {
-    newRole = 'professeur';
-  } else if (currentRole === 'professeur' && newPoints >= POINTS_CONFIG.LEVEL_THRESHOLDS.directeur) {
-    newRole = 'directeur';
+  // Récupérer l'identifiant de l'utilisateur (vous devez le stocker lors de la connexion/inscription)
+  const userId = localStorage.getItem('userId');
+  if (!userId) {
+    console.error("L'identifiant de l'utilisateur n'est pas défini.");
+    return;
   }
   
-  // Mettre à jour le rôle si nécessaire
-  if (newRole !== currentRole) {
-    localStorage.setItem('role', newRole);
+  try {
+    // Envoyer la requête PATCH au backend pour mettre à jour le score
+    const response = await fetch(`http://localhost:5001/api/users/${userId}/score`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ increment: adjustedPointsToAdd })
+    });
     
-    // Afficher un message de félicitation pour le nouveau niveau
-    alert(`Félicitations ! Vous êtes maintenant ${newRole === 'professeur' ? 'Gestionnaire' : 'Directeur'} !`);
-    
-    // Rafraîchir la page pour mettre à jour l'affichage
-    window.location.reload();
+    if (response.ok) {
+      const data = await response.json();
+      const newPoints = data.score;
+      localStorage.setItem('points', newPoints.toString());
+      
+      // Vérifier si l'utilisateur a atteint un nouveau niveau
+      let newRole = currentRole;
+      
+      if (currentRole === 'eleve' && newPoints >= POINTS_CONFIG.LEVEL_THRESHOLDS.professeur) {
+        newRole = 'professeur';
+      } else if (currentRole === 'professeur' && newPoints >= POINTS_CONFIG.LEVEL_THRESHOLDS.directeur) {
+        newRole = 'directeur';
+      }
+      
+      if (newRole !== currentRole) {
+        localStorage.setItem('role', newRole);
+        alert(`Félicitations ! Vous êtes maintenant ${newRole === 'professeur' ? 'Gestionnaire' : 'Directeur'} !`);
+        window.location.reload();
+      }
+      
+      return { points: newPoints, role: newRole, levelUp: newRole !== currentRole };
+    } else {
+      console.error("Erreur lors de la mise à jour du score :", response.statusText);
+    }
+  } catch (error) {
+    console.error("Erreur réseau lors de la mise à jour du score", error);
   }
-  
-  return { points: newPoints, role: newRole, levelUp: newRole !== currentRole };
 };
+
 
 // Fonction pour afficher un toast de gain de points
 const showPointsToast = (points) => {
@@ -174,6 +190,22 @@ const Dashboard = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const [userPoints, setUserPoints] = useState(parseInt(localStorage.getItem('points') || '0'));
+
+  //gestion des points 
+  useEffect(() => {
+    const updatePointsFromStorage = () => {
+      setUserPoints(parseInt(localStorage.getItem('points') || '0'));
+    };
+
+    window.addEventListener('storage', updatePointsFromStorage);
+    const intervalId = setInterval(updatePointsFromStorage, 1000); // Met à jour toutes les secondes
+
+    return () => {
+      window.removeEventListener('storage', updatePointsFromStorage);
+      clearInterval(intervalId);
+    };
+  }, []);
   // Initialisation des équipements lors de la sélection d'une salle
   useEffect(() => {
     if (selectedRoom && equipments[selectedRoom] && !roomEquipments[selectedRoom]) {
