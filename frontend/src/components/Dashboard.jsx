@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import dashboardBackground from '../assets/dashboard.png';
 import { 
   DashboardContainer,
   ProfileCard,
@@ -22,6 +23,7 @@ import {
   CategoryContainer,
   CategoryButton,
   SubItemContainer,
+  bodyDashboard
 } from '../styles/DashboardStyles';
 
 import { fakeObjects, categories, equipments } from '../data/fakeData';
@@ -2128,28 +2130,43 @@ const Dashboard = () => {
   };
 
   return (
-    <DashboardContainer>
-      <Header>
-        <h2>Mon Tableau de Bord</h2>
-        <p>Suivez votre progression et gérez vos objets connectés</p>
-      </Header>
-
-      <CategoryContainer>
-        {Object.keys(categories).map(cat => (
-          <CategoryButton
-            key={cat}
-            active={selectedCategory === cat}
-            onClick={() => {
-              setSelectedCategory(cat);
-              setSelectedRoom(null);
-            }}
-          >
-            {categories[cat].name}
-          </CategoryButton>
-        ))}
-      </CategoryContainer>
-      {renderCategoryContent()}
-    </DashboardContainer>
+    <div style={{ position: 'relative', minHeight: '100vh', width: '100%' }}>
+      <bodyDashboard 
+        style={{ 
+          backgroundImage: `url(${dashboardBackground})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: -1
+        }} 
+      />
+      <DashboardContainer>
+        <Header>
+          <h2>Mon Tableau de Bord</h2>
+          <p>Suivez votre progression et gérez vos objets connectés</p>
+        </Header>
+        <CategoryContainer>
+          {Object.keys(categories).map(cat => (
+            <CategoryButton
+              key={cat}
+              active={selectedCategory === cat}
+              onClick={() => {
+                setSelectedCategory(cat);
+                setSelectedRoom(null);
+              }}
+            >
+              {categories[cat].name}
+            </CategoryButton>
+          ))}
+        </CategoryContainer>
+        {renderCategoryContent()}
+      </DashboardContainer>
+    </div>
   );
 };
 

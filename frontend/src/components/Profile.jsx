@@ -16,10 +16,11 @@ import {
   FileInputContainer,
   FileInputLabel,
   HiddenFileInput,
-  FileNameDisplay
+  FileNameDisplay,
+  BackgroundContainer
 } from '../styles/ProfileStyles';
 import { FaLock, FaGlobe, FaTrashAlt, FaUser, FaCalendar, FaVenusMars } from 'react-icons/fa';
-
+import profileBackground from '../assets/profil.png';
 
 const Profile = () => {
   const [isPublic, setIsPublic] = useState(true);
@@ -123,130 +124,135 @@ const Profile = () => {
   };
 
   return (
-    <ProfileContainer>
-      <Header>
-        <h2>{isPublic ? 'Profil Public 🌐' : 'Profil Privé 🔒'}</h2>
-        <ToggleViewButton onClick={toggleView}>
+    <>
+      <BackgroundContainer>
+        <img src={profileBackground} alt="Profile background" />
+      </BackgroundContainer>
+      <ProfileContainer>
+        <Header>
+          <h2>{isPublic ? 'Profil Public 🌐' : 'Profil Privé 🔒'}</h2>
+          <ToggleViewButton onClick={toggleView}>
+            {isPublic ? (
+              <>
+                Voir les infos privées <FaLock />
+              </>
+            ) : (
+              <>
+                Voir les infos publiques <FaGlobe />
+              </>
+            )}
+          </ToggleViewButton>
+        </Header>
+
+        <InfoSection>
           {isPublic ? (
-            <>
-              Voir les infos privées <FaLock />
-            </>
+            <ProfileCard>
+              <ProfilePictureContainer>
+                {photoUrl && <ProfilePicture src={photoUrl} alt="Profile" />}
+                <FileInputContainer>
+                  <FileInputLabel htmlFor="photoInput">Choisir une photo</FileInputLabel>
+                  <HiddenFileInput
+                    id="photoInput"
+                    name="photo"
+                    type="file"
+                    onChange={handleInputChange}
+                  />
+                  {formData.photo && <FileNameDisplay>{formData.photo.name}</FileNameDisplay>}
+                </FileInputContainer>
+                {photoUrl && (
+                  <DeleteButton onClick={handleDeletePhoto}>
+                    Supprimer la photo <FaTrashAlt />
+                  </DeleteButton>
+                )}
+              </ProfilePictureContainer>
+              <InputField
+                name="pseudonyme"
+                placeholder="Pseudonyme"
+                value={formData.pseudonyme}
+                onChange={handleInputChange}
+                prefix={<FaUser />}
+              />
+              <InputField
+                name="dateNaissance"
+                type="date"
+                value={formData.dateNaissance}
+                onChange={handleInputChange}
+                prefix={<FaCalendar />}
+              />
+              <InputField name="age" placeholder="Âge" type="number" value={age} readOnly />
+
+              <select
+                name="genre"
+                value={formData.genre}
+                onChange={handleInputChange}
+                style={{
+                  padding: '18px',
+                  margin: '20px 0',
+                  width: '100%',
+                  borderRadius: '10px',
+                  border: '1px solid #e1e1e1',
+                  fontSize: '1.2rem',
+                }}
+              >
+                <option value="">Sélectionner un genre</option>
+                <option value="Homme">Homme <FaVenusMars /></option>
+                <option value="Femme">Femme <FaVenusMars /></option>
+              </select>
+
+              <InputField name="typeMembre" value={formData.typeMembre} readOnly />
+              
+            </ProfileCard>
           ) : (
             <>
-              Voir les infos publiques <FaGlobe />
-            </>
-          )}
-        </ToggleViewButton>
-      </Header>
-
-      <InfoSection>
-        {isPublic ? (
-          <ProfileCard>
-            <ProfilePictureContainer>
-              {photoUrl && <ProfilePicture src={photoUrl} alt="Profile" />}
-              <FileInputContainer>
-                <FileInputLabel htmlFor="photoInput">Choisir une photo</FileInputLabel>
-                <HiddenFileInput
-                  id="photoInput"
-                  name="photo"
-                  type="file"
+              <ProfileCard>
+                <h3>Modifier vos identifiants</h3>
+                <InputField
+                  name="nom"
+                  placeholder="Nom"
+                  value={formData.nom}
                   onChange={handleInputChange}
                 />
-                {formData.photo && <FileNameDisplay>{formData.photo.name}</FileNameDisplay>}
-              </FileInputContainer>
-              {photoUrl && (
-                <DeleteButton onClick={handleDeletePhoto}>
-                  Supprimer la photo <FaTrashAlt />
-                </DeleteButton>
-              )}
-            </ProfilePictureContainer>
-            <InputField
-              name="pseudonyme"
-              placeholder="Pseudonyme"
-              value={formData.pseudonyme}
-              onChange={handleInputChange}
-              prefix={<FaUser />}
-            />
-            <InputField
-              name="dateNaissance"
-              type="date"
-              value={formData.dateNaissance}
-              onChange={handleInputChange}
-              prefix={<FaCalendar />}
-            />
-            <InputField name="age" placeholder="Âge" type="number" value={age} readOnly />
+                <InputField
+                  name="prenom"
+                  placeholder="Prénom"
+                  value={formData.prenom}
+                  onChange={handleInputChange}
+                />
+              </ProfileCard>
 
-            <select
-              name="genre"
-              value={formData.genre}
-              onChange={handleInputChange}
-              style={{
-                padding: '18px',
-                margin: '20px 0',
-                width: '100%',
-                borderRadius: '10px',
-                border: '1px solid #e1e1e1',
-                fontSize: '1.2rem',
-              }}
-            >
-              <option value="">Sélectionner un genre</option>
-              <option value="Homme">Homme <FaVenusMars /></option>
-              <option value="Femme">Femme <FaVenusMars /></option>
-            </select>
+              <ChangePasswordSection>
+                <h3>Modifier le mot de passe</h3>
+                <PasswordInputField
+                  name="oldPassword"
+                  type="password"
+                  placeholder="Ancien mot de passe"
+                  value={formData.oldPassword}
+                  onChange={handleInputChange}
+                />
+                <PasswordInputField
+                  name="newPassword"
+                  type="password"
+                  placeholder="Nouveau mot de passe"
+                  value={formData.newPassword}
+                  onChange={handleInputChange}
+                />
+                <PasswordInputField
+                  name="confirmNewPassword"
+                  type="password"
+                  placeholder="Confirmer le mot de passe"
+                  value={formData.confirmNewPassword}
+                  onChange={handleInputChange}
+                />
+              </ChangePasswordSection>
+            </>
+          )}
+        </InfoSection>
 
-            <InputField name="typeMembre" value={formData.typeMembre} readOnly />
-            
-          </ProfileCard>
-        ) : (
-          <>
-            <ProfileCard>
-              <h3>Modifier vos identifiants</h3>
-              <InputField
-                name="nom"
-                placeholder="Nom"
-                value={formData.nom}
-                onChange={handleInputChange}
-              />
-              <InputField
-                name="prenom"
-                placeholder="Prénom"
-                value={formData.prenom}
-                onChange={handleInputChange}
-              />
-            </ProfileCard>
-
-            <ChangePasswordSection>
-              <h3>Modifier le mot de passe</h3>
-              <PasswordInputField
-                name="oldPassword"
-                type="password"
-                placeholder="Ancien mot de passe"
-                value={formData.oldPassword}
-                onChange={handleInputChange}
-              />
-              <PasswordInputField
-                name="newPassword"
-                type="password"
-                placeholder="Nouveau mot de passe"
-                value={formData.newPassword}
-                onChange={handleInputChange}
-              />
-              <PasswordInputField
-                name="confirmNewPassword"
-                type="password"
-                placeholder="Confirmer le mot de passe"
-                value={formData.confirmNewPassword}
-                onChange={handleInputChange}
-              />
-            </ChangePasswordSection>
-          </>
-        )}
-      </InfoSection>
-
-      <SaveButton className={isModified ? 'changed' : ''} onClick={handleSave}>
-        Enregistrer les modifications
-      </SaveButton>
-    </ProfileContainer>
+        <SaveButton className={isModified ? 'changed' : ''} onClick={handleSave}>
+          Enregistrer les modifications
+        </SaveButton>
+      </ProfileContainer>
+    </>
   );
 };
 

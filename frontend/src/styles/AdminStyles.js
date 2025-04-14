@@ -4,8 +4,8 @@ export const AdminContainer = styled.div`
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem;
-  background-color: #f8fafc;
-  min-height: 100vh;
+  background-color:rgba(212, 213, 247, 0.9);
+  min-height: 130vh;
 `;
 
 export const AdminHeader = styled.div`
@@ -396,4 +396,15 @@ export const ExportButton = styled.button`
   &:hover {
     background-color: #059669;
   }
+`;
+
+export const bodyAdmin = styled.div`
+  position: fixed;
+  top: 20px;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  overflow: hidden;
+  background-color: rgb(36, 106, 187);
 `;

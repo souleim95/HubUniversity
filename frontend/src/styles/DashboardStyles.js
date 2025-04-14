@@ -1,10 +1,27 @@
 import styled from 'styled-components';
 
-export const DashboardContainer = styled.div`
-  max-width: 1400px;  // Augmentez la largeur maximale du conteneur
-  margin: 40px auto;  // Augmentez la marge autour
-  padding: 40px;  // Augmentez l'espacement interne
+export const bodyDashboard = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+  width: 100%;
+  opacity: 0.7;
+  background-attachment: fixed;
   background-color: #f5f7fa;
+`;
+
+export const DashboardContainer = styled.div`
+  max-width: 1400px;
+  margin: 40px auto;
+  padding: 40px;
+  background-color: rgba(255, 255, 255, 0.94);
   border-radius: 15px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.1);
   text-align: center;
@@ -12,14 +29,16 @@ export const DashboardContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 40px;
+  position: relative;
+  z-index: 1;
 
   @media (max-width: 768px) {
-    padding: 25px;  // Augmenter l'espacement pour les petits écrans
+    padding: 25px;
   }
 `;
 
 export const Header = styled.header`
-  background: linear-gradient(45deg, #6a82fb, #fc5c7d);
+  background: linear-gradient(45deg, #6a82fb,rgb(75, 71, 71));
   color: white;
   padding: 20px;
   border-radius: 15px;
