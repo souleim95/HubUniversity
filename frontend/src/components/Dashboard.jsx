@@ -100,12 +100,12 @@ const POINTS_CONFIG = {
 // Fonction utilitaire pour mettre à jour les points en communiquant avec le backend
 const updateUserPoints = async (pointsToAdd) => {
   // Récupérer le rôle actuel et appliquer le multiplicateur de points
-  const currentRole = localStorage.getItem('role') || 'eleve';
+  const currentRole = sessionStorage.getItem('role') || 'eleve';
   const roleMultiplier = POINTS_CONFIG.ROLE_MULTIPLIERS[currentRole] || 1;
   const adjustedPointsToAdd = pointsToAdd * roleMultiplier;
   
   // Récupérer l'identifiant de l'utilisateur (vous devez le stocker lors de la connexion/inscription)
-  const userId = localStorage.getItem('userId');
+  const userId = sessionStorage.getItem('userId');
   if (!userId) {
     console.error("L'identifiant de l'utilisateur n'est pas défini.");
     return;
@@ -124,7 +124,7 @@ const updateUserPoints = async (pointsToAdd) => {
     if (response.ok) {
       const data = await response.json();
       const newPoints = data.score;
-      localStorage.setItem('points', newPoints.toString());
+      sessionStorage.setItem('points', newPoints.toString());
       
       // Vérifier si l'utilisateur a atteint un nouveau niveau
       let newRole = currentRole;
@@ -136,7 +136,7 @@ const updateUserPoints = async (pointsToAdd) => {
       }
       
       if (newRole !== currentRole) {
-        localStorage.setItem('role', newRole);
+        sessionStorage.setItem('role', newRole);
         alert(`Félicitations ! Vous êtes maintenant ${newRole === 'professeur' ? 'Gestionnaire' : 'Directeur'} !`);
         window.location.reload();
       }
@@ -190,12 +190,12 @@ const Dashboard = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [userPoints, setUserPoints] = useState(parseInt(localStorage.getItem('points') || '0'));
+  const [userPoints, setUserPoints] = useState(parseInt(sessionStorage.getItem('points') || '0'));
 
   //gestion des points 
   useEffect(() => {
     const updatePointsFromStorage = () => {
-      setUserPoints(parseInt(localStorage.getItem('points') || '0'));
+      setUserPoints(parseInt(sessionStorage.getItem('points') || '0'));
     };
 
     window.addEventListener('storage', updatePointsFromStorage);

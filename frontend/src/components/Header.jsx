@@ -29,31 +29,28 @@ const Header = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const handleStorageChange = () => {
-      setUserPoints(parseInt(sessionStorage.getItem('points') || '0'));
+    const updatePointsFromStorage = () => {
+      const stored = sessionStorage.getItem('points');
+      const parsed = parseInt(stored, 10);
+      setUserPoints(isNaN(parsed) ? 0 : parsed);
       setRole(sessionStorage.getItem('role'));
     };
-
-    window.addEventListener('storage', handleStorageChange);
-
-    const interval = setInterval(() => {
-      const storedPoints = parseInt(sessionStorage.getItem('points') || '0');
-      const storedRole = sessionStorage.getItem('role');
-      
-      if (storedPoints !== userPoints) {
-        setUserPoints(storedPoints);
-      }
-      
-      if (storedRole !== role) {
-        setRole(storedRole);
-      }
-    }, 200);
-
+  
+    window.addEventListener('storage', updatePointsFromStorage);
+    const intervalId = setInterval(updatePointsFromStorage, 200);
+  
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
+      window.removeEventListener('storage', updatePointsFromStorage);
+      clearInterval(intervalId);
     };
-  }, [userPoints, role]);
+  }, []); // tableau de dépendances vide : l'effet s'exécute qu'une seule fois
+  
+
+  //   return () => {
+  //     window.removeEventListener('storage', handleStorageChange);
+  //     clearInterval(interval);
+  //   };
+  // }, [userPoints, role]);
   //supprime les données lors de la fermeture de la page 
 
   useEffect(() => {
