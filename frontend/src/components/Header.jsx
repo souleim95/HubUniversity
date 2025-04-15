@@ -17,6 +17,7 @@ import { equipments } from '../data/fakeData';
 import { categories } from '../data/fakeData';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Toast from './Toast';
 
 const Header = () => {
   const [isFormOpen, setIsFormOpen] = useState(null); 
@@ -30,6 +31,7 @@ const Header = () => {
   const [scrollDirection, setScrollDirection] = useState(null);
   const [lastScrollTop, setLastScrollTop] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
+  const [toasts, setToasts] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -101,30 +103,77 @@ const Header = () => {
   };
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const addToast = (text, type = 'info') => {
+    const id = Date.now();
+    setToasts(prev => [...prev, { id, text, type }]);
+  };
+
+  const removeToast = (id) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
+  };
+
+  const validateForm = () => {
+    const errors = [];
+
+    if (isFormOpen === 'signup') {
+      if (!formData.name.trim()) {
+        errors.push('Le nom est obligatoire');
+      } else if (formData.name.length < 3) {
+        errors.push('Le nom doit contenir au moins 3 caractères');
+      }
+      if (!formData.role) {
+        errors.push('Veuillez sélectionner votre rôle');
+      }
+    }
+
+    if (!formData.email.trim()) {
+      errors.push('L\'email est obligatoire');
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.push('Format d\'email invalide');
+    }
+
+    if (!formData.password) {
+      errors.push('Le mot de passe est obligatoire');
+    } else if (formData.password.length < 8) {
+      errors.push('Le mot de passe doit contenir au moins 8 caractères');
+    }
+
+    if (errors.length > 0) {
+      errors.forEach(error => addToast(error, 'error'));
+      return false;
+    }
+    return true;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    if (!validateForm()) return;
+
     let requestData = isFormOpen === 'signup'
       ? { name: formData.name, email: formData.email, role: formData.role, password: formData.password }
       : { email: formData.email, password: formData.password };
   
-    const url = isFormOpen === 'signup'
-      ? 'http://localhost:5001/api/users'
-      : 'http://localhost:5001/api/login';
-  
     try {
+      addToast(`Tentative de ${isFormOpen === 'signup' ? 'création de compte' : 'connexion'}...`, 'info');
+      
+      const url = isFormOpen === 'signup'
+        ? 'http://localhost:5001/api/users'
+        : 'http://localhost:5001/api/login';
+  
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestData),
       });
   
+      const data = await response.json();
+
       if (response.ok) {
-        const data = await response.json();
-  
         if (isFormOpen === 'login') {
           sessionStorage.setItem('user', data.user.name);
           sessionStorage.setItem('role', data.user.role);
@@ -134,107 +183,43 @@ const Header = () => {
           setRole(data.user.role);
           setUserPoints(parseInt(data.user.score, 10));
           
-          toast.success(
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span style={{ fontWeight: 'bold', marginBottom: '5px' }}>
-                Connexion réussie !
-              </span>
-              <span style={{ fontSize: '0.9em', color: '#666' }}>
-                Bienvenue {data.user.name}
-              </span>
-            </div>,
-            {
-              position: "top-right",
-              autoClose: 3000,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-              style: {
-                background: '#f8f9fa',
-                border: '1px solid #e9ecef',
-                borderLeft: '4px solid #4CAF50',
-                borderRadius: '8px',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-              }
-            }
-          );
+          addToast(`Bienvenue ${data.user.name} ! Connexion réussie.`, 'success');
           
           setTimeout(() => {
             window.location.reload();
-          }, 1000);
+          }, 1500);
+        } else {
+          addToast('Compte créé avec succès ! Vous pouvez maintenant vous connecter.', 'success');
+          setIsFormOpen('login');
+          setFormData({ ...formData, name: '', role: '', password: '' });
         }
-  
-        setIsFormOpen(null);
       } else {
-        const errorData = await response.json();
-        toast.error(
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontWeight: 'bold', marginBottom: '5px' }}>
-              Erreur de connexion
-            </span>
-            <span style={{ fontSize: '0.9em', color: '#666' }}>
-              {errorData.error || 'Vérifiez vos identifiants'}
-            </span>
-          </div>,
-          {
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            style: {
-              background: '#f8f9fa',
-              border: '1px solid #e9ecef',
-              borderLeft: '4px solid #ef4444',
-              borderRadius: '8px',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-            }
-          }
-        );
+        if (data.error.includes('exist')) {
+          addToast('Cet email est déjà utilisé', 'error');
+        } else if (data.error.includes('password')) {
+          addToast('Mot de passe incorrect', 'error');
+        } else if (data.error.includes('found')) {
+          addToast('Aucun compte trouvé avec cet email', 'error');
+        } else {
+          addToast(data.error || 'Une erreur est survenue', 'error');
+        }
       }
     } catch (error) {
-      toast.error(
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <span style={{ fontWeight: 'bold', marginBottom: '5px' }}>
-            Erreur réseau
-          </span>
-          <span style={{ fontSize: '0.9em', color: '#666' }}>
-            Vérifiez votre connexion internet
-          </span>
-        </div>,
-        {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          style: {
-            background: '#f8f9fa',
-            border: '1px solid #e9ecef',
-            borderLeft: '4px solid #ef4444',
-            borderRadius: '8px',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-          }
-        }
-      );
+      addToast('Erreur de connexion au serveur. Veuillez réessayer.', 'error');
     }
   };
-  
 
   const handleLogout = () => {
+    addToast(`Au revoir ${userName} ! À bientôt.`, 'info');
     sessionStorage.removeItem('user');
     sessionStorage.removeItem('role');
     sessionStorage.removeItem('points');
     setUserName(null);
     setRole(null);
     setUserPoints(0);
-    window.location.reload();
+    setTimeout(() => {
+      window.location.reload();
+    }, 3000);
   };
 
   const handleSelectObject = (obj, categoryKey) => {
@@ -307,6 +292,7 @@ const Header = () => {
       top: scrollDirection === 'down' ? '-100px' : '0',
       transition: 'top 0.3s'
     }}>
+      <Toast messages={toasts} removeToast={removeToast} />
       <WelcomeChoices>
         <a href="/">
           <img src={hubCyLogo} alt="HubCY" />

@@ -192,6 +192,7 @@ const Dashboard = () => {
 
   const [userPoints, setUserPoints] = useState(parseInt(sessionStorage.getItem('points') || '0'));
 
+
   //gestion des points 
   useEffect(() => {
     const updatePointsFromStorage = () => {
@@ -390,7 +391,6 @@ const Dashboard = () => {
 
   // Modifier l'useEffect pour le décompte du micro-ondes
   useEffect(() => {
-    console.log("Initialisation du décompte du micro-ondes"); // Debug
     const microwaveInterval = setInterval(() => {
       setRoomEquipments(prevEquipments => {
         let changed = false;
@@ -401,7 +401,6 @@ const Dashboard = () => {
             updatedEquipments[roomId] = updatedEquipments[roomId].map(equip => {
               // Chercher tous les types de micro-ondes possibles
               if (equip.type === 'Microwave' && equip.status === 'En cours' && equip.timer > 0) {
-                console.log(`DÉCOMPTE: ${equip.id} - ${equip.timer}s → ${equip.timer-1}s`); // Afficher le décompte dans la console
                 
                 const newTimer = equip.timer - 1;
                 const newStatus = newTimer <= 0 ? 'Terminé' : 'En cours';
@@ -439,7 +438,6 @@ const Dashboard = () => {
 
   const handleObjectControl = (id, action, value) => {
     if (isFireAlarmActive() && action !== 'reset_fire_alarm') {
-      console.warn(`Action '${action}' bloquée pour '${id}': Alarme Incendie active.`);
       return; // Prevent state update
     }
 
@@ -562,7 +560,6 @@ const Dashboard = () => {
             };
           case 'thermo_toggle':
             const currentGlobalTemp = obj.targetTemp;
-            console.log("Thermostat toggle:", value, obj.id); // Ajout de log pour débuggage
             return {
               ...obj,
               status: value ? 'Actif' : 'Inactif',
@@ -593,37 +590,28 @@ const Dashboard = () => {
               status: value // Restore previous status passed as value
             };
           case 'simulate_car_enter':
-            console.log(`Action: simulate_car_enter for ${id}`); // Debug log
             if (obj.id === 'affichage_parking' && obj.freeSpots > 0) {
               return { ...obj, freeSpots: obj.freeSpots - 1 };
             }
             return obj;
           case 'simulate_car_leave':
-            console.log(`Action: simulate_car_leave for ${id}`); // Debug log
             if (obj.id === 'affichage_parking' && obj.freeSpots < obj.totalSpots) {
               return { ...obj, freeSpots: obj.freeSpots + 1 };
             }
             return obj;
           case 'simulate_fire_alarm':
-            console.log(`Action: simulate_fire_alarm for ${id}`); // Debug log
             return { ...obj, status: 'Alarme Incendie' };
           case 'reset_fire_alarm':
-            console.log(`Action: reset_fire_alarm for ${id}`); // Debug log
             return { ...obj, status: 'Normal' };
           case 'simulate_smoke_detection':
-            console.log(`Action: simulate_smoke_detection for ${id}`); // Debug log
             return { ...obj, status: 'Fumée détectée' };
           case 'reset_smoke_detector':
-            console.log(`Action: reset_smoke_detector for ${id}`); // Debug log
             return { ...obj, status: 'Normal' };
           case 'simulate_charge_start':
-            console.log(`Action: simulate_charge_start for ${id}`);
             return { ...obj, status: 'En charge' };
           case 'simulate_charge_end':
-            console.log(`Action: simulate_charge_end for ${id}`);
             return { ...obj, status: 'Libre' };
           case 'toggle_service_status':
-            console.log(`Action: toggle_service_status for ${id}`);
             const newChargerStatus = obj.status === 'Hors service' ? 'Libre' : 'Hors service';
             return { ...obj, status: newChargerStatus };
           default:
@@ -636,11 +624,8 @@ const Dashboard = () => {
 
   const handleEquipmentControl = (id, action, value) => {
     if (isFireAlarmActive()) {
-      console.warn(`Action équipement '${action}' bloquée pour '${id}': Alarme Incendie active.`);
       return; // Prevent state update
     }
-
-    console.log("Equipment control:", id, action, value); // Ajout de log pour débuggage
 
     // Attribuer des points selon le type d'action
     let pointsEarned = 0;
@@ -689,7 +674,6 @@ const Dashboard = () => {
         if (equip.id === id) {
           // Bloquer les interactions si la cafetière est en nettoyage (sauf pour arrêter le nettoyage)
           if (equip.type === 'Cafetiere' && equip.isCleaning && action !== 'cafetiere_clean') {
-            console.warn(`Action '${action}' bloquée pour '${id}': Nettoyage en cours.`);
             return equip;
           }
           
@@ -909,7 +893,6 @@ const Dashboard = () => {
             case 'dishwasher_start_stop':
               if (value && equip.rinseAidLevel <= 0) {
                 // Ne pas démarrer si pas de liquide de rinçage
-                console.warn("Impossible de démarrer: liquide de rinçage vide");
                 return equip;
               }
               
@@ -976,14 +959,12 @@ const Dashboard = () => {
                return equip;
             case 'scoreboard_timer':
               if (equip.id === 'score_board') {
-                console.log(`Scoreboard Timer Update: Received value = ${value}`);
                 const newTimer = Math.max(0, parseInt(value) || 0); // Ensure non-negative integer
                 return { ...equip, timer: newTimer };
               }
               return equip;
             case 'scoreboard_period':
                if (equip.id === 'score_board') {
-                 console.log(`Scoreboard Period Update: Received value = ${value}`);
                  const newPeriod = Math.max(1, parseInt(value) || 1); // Ensure integer >= 1
                  return { ...equip, period: newPeriod };
                }
@@ -1098,7 +1079,6 @@ const Dashboard = () => {
               };
             case 'thermo_toggle':
               const currentTemp = equip.targetTemp;
-              console.log("Equipment thermostat toggle:", value, equip.id); // Ajout de log pour débuggage
               return {
                 ...equip,
                 status: value ? 'Actif' : 'Inactif',
@@ -1761,21 +1741,11 @@ const Dashboard = () => {
                   Alarme déclenchée: {new Date(obj.lastDetection).toLocaleString()}
                 </ValueDisplay>
               )}
-              {isAlarm && obj.alarmTriggerItem && (
-                <div style={{ color: 'red', marginTop: '5px' }}>
-                  Objet suspecté: {obj.alarmTriggerItem.title} ({obj.alarmTriggerItem.id})
-                </div>
-              )}
               <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                <ControlButton
-                  onClick={() => handler(obj.id, 'simulate_rfid_alarm')}
-                  disabled={isAlarm}>
-                  Simuler Alarme
+                <ControlButton onClick={() => handler(obj.id, 'simulate_rfid_alarm')} disabled={isAlarm}>
+                  Simuler Alarme Antivol
                 </ControlButton>
-                <ControlButton
-                  onClick={() => handler(obj.id, 'reset_rfid_alarm')}
-                  disabled={!isAlarm}
-                  style={{ backgroundColor: isAlarm ? '#4CAF50' : '#cccccc' }}>
+                <ControlButton onClick={() => handler(obj.id, 'reset_rfid_alarm')} disabled={!isAlarm} style={{ backgroundColor: isAlarm ? '#4CAF50' : '#cccccc' }}>
                   Réinitialiser Alarme
                 </ControlButton>
               </div>

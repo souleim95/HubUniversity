@@ -114,6 +114,7 @@ export const SearchContainer = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
+    left: 215px;
 
     svg {
       width: 24px;

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import Toast from './Toast';
 import {
   ProfileContainer,
   Header,
@@ -26,6 +27,7 @@ const Profile = () => {
   const [isPublic, setIsPublic] = useState(true);
   const [age, setAge] = useState('');
   const [photoUrl, setPhotoUrl] = useState(localStorage.getItem('photoUrl') || null);
+  const [toasts, setToasts] = useState([]);
 
   const initialFormData = {
     pseudonyme: localStorage.getItem('user') || '',
@@ -76,6 +78,23 @@ const Profile = () => {
 
   const handleInputChange = (e) => {
     const { name, value, type, files } = e.target;
+    
+    if (type === 'file') {
+      const file = files[0];
+      if (file) {
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        if (file.size > maxSize) {
+          addToast('La taille de l\'image ne doit pas dépasser 5MB', 'error');
+          return;
+        }
+        if (!file.type.startsWith('image/')) {
+          addToast('Seules les images sont acceptées', 'error');
+          return;
+        }
+        addToast('Photo de profil mise à jour', 'success');
+      }
+    }
+
     setFormData((prevData) => ({
       ...prevData,
       [name]: type === 'file' ? files[0] : value,
@@ -101,29 +120,65 @@ const Profile = () => {
       photo: null,
     }));
     setIsModified(true);
+    addToast('Photo de profil supprimée avec succès', 'info');
+  };
+
+  const addToast = (text, type = 'info') => {
+    const id = Date.now();
+    setToasts(prev => [...prev, { id, text, type }]);
+  };
+
+  const removeToast = (id) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
   };
 
   const handleSave = () => {
     if (formData.newPassword || formData.confirmNewPassword || formData.oldPassword) {
       if (!formData.oldPassword) {
-        alert('Veuillez entrer votre ancien mot de passe.');
+        addToast('Veuillez renseigner votre ancien mot de passe pour effectuer la modification', 'error');
         return;
       }
       if (formData.newPassword !== formData.confirmNewPassword) {
-        alert('La confirmation du mot de passe ne correspond pas.');
+        addToast('Les nouveaux mots de passe ne correspondent pas', 'error');
         return;
       }
-      alert('Mot de passe modifié avec succès.');
+      if (formData.newPassword.length < 8) {
+        addToast('Le nouveau mot de passe doit contenir au moins 8 caractères', 'error');
+        return;
+      }
+      addToast('Votre mot de passe a été modifié avec succès', 'success');
     }
 
-    localStorage.setItem('user', formData.pseudonyme);
-    localStorage.setItem('genre', formData.genre);
-    localStorage.setItem('dateNaissance', formData.dateNaissance);
-    localStorage.setItem('nom', formData.nom);
-    localStorage.setItem('prenom', formData.prenom);
+    const updates = [];
+    if (formData.pseudonyme !== initialFormData.pseudonyme) {
+      localStorage.setItem('user', formData.pseudonyme);
+      updates.push('pseudonyme');
+    }
+    if (formData.genre !== initialFormData.genre) {
+      localStorage.setItem('genre', formData.genre);
+      updates.push('genre');
+    }
+    if (formData.dateNaissance !== initialFormData.dateNaissance) {
+      localStorage.setItem('dateNaissance', formData.dateNaissance);
+      updates.push('date de naissance');
+    }
+    if (formData.nom !== initialFormData.nom) {
+      localStorage.setItem('nom', formData.nom);
+      updates.push('nom');
+    }
+    if (formData.prenom !== initialFormData.prenom) {
+      localStorage.setItem('prenom', formData.prenom);
+      updates.push('prénom');
+    }
 
     setIsModified(false);
-    alert('Modifications enregistrées !');
+
+    if (updates.length > 0) {
+      addToast(
+        `Modifications enregistrées : ${updates.join(', ')}`,
+        'success'
+      );
+    }
   };
 
   const toggleOldPasswordVisibility = () => {
@@ -140,6 +195,7 @@ const Profile = () => {
 
   return (
     <>
+      <Toast messages={toasts} removeToast={removeToast} />
       <BackgroundContainer>
         <img src={profileBackground} alt="Profile background" />
       </BackgroundContainer>
