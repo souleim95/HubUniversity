@@ -14,6 +14,9 @@ import UserMenu from './UserMenu';
 import { useNavigate } from 'react-router-dom';
 import { equipments } from '../data/fakeData';
 import { categories } from '../data/fakeData';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const Header = () => {
   const [isFormOpen, setIsFormOpen] = useState(null); 
@@ -26,6 +29,7 @@ const Header = () => {
   const [selectedEquipment, setSelectedEquipment] = useState(null);
   const [scrollDirection, setScrollDirection] = useState(null);
   const [lastScrollTop, setLastScrollTop] = useState(0);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -103,7 +107,6 @@ const Header = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Préparer les données à envoyer
     let requestData = isFormOpen === 'signup'
       ? { name: formData.name, email: formData.email, role: formData.role, password: formData.password }
       : { email: formData.email, password: formData.password };
@@ -130,17 +133,96 @@ const Header = () => {
           setUserName(data.user.name);
           setRole(data.user.role);
           setUserPoints(parseInt(data.user.score, 10));
-          window.location.reload();
+          
+          toast.success(
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontWeight: 'bold', marginBottom: '5px' }}>
+                Connexion réussie !
+              </span>
+              <span style={{ fontSize: '0.9em', color: '#666' }}>
+                Bienvenue {data.user.name}
+              </span>
+            </div>,
+            {
+              position: "top-right",
+              autoClose: 3000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              style: {
+                background: '#f8f9fa',
+                border: '1px solid #e9ecef',
+                borderLeft: '4px solid #4CAF50',
+                borderRadius: '8px',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+              }
+            }
+          );
+          
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
         }
-        
   
         setIsFormOpen(null);
       } else {
         const errorData = await response.json();
-        alert(errorData.error || 'Erreur lors de la connexion.');
+        toast.error(
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <span style={{ fontWeight: 'bold', marginBottom: '5px' }}>
+              Erreur de connexion
+            </span>
+            <span style={{ fontSize: '0.9em', color: '#666' }}>
+              {errorData.error || 'Vérifiez vos identifiants'}
+            </span>
+          </div>,
+          {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            style: {
+              background: '#f8f9fa',
+              border: '1px solid #e9ecef',
+              borderLeft: '4px solid #ef4444',
+              borderRadius: '8px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+            }
+          }
+        );
       }
     } catch (error) {
-      alert('Erreur réseau. Vérifiez votre connexion.');
+      toast.error(
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <span style={{ fontWeight: 'bold', marginBottom: '5px' }}>
+            Erreur réseau
+          </span>
+          <span style={{ fontSize: '0.9em', color: '#666' }}>
+            Vérifiez votre connexion internet
+          </span>
+        </div>,
+        {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          style: {
+            background: '#f8f9fa',
+            border: '1px solid #e9ecef',
+            borderLeft: '4px solid #ef4444',
+            borderRadius: '8px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+          }
+        }
+      );
     }
   };
   
@@ -159,7 +241,7 @@ const Header = () => {
     let targetCategory = categoryKey;
     let targetRoom = null;
     let targetEquipment = null;
-
+  
     if (!targetCategory) {
       for (const [key, value] of Object.entries(categories)) {
         if (value.items && value.items.includes(obj.id)) {
@@ -180,9 +262,37 @@ const Header = () => {
         }
       }
     }
-    
-    console.log(`Navigation vers Dashboard - Catégorie: ${targetCategory}, Salle: ${targetRoom}, Équipement: ${targetEquipment}`);
-
+  
+    toast.info(
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <span style={{ fontWeight: 'bold', marginBottom: '5px' }}>
+          Navigation vers le tableau de bord
+        </span>
+        <span style={{ fontSize: '0.9em', color: '#666' }}>
+          {`${targetCategory.charAt(0).toUpperCase() + targetCategory.slice(1)} › ${
+            obj.type === 'Salle' ? obj.name : `Salle ${targetRoom} › ${obj.name}`
+          }`}
+        </span>
+      </div>,
+      {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        className: 'custom-toast',
+        style: {
+          background: '#f8f9fa',
+          border: '1px solid #e9ecef',
+          borderLeft: '4px solid #0f6ead',
+          borderRadius: '8px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+        }
+      }
+    );
+  
     navigate('/dashboard', { 
       state: { 
         category: targetCategory, 
@@ -204,55 +314,54 @@ const Header = () => {
       </WelcomeChoices>
 
       <NavLinks>
-        <div>
-          {userName && (
+        {userName ? (
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            backgroundColor: '#f5f5f5', 
+            padding: '6px 12px', 
+            borderRadius: '20px',
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+            border: '1px solid #e0e0e0'
+          }}>
+            <span style={{ 
+              fontWeight: 'bold', 
+              marginRight: '10px'
+            }}>
+              Bonjour {userName}
+            </span>
             <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
-              backgroundColor: '#f5f5f5', 
-              padding: '6px 12px', 
-              borderRadius: '20px',
-              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-              border: '1px solid #e0e0e0'
+              gap: '10px' 
             }}>
               <span style={{ 
-                fontWeight: 'bold', 
-                marginRight: '10px'
+                backgroundColor: '#FFC107', 
+                color: '#333', 
+                padding: '3px 8px',
+                borderRadius: '12px',
+                fontSize: '0.85rem',
+                fontWeight: 'bold'
               }}>
-                Bonjour {userName}
+                {userPoints} pts
               </span>
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '10px' 
+              <span style={{ 
+                backgroundColor: getRoleColor(role), 
+                color: 'white', 
+                padding: '3px 8px',
+                borderRadius: '12px',
+                fontSize: '0.85rem',
+                fontWeight: 'bold'
               }}>
-                <span style={{ 
-                  backgroundColor: '#FFC107', 
-                  color: '#333', 
-                  padding: '3px 8px',
-                  borderRadius: '12px',
-                  fontSize: '0.85rem',
-                  fontWeight: 'bold'
-                }}>
-                  {userPoints} pts
-                </span>
-                <span style={{ 
-                  backgroundColor: getRoleColor(role), 
-                  color: 'white', 
-                  padding: '3px 8px',
-                  borderRadius: '12px',
-                  fontSize: '0.85rem',
-                  fontWeight: 'bold'
-                }}>
-                  {getRoleTitle(role)}
-                </span>
-              </div>
+                {getRoleTitle(role)}
+              </span>
             </div>
-          )}
-          {!userName && (
-            <ConnectButton onClick={() => toggleForm('login')}>Connexion</ConnectButton>
-          )}
-        </div>
+          </div>
+        ) : (
+          <ConnectButton onClick={() => toggleForm('login')}>
+            Connexion
+          </ConnectButton>
+        )}
       </NavLinks>
 
       <SearchContainer>
@@ -279,43 +388,65 @@ const Header = () => {
             <h2>{isFormOpen === 'signup' ? 'Inscription' : 'Connexion'}</h2>
             <form onSubmit={handleSubmit}>
               {isFormOpen === 'signup' && (
-                <input type="text" name="name" placeholder="Nom complet" value={formData.name} onChange={handleChange} required />
+                <input 
+                  type="text" 
+                  name="name" 
+                  placeholder="Nom complet" 
+                  value={formData.name} 
+                  onChange={handleChange} 
+                  required 
+                />
               )}
-              <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} required />
               
-              {isFormOpen === 'login' && (
-                <input type="password" name="password" placeholder="Mot de passe" value={formData.password} onChange={handleChange} required />
-              )}
+              <input 
+                type="email" 
+                name="email" 
+                placeholder="Email" 
+                value={formData.email} 
+                onChange={handleChange} 
+                required 
+              />
+              
+              <div className="password-input">
+                <input 
+                  type={showPassword ? "text" : "password"} 
+                  name="password" 
+                  placeholder="Mot de passe" 
+                  value={formData.password} 
+                  onChange={handleChange} 
+                  required 
+                />
+                <button 
+                  type="button" 
+                  className="toggle-password"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
 
               {isFormOpen === 'signup' && (
-                <>
-                  <input type="password" name="password" placeholder="Mot de passe" value={formData.password} onChange={handleChange} required />
-                  <select name="role" value={formData.role} onChange={handleChange} required>
-                    <option value="">Sélectionnez votre rôle</option>
-                    <option value="eleve">Étudiant</option>
-                    <option value="professeur">Enseignant</option>
-                    {/*<option value="directeur">Administrateur</option>*/}
-                  </select>
-                </>
+                <select name="role" value={formData.role} onChange={handleChange} required>
+                  <option value="">Sélectionnez votre rôle</option>
+                  <option value="eleve">Étudiant</option>
+                  <option value="professeur">Enseignant</option>
+                </select>
               )}
 
-              <button type="submit">{isFormOpen === 'signup' ? 'Créer un compte' : 'Se connecter'}</button>
+              <button type="submit">
+                {isFormOpen === 'signup' ? 'Créer un compte' : 'Se connecter'}
+              </button>
 
-              {isFormOpen === 'login' ? (
-                <p>
-                  Pas encore inscrit ?{' '}
-                  <button type="button" onClick={() => toggleForm('signup')} className="switch-form">
-                    Inscription
-                  </button>
-                </p>
-              ) : (
-                <p>
-                  Déjà un compte ?{' '}
-                  <button type="button" onClick={() => toggleForm('login')} className="switch-form">
-                    Connexion
-                  </button>
-                </p>
-              )}
+              <p>
+                {isFormOpen === 'login' ? 'Pas encore inscrit ?' : 'Déjà un compte ?'}{' '}
+                <button 
+                  type="button" 
+                  onClick={() => toggleForm(isFormOpen === 'login' ? 'signup' : 'login')} 
+                  className="switch-form"
+                >
+                  {isFormOpen === 'login' ? 'Inscription' : 'Connexion'}
+                </button>
+              </p>
 
               <button type="button" onClick={() => setIsFormOpen(null)} className="close-btn">
                 Fermer
@@ -324,6 +455,7 @@ const Header = () => {
           </LoginFormContainer>
         </>
       )}
+      <ToastContainer />
     </HeaderContainer>
   );
 };

@@ -80,16 +80,27 @@ export const ConnectButton = styled.button`
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  margin: auto;
+  display: block;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 
   &:hover {
     background-color: rgb(49, 137, 196);
-    transform: translateY(-2px);
-    cursor: pointer;
+    transform: translateX(-50%) translateY(-2px);
   }
 
   @media (max-width: 768px) {
     padding: 6px 12px;
     font-size: 13px;
+    position: relative;
+    transform: none;
+    left: auto;
+
+    &:hover {
+      transform: translateY(-2px);
+    }
   }
 `;
 
@@ -151,43 +162,134 @@ export const LoginFormContainer = styled.div`
   left: 50%;
   transform: translate(-50%, -50%);
   background: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   z-index: 1000;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 300px;
-  animation: slideIn 0.5s ease-in-out; /* Douce transition de 0.5 secondes */
-
-
+  width: 380px;
+  animation: slideIn 0.5s ease-in-out;
+  
   h2 {
-    margin-bottom: 15px;
+    color: rgb(15, 110, 173);
+    font-size: 24px;
+    margin-bottom: 25px;
+    text-align: center;
+    font-weight: 600;
   }
 
   input, select {
     width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    border: 2px solid #eef2f7;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: #f8fafc;
+
+    &:focus {
+      outline: none;
+      border-color: rgb(15, 110, 173);
+      background: white;
+      box-shadow: 0 0 0 3px rgba(15, 110, 173, 0.1);
+    }
   }
 
   button {
     width: 100%;
-    padding: 10px;
-    background: rgb(15, 110, 173);
-    color: white;
+    padding: 12px;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    transition: all 0.3s ease;
     cursor: pointer;
-    font-size: 16px;
-    margin-top: 10px;
+
+    &:not(.switch-form):not(.close-btn) {
+      background: rgb(15, 110, 173);
+      color: white;
+      margin-top: 10px;
+
+      &:hover {
+        background: rgb(12, 90, 143);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(15, 110, 173, 0.2);
+      }
+    }
+  }
+
+  .switch-form {
+    background: none;
+    color: rgb(15, 110, 173);
+    text-decoration: underline;
+    padding: 0;
+    margin: 0;
+    width: auto;
+    display: inline;
+
+    &:hover {
+      color: rgb(12, 90, 143);
+    }
+  }
+
+  p {
+    margin: 20px 0;
+    text-align: center;
+    color: #64748b;
+    font-size: 14px;
   }
 
   .close-btn {
-    background: red;
-    margin-top: 5px;
+    background: #ef4444;
+    color: white;
+    margin-top: 15px;
+
+    &:hover {
+      background: #dc2626;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+    }
+  }
+
+  .password-input {
+    position: relative;
+    width: 100%;
+    margin-bottom: 16px;
+
+    input {
+      margin-bottom: 0;
+      padding-right: 40px;
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 12px;
+      top: 2px; 
+      transform: none; 
+      background: none;
+      border: none;
+      padding: 0;
+      width: auto;
+      height: auto;
+      color: #666;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &:hover {
+        color: rgb(15, 110, 173);
+      }
+
+      svg {
+        width: 20px;
+        height: 20px;
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    width: 90%;
+    padding: 20px;
   }
 `;

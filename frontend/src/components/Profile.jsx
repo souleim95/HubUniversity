@@ -42,6 +42,9 @@ const Profile = () => {
 
   const [formData, setFormData] = useState(initialFormData);
   const [isModified, setIsModified] = useState(false);
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
 
   useEffect(() => {
     const storedPhotoUrl = localStorage.getItem('photoUrl');
@@ -121,6 +124,18 @@ const Profile = () => {
 
     setIsModified(false);
     alert('Modifications enregistrées !');
+  };
+
+  const toggleOldPasswordVisibility = () => {
+    setShowOldPassword(!showOldPassword);
+  };
+
+  const toggleNewPasswordVisibility = () => {
+    setShowNewPassword(!showNewPassword);
+  };
+
+  const toggleConfirmNewPasswordVisibility = () => {
+    setShowConfirmNewPassword(!showConfirmNewPassword);
   };
 
   return (
@@ -224,25 +239,34 @@ const Profile = () => {
                 <h3>Modifier le mot de passe</h3>
                 <PasswordInputField
                   name="oldPassword"
-                  type="password"
+                  type={showOldPassword ? "text" : "password"}
                   placeholder="Ancien mot de passe"
                   value={formData.oldPassword}
                   onChange={handleInputChange}
                 />
+                <ToggleViewButton type="button" onClick={toggleOldPasswordVisibility}>
+                  {showOldPassword ? "Cacher" : "Afficher"}
+                </ToggleViewButton>
                 <PasswordInputField
                   name="newPassword"
-                  type="password"
+                  type={showNewPassword ? "text" : "password"}
                   placeholder="Nouveau mot de passe"
                   value={formData.newPassword}
                   onChange={handleInputChange}
                 />
+                <ToggleViewButton type="button" onClick={toggleNewPasswordVisibility}>
+                  {showNewPassword ? "Cacher" : "Afficher"}
+                </ToggleViewButton>
                 <PasswordInputField
                   name="confirmNewPassword"
-                  type="password"
+                  type={showConfirmNewPassword ? "text" : "password"}
                   placeholder="Confirmer le mot de passe"
                   value={formData.confirmNewPassword}
                   onChange={handleInputChange}
                 />
+                <ToggleViewButton type="button" onClick={toggleConfirmNewPasswordVisibility}>
+                  {showConfirmNewPassword ? "Cacher" : "Afficher"}
+                </ToggleViewButton>
               </ChangePasswordSection>
             </>
           )}
