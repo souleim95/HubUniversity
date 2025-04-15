@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { RiEyeLine, RiEyeOffLine } from 'react-icons/ri';
 import { 
   HeaderContainer, 
   WelcomeChoices, 
@@ -16,7 +17,6 @@ import { equipments } from '../data/fakeData';
 import { categories } from '../data/fakeData';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const Header = () => {
   const [isFormOpen, setIsFormOpen] = useState(null); 
@@ -421,7 +421,7 @@ const Header = () => {
                   className="toggle-password"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  {showPassword ? <RiEyeOffLine /> : <RiEyeLine />}
                 </button>
               </div>
 

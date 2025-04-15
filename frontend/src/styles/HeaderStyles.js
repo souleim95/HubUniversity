@@ -277,13 +277,19 @@ export const LoginFormContainer = styled.div`
       align-items: center;
       justify-content: center;
 
-      &:hover {
-        color: rgb(15, 110, 173);
+      svg {
+        width: 24px;        /* plus grand */
+        height: 24px;
+        transition: transform 0.2s ease;
       }
 
-      svg {
-        width: 20px;
-        height: 20px;
+      &:hover svg {
+        transform: scale(1.15);
+      }
+
+      .toggle-password:active svg {
+        transform: scale(0.95);
+        opacity: 0.1;
       }
     }
   }
