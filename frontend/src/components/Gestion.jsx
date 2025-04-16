@@ -9,7 +9,8 @@ import {
   Tooltip,
   CartesianGrid,
 } from 'recharts';
-import { toast, Toaster } from 'react-hot-toast';
+
+
 import {
   AdminContainer,
   AdminHeader,
@@ -68,6 +69,12 @@ function GestionPage() {
   const [editingObject, setEditingObject] = useState(null);
   const [allObjects, setAllObjects] = useState([]);
 
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [confirmationMessage, setConfirmationMessage] = useState('');
+  const [confirmationAction, setConfirmationAction] = useState(null);
+
   
 
   const [objectFormData, setObjectFormData] = useState({
@@ -106,13 +113,6 @@ const [editingSettingsFor, setEditingSettingsFor] = useState(null);
     energyConsumption: [],
     objectUsage: [],
   });
-
-  const [showDeleteReservationModal, setShowDeleteReservationModal] = useState(false);
-  const [showDeleteObjectModal, setShowDeleteObjectModal] = useState(false);
-  const [selectedReservationToDelete, setSelectedReservationToDelete] = useState(null);
-  const [selectedObjectToDelete, setSelectedObjectToDelete] = useState(null);
-
-  const [showExportModal, setShowExportModal] = useState(false);
 
   const generateReports = (objectsToAnalyze) => {
     const today = new Date().toISOString().split('T')[0];
@@ -154,12 +154,16 @@ const [editingSettingsFor, setEditingSettingsFor] = useState(null);
   };
   
 
-  const handleExport = () => {
-    if (objects.length === 0) {
-      setShowExportModal(true);
+  const handleExportReport = (type) => {
+    const data = reports[type];
+    if (!data || data.length === 0) {
+      setAlertMessage("Aucune donnée à exporter");
+      setShowAlert(true);
       return;
     }
-    // ... existing code ...
+  
+    const csv = convertToCSV(data);
+    downloadCSV(csv, `${type}_report.csv`);
   };
   
   const convertToCSV = (data) => {
@@ -236,10 +240,20 @@ const [editingSettingsFor, setEditingSettingsFor] = useState(null);
   };
   
 
+
+  
+  
+  
+
   const handleAddObject = () => {
     setObjectFormData({ name: '', category: selectedCategory, status: 'active', priority: 'normal' });
     setShowObjectModal(true);
   };
+
+
+  
+
+  
   
 
   // --------- Gestion des réservations ---------
@@ -258,14 +272,12 @@ const [editingSettingsFor, setEditingSettingsFor] = useState(null);
   };
 
   const handleDeleteReservation = (reservationId) => {
-    setSelectedReservationToDelete(reservationId);
-    setShowDeleteReservationModal(true);
-  };
-
-  const confirmDeleteReservation = () => {
-    setReservations(reservations.filter(reservation => reservation.id !== selectedReservationToDelete));
-    setShowDeleteReservationModal(false);
-    setSelectedReservationToDelete(null);
+    setConfirmationMessage('Êtes-vous sûr de vouloir supprimer cette réservation ?');
+    setShowConfirmation(true);
+    setConfirmationAction(() => () => {
+      setReservations(reservations.filter(reservation => reservation.id !== reservationId));
+      setShowConfirmation(false);
+    });
   };
 
   const handleObjectSubmit = (e) => {
@@ -285,35 +297,11 @@ const [editingSettingsFor, setEditingSettingsFor] = useState(null);
         fakeObjects.some((obj) => obj.id === fullId) ||
         allObjects.some((obj) => obj.id === fullId);
   
-    if (idExists) {
-      toast.error(
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <span style={{ fontWeight: 'bold', marginBottom: '5px' }}>
-            Erreur d'identifiant
-          </span>
-          <span style={{ fontSize: '0.9em', color: '#666' }}>
-            Cet identifiant existe déjà ! Choisissez un autre numéro.
-          </span>
-        </div>,
-        {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          className: 'custom-toast',
-          style: {
-            background: '#f8f9fa',
-            border: '1px solid #e9ecef',
-            borderLeft: '4px solid #f44336',
-            borderRadius: '8px',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-          }
-        }
-      );
-      return;
+      if (idExists) {
+        setAlertMessage("Cet identifiant existe déjà ! Choisissez un autre numéro.");
+        setShowAlert(true);
+        return;
+      }
     }
   
     const newObject = {
@@ -336,9 +324,27 @@ const [editingSettingsFor, setEditingSettingsFor] = useState(null);
       }
     };
   
-    const updatedObjects = [...objects, newObject];
-    setObjects(updatedObjects);
-    generateReports(updatedObjects); // 🟢 Maintenant c'est bon ✅
+    let updatedAllObjects;
+    if (editingObject) {
+      updatedAllObjects = allObjects.filter(obj => obj.id !== editingObject.id);
+      updatedAllObjects.push(newObject);
+    } else {
+      updatedAllObjects = [...allObjects, newObject];
+    }
+    
+  
+    setAllObjects(updatedAllObjects);
+  
+    // 🔁 Mise à jour de la catégorie active si nécessaire
+    const updatedCategory = objectFormData.category;
+    setSelectedCategory(updatedCategory); // <- forcer le passage à cette catégorie
+  
+    const newCategoryObjects = updatedAllObjects.filter(object =>
+      categories[updatedCategory]?.items.includes(object.id)
+    );
+  
+    setSelectedCategory(updatedCategory); // C’est le useEffect qui fera le reste
+
     setShowObjectModal(false);
     setEditingObject(null);
   };
@@ -351,42 +357,18 @@ const [editingSettingsFor, setEditingSettingsFor] = useState(null);
 
 // --------- Gestion des objets ---------
 const handleRequestDeletion = (object) => {
-  setSelectedObjectToDelete(object);
-  setShowDeleteObjectModal(true);
-};
-
-const confirmDeleteObject = () => {
-  toast.success(
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
-      <span style={{ fontWeight: 'bold', marginBottom: '5px' }}>
-        Demande de suppression envoyée
-      </span>
-      <span style={{ fontSize: '0.9em', color: '#666' }}>
-        {`La demande de suppression pour l'objet ${selectedObjectToDelete.name} a été envoyée à l'administrateur.`}
-      </span>
-    </div>,
-    {
-      position: "top-right",
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-      className: 'custom-toast',
-      style: {
-        background: '#f8f9fa',
-        border: '1px solid #e9ecef',
-        borderLeft: '4px solid #4caf50',
-        borderRadius: '8px',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-      }
-    }
-  );
-  
-  setAlerts(prevAlerts => [...prevAlerts, { message: `Demande de suppression pour ${selectedObjectToDelete.name}`, objectId: selectedObjectToDelete.id }]);
-  setShowDeleteObjectModal(false);
-  setSelectedObjectToDelete(null);
+  // Créer une alerte pour demander la suppression de l'objet
+  setConfirmationMessage(`Êtes-vous sûr de vouloir demander la suppression de ${object.name} ?`);
+  setShowConfirmation(true);
+  setConfirmationAction(() => () => {
+    // Ici tu peux envoyer un message ou une alerte à l'administrateur, par exemple en ajoutant l'objet à une liste des objets à supprimer
+    setAlertMessage(`La demande de suppression pour l'objet ${object.name} a été envoyée à l'administrateur.`);
+    setShowAlert(true);
+    
+    // Tu peux également maintenir une liste d'objets à supprimer (à traiter côté serveur ou administrateur)
+    setAlerts(prevAlerts => [...prevAlerts, { message: `Demande de suppression pour ${object.name}`, objectId: object.id }]);
+    setShowConfirmation(false);
+  });
 };
 
 
@@ -405,34 +387,9 @@ const confirmDeleteObject = () => {
     // Ajouter l'alerte à l'état des alertes
     setAlerts(prevAlerts => [...prevAlerts, newAlert]);
   
-    // Afficher un toast
-    toast.warning(
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
-        <span style={{ fontWeight: 'bold', marginBottom: '5px' }}>
-          Nouvelle alerte créée
-        </span>
-        <span style={{ fontSize: '0.9em', color: '#666' }}>
-          {`L'alerte pour l'objet ${object.name} a été créée.`}
-        </span>
-      </div>,
-      {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        className: 'custom-toast',
-        style: {
-          background: '#f8f9fa',
-          border: '1px solid #e9ecef',
-          borderLeft: '4px solid #ff9800',
-          borderRadius: '8px',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-        }
-      }
-    );
+    // Optionnel : afficher une alerte en pop-up
+    setAlertMessage(`L'alerte pour l'objet ${object.name} a été créée.`);
+    setShowAlert(true);
   };
 
   const handleAlertAction = (alert) => {
@@ -514,7 +471,6 @@ const confirmDeleteObject = () => {
 
   return (
     <AdminContainer>
-      <Toaster />
       <AdminHeader>
         <AdminTitle>Gestion des Objets Connectés</AdminTitle>
         <AdminSubtitle>Gestion des objets, des réservations de salles et des alertes</AdminSubtitle>
@@ -581,7 +537,7 @@ const confirmDeleteObject = () => {
   Configurer
 </SecondaryButton>
 <SecondaryButton onClick={() => setSelectedForChart(object)}>
-  Voir l'historique
+  Voir l’historique
 </SecondaryButton>
 <SecondaryButton onClick={() => handleEditObject(object)}>
   Modifier
@@ -600,77 +556,29 @@ const confirmDeleteObject = () => {
 
       </Section>
       <Section>
-        <SectionHeader>
-          <SectionTitle>
-            <FaExclamationTriangle /> Alertes
-          </SectionTitle>
-        </SectionHeader>
+  <SectionHeader>
+    <SectionTitle>
+      <FaExclamationTriangle /> Alertes
+    </SectionTitle>
+  </SectionHeader>
 
-        {alerts.length === 0 ? (
-          <div style={{ 
-            textAlign: 'center', 
-            padding: '2rem',
-            backgroundColor: '#f8f9fa',
-            borderRadius: '8px',
-            border: '1px dashed #dee2e6'
-          }}>
-            <FaExclamationTriangle style={{ fontSize: '2rem', color: '#6c757d', marginBottom: '1rem' }} />
-            <p style={{ color: '#6c757d', margin: 0 }}>Aucune alerte active</p>
-          </div>
-        ) : (
-          <Grid>
-            {alerts.map((alert) => {
-              const object = fakeObjects.find(obj => obj.id === alert.objectId);
-              return (
-                <Card key={alert.id} style={{ 
-                  borderLeft: '4px solid #ff9800',
-                  position: 'relative',
-                  overflow: 'hidden'
-                }}>
-                  <div style={{ 
-                    position: 'absolute',
-                    top: 0,
-                    right: 0,
-                    padding: '0.5rem',
-                    backgroundColor: '#fff3e0',
-                    borderBottomLeftRadius: '8px'
-                  }}>
-                    <FaExclamationTriangle style={{ color: '#ff9800' }} />
-                  </div>
-                  <CardTitle style={{ marginBottom: '0.5rem' }}>
-                    {object?.name || 'Objet inconnu'}
-                  </CardTitle>
-                  <p style={{ 
-                    color: '#666',
-                    marginBottom: '1rem',
-                    fontSize: '0.9rem'
-                  }}>
-                    {alert.message}
-                  </p>
-                  <div style={{ 
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginTop: 'auto'
-                  }}>
-                    <span style={{ 
-                      fontSize: '0.8rem',
-                      color: '#999'
-                    }}>
-                      {new Date(alert.id).toLocaleString()}
-                    </span>
-                    <ButtonGroup>
-                      <SecondaryButton onClick={() => handleAlertAction(alert)}>
-                        Voir détails
-                      </SecondaryButton>
-                    </ButtonGroup>
-                  </div>
-                </Card>
-              );
-            })}
-          </Grid>
-        )}
-      </Section>
+  <Table>
+    <TableHeader>
+      <tr>
+        <TableHeaderCell>Objet</TableHeaderCell>
+        <TableHeaderCell>Message</TableHeaderCell>
+      </tr>
+    </TableHeader>
+    <tbody>
+      {alerts.map((alert) => (
+        <TableRow key={alert.id}>
+          <TableCell>{fakeObjects.find(object => object.id === alert.objectId)?.name}</TableCell>
+          <TableCell>{alert.message}</TableCell>
+        </TableRow>
+      ))}
+    </tbody>
+  </Table>
+</Section>
 
       <Section>
   <SectionHeader>
@@ -716,8 +624,11 @@ const confirmDeleteObject = () => {
       <FaChartBar /> Rapports d'Utilisation & Efficacité
     </SectionTitle>
     <ButtonGroup>
-      <ExportButton onClick={handleExport}>
-        <FaDownload /> Exporter
+      <ExportButton onClick={() => handleExportReport('energyConsumption')}>
+        <FaDownload /> Exporter conso
+      </ExportButton>
+      <ExportButton onClick={() => handleExportReport('objectUsage')}>
+        <FaDownload /> Exporter objets inefficaces
       </ExportButton>
     </ButtonGroup>
   </div>
@@ -808,7 +719,7 @@ const confirmDeleteObject = () => {
                 </Select>
               </FormGroup>
               <FormGroup>
-  <Label>Type d'objet</Label>
+  <Label>Type d’objet</Label>
   <Select
     value={objectFormData.type}
     onChange={(e) => setObjectFormData({ ...objectFormData, type: e.target.value })}
@@ -1038,62 +949,30 @@ const confirmDeleteObject = () => {
   </ModalOverlay>
 )}
 
-{/* Modal de confirmation de suppression de réservation */}
-{showDeleteReservationModal && (
-  <ModalOverlay onClick={() => setShowDeleteReservationModal(false)}>
+{showAlert && (
+  <ModalOverlay onClick={() => setShowAlert(false)}>
     <ModalContent onClick={(e) => e.stopPropagation()}>
-      <SectionTitle>Confirmer la suppression</SectionTitle>
-      <p style={{ marginBottom: '1.5rem', color: '#666' }}>
-        Êtes-vous sûr de vouloir supprimer cette réservation ?
-      </p>
+      <SectionTitle>Alerte</SectionTitle>
+      <p>{alertMessage}</p>
       <ButtonGroup>
-        <SecondaryButton onClick={() => setShowDeleteReservationModal(false)}>
-          Annuler
-        </SecondaryButton>
-        <PrimaryButton onClick={confirmDeleteReservation}>
-          Confirmer
-        </PrimaryButton>
+        <PrimaryButton onClick={() => setShowAlert(false)}>OK</PrimaryButton>
       </ButtonGroup>
     </ModalContent>
   </ModalOverlay>
 )}
 
-{/* Modal de confirmation de suppression d'objet */}
-{showDeleteObjectModal && (
-  <ModalOverlay onClick={() => setShowDeleteObjectModal(false)}>
+{showConfirmation && (
+  <ModalOverlay onClick={() => setShowConfirmation(false)}>
     <ModalContent onClick={(e) => e.stopPropagation()}>
-      <SectionTitle>Confirmer la demande de suppression</SectionTitle>
-      <p style={{ marginBottom: '1.5rem', color: '#666' }}>
-        Êtes-vous sûr de vouloir demander la suppression de {selectedObjectToDelete?.name} ?
-      </p>
+      <SectionTitle>Confirmation</SectionTitle>
+      <p>{confirmationMessage}</p>
       <ButtonGroup>
-        <SecondaryButton onClick={() => setShowDeleteObjectModal(false)}>
-          Annuler
-        </SecondaryButton>
-        <PrimaryButton onClick={confirmDeleteObject}>
-          Confirmer
-        </PrimaryButton>
+        <SecondaryButton onClick={() => setShowConfirmation(false)}>Annuler</SecondaryButton>
+        <PrimaryButton onClick={() => confirmationAction()}>Confirmer</PrimaryButton>
       </ButtonGroup>
     </ModalContent>
   </ModalOverlay>
 )}
-
-{showExportModal && (
-  <ModalOverlay onClick={() => setShowExportModal(false)}>
-    <ModalContent onClick={e => e.stopPropagation()}>
-      <SectionTitle>Export impossible</SectionTitle>
-      <p style={{ marginBottom: '1.5rem', color: '#666' }}>
-        Aucune donnée à exporter
-      </p>
-      <ButtonGroup>
-        <PrimaryButton onClick={() => setShowExportModal(false)}>
-          Fermer
-        </PrimaryButton>
-      </ButtonGroup>
-    </ModalContent>
-  </ModalOverlay>
-)}
-
 
     </AdminContainer>
   );
