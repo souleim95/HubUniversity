@@ -10,7 +10,8 @@ export const fakeObjects = [
         status: 'Disponible',
         capacity: 30,
         reservedBy: null,
-        nextReservation: '2024-01-20T14:00:00'
+        nextReservation: '2024-01-20T14:00:00',
+        description: "La salle de la meileur prof Taisa <3 où les rêves de code prennent vie ! 💻✨",
     },
     {
         id: 'amphiA',
@@ -18,7 +19,8 @@ export const fakeObjects = [
         type: 'Salle',
         status: 'Disponible',  
         capacity: 200,
-        reservedBy: null
+        reservedBy: null,
+        description: "La salle la plus intelligente du campus ! Elle fait même les devoirs à votre place... ou pas 🤖❌"
     },
     {
         id: 'thermo123',
@@ -28,7 +30,8 @@ export const fakeObjects = [
         temperature: 21,
         targetTemp: 0,
         previousTargetTemp: 20,
-        mode: 'auto'
+        mode: 'auto',
+        description: "Ce thermostat est si précis qu'il détecte quand un prof raconte une blague pas drôle - la température monte ! 🌡️😅"
     },
     {
         id: 'cam456',
@@ -37,14 +40,16 @@ export const fakeObjects = [
         status: 'Déconnecté',
         isRecording: false,
         lastMaintenance: '2024-01-15',
-        resolution: '1080p'
+        resolution: '1080p',
+        description: "La seule caméra qui fait des selfies quand personne ne regarde ! 📸 #CameraSpy"
     },
     {
         id: 'capteur789',
         name: 'Capteur de présence',
         type: 'Capteur',
         status: 'Actif',
-        lastDetection: '2024-01-19T10:30:00'
+        lastDetection: '2024-01-19T10:30:00',
+        description: "Détecte même les étudiants invisibles qui séchent les cours ! 👻 Pas de chance !"
     },
     {
         id: 'light001',
@@ -53,7 +58,8 @@ export const fakeObjects = [
         status: 'Éteint',
         brightness: 0,
         previousBrightness: 80,
-        autoMode: true
+        autoMode: true,
+        description: "Les lumières qui font un mini show disco quand les profs passent ! 💃💡"
     },
     {
         id: 'door001',
@@ -62,7 +68,8 @@ export const fakeObjects = [
         status: 'Verrouillée',
         lastAccess: '2024-01-19T08:00:00',
         autoLock: true,
-        securityLevel: 'high'
+        securityLevel: 'high',
+        description: "La porte la plus sarcastique du campus : 'Mot de passe incorrect... encore !' 🚪😅"
     },
     {
         id: 'refectoire',
@@ -70,7 +77,8 @@ export const fakeObjects = [
         type: 'Salle',
         status: 'Disponible',
         capacity: 150,
-        reservedBy: null
+        reservedBy: null,
+        description: "Le seul endroit où les machines distributrices jugent vos choix alimentaires ! 🍕🤖"
     },
     {
         id: 'labo_chimie',
@@ -78,7 +86,8 @@ export const fakeObjects = [
         type: 'Salle',
         status: 'Disponible',
         capacity: 24,
-        reservedBy: null
+        reservedBy: null,
+        description: "Attention : les béchers sont plus intelligents que certains étudiants ! 🧪🤓"
     },
     {
         id: 'biblio',
@@ -86,7 +95,8 @@ export const fakeObjects = [
         type: 'Salle',
         status: 'Disponible',
         capacity: 100,
-        reservedBy: null
+        reservedBy: null,
+        description: "Les livres font la fête dès que vous avez le dos tourné ! 📚🎉"
     },
     {
         id: 'salle_sport',
@@ -94,14 +104,16 @@ export const fakeObjects = [
         type: 'Salle',
         status: 'Disponible',
         capacity: 150,
-        reservedBy: null
+        reservedBy: null,
+        description: "Le seul gymnase où les ballons se cachent d'eux-mêmes après le cours ! 🏀😱"
     },
     {
         id: 'acces_parking',
         name: 'Barrière Parking',
         type: 'Barriere',
         status: 'Fermée',
-        lastAccess: '2024-01-19T08:00:00'
+        lastAccess: '2024-01-19T08:00:00',
+        description: "La seule barrière qui se bloque mystérieusement quand c'est toi qui es devant... et que c'est bouché ! 🚧😤"
     },
     {
         id: 'panneau_info',
@@ -109,7 +121,8 @@ export const fakeObjects = [
         type: 'Panneau',
         status: 'Actif',
         message: 'Bienvenue',
-        brightness: 70
+        brightness: 70,
+        description: "Affiche parfois des blagues nulles pour réveiller les étudiants du matin ! 📱😴"
     },
     {
         id: 'grille_ecole',
@@ -118,7 +131,8 @@ export const fakeObjects = [
         status: 'Ouverte',
         lastAccess: '2024-01-19T07:00:00',
         autoLock: true,
-        securityLevel: 'high'
+        securityLevel: 'high',
+        description: "La grille qui joue à cache-cache avec les retardataires ! 🏃‍♂️🚪"
     },
     {
         id: 'cam_entree',
@@ -126,7 +140,8 @@ export const fakeObjects = [
         type: 'Caméra',
         status: 'Actif',
         isRecording: true,
-        resolution: '4K'
+        resolution: '4K',
+        description: "La caméra qui compte les bâillements pendant les cours du matin ! 😴📹"
     },
     {
         id: 'eclairage_parking',
@@ -135,38 +150,44 @@ export const fakeObjects = [
         status: 'Éteint',
         brightness: 0,
         previousBrightness: 70,
-        autoMode: true
+        autoMode: true,
+        description: "L'éclairage qui organise des rave parties nocturnes avec les voitures ! 🚗💡"
     },
     {
         id: 'borne_recharge',
         name: 'Borne de recharge VE',
         type: 'Borne',
-        status: 'Disponible'
+        status: 'Disponible',
+        description: "La seule borne qui raconte des blagues pendant que vous rechargez ! ⚡😄"
     },
     {
         id: 'panneau_places',
         name: 'Affichage Places',
         type: 'Panneau',
         status: 'Actif',
-        message: '45 places libres'
+        message: '45 places libres',
+        description: "Le panneau qui ment comme un arracheur de dents sur les places disponibles ! 🅿️🤥"
     },
     {
         id: 'detecteur_parking',
         name: 'Détecteur Occupation',
         type: 'Capteur',
-        status: 'Actif'
+        status: 'Actif',
+        description: "Détecte même les voitures fantômes et les licornes garées ! 🚙👻"
     },
     {
         id: 'cam_urgence',
         name: 'Caméra Issue Secours',
         type: 'Caméra',
-        status: 'Actif'
+        status: 'Actif',
+        description: "La caméra qui filme les héros en action... ou juste les gens perdus ! 🦸‍♂️🎥"
     },
     {
         id: 'alarme_incendie',
         name: 'Alarme Incendie',
         type: 'Securite',
-        status: 'Actif'
+        status: 'Actif',
+        description: "L'alarme qui se déclenche quand les étudiants sont trop en feu ! 🔥😎"
     },
     {
         id: 'eclairage_urgence',
@@ -174,13 +195,15 @@ export const fakeObjects = [
         type: 'Éclairage',
         status: 'Éteint',
         brightness: 0,
-        previousBrightness: 100
+        previousBrightness: 100,
+        description: "Les lumières qui transforment le couloir en piste de discothèque en cas d'urgence ! 🕺💃"
     },
     {
         id: 'detecteur_fumee',
         name: 'Détecteur de Fumée',
         type: 'Detecteur',
-        status: 'Actif'
+        status: 'Actif',
+        description: "Détecte même la fumée des cerveaux qui surchauffent pendant les examens ! 🧠💨"
     }
 ];
 
@@ -336,7 +359,7 @@ export const equipments = {
       power: 900,
       mode: 'Veille',
       timer: 0,
-      maxTime: 300,
+      maxTime: 10,
       doorStatus: 'Fermée'
     },
     {

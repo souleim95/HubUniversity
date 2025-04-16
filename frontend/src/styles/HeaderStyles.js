@@ -15,19 +15,23 @@ export const HeaderContainer = styled.header`
   padding: 10px 20px;
   flex-wrap: wrap;
   justify-content: space-between;
+  height: 115px;
 `;
 
 export const WelcomeChoices = styled.div`
   display: flex;
   align-items: center;
   border-right: solid rgb(15, 110, 173) 3px;
-  padding-right: 10px;
+  padding-right: 20px;
+  height: 100%;
 
   a {
     text-decoration: none;
     color: rgb(15, 110, 173);
     font-size: 1.1rem;
     font-weight: 600;
+    display: flex;
+    align-items: center;
   }
 
   img {
@@ -45,13 +49,17 @@ export const WelcomeChoices = styled.div`
     justify-content: center;
     border: none;
     padding: 5px 0;
+    height: auto;
   }
 `;
 
 export const NavLinks = styled.div`
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 15px;
+  height: 100%;
+  flex: 1;
 
   span {
     color: #2C5282;
@@ -66,6 +74,7 @@ export const NavLinks = styled.div`
     flex: 1 1 100%;
     justify-content: center;
     margin-top: 10px;
+    height: auto;
   }
 `;
 
@@ -107,27 +116,22 @@ export const ConnectButton = styled.button`
 export const SearchContainer = styled.div`
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 20px;
+  height: 100%;
+  color: rgb(15, 110, 173);
 
   div {
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    left: 215px;
-
-    svg {
-      width: 24px;
-      height: 24px;
-      color: rgb(49, 137, 196);
-      transition: all 0.3s ease;
-    }
   }
 
   @media (max-width: 768px) {
     flex: 1 1 100%;
     justify-content: center;
     margin-top: 10px;
+    height: auto;
   }
 `;
 

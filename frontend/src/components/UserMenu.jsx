@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   MenuContainer, 
   MenuButton, 
@@ -7,11 +7,13 @@ import {
   UserAvatar
 } from '../styles/UserMenuStyles'; 
 import { useNavigate } from 'react-router-dom';
+import useClickOutside from '../hooks/useClickOutside';
 
 // Composant de menu utilisateur avec options contextuelles selon le rôle
 const UserMenu = ({ user, role, onLogout }) => {
   // Gestion de l'état d'ouverture du menu déroulant
   const [open, setOpen] = useState(false);
+  const menuRef = useRef(null);
   const navigate = useNavigate();
 
   // Navigation vers une route et fermeture du menu
@@ -20,12 +22,18 @@ const UserMenu = ({ user, role, onLogout }) => {
     setOpen(false);  
   };
 
+  const handleClickOutside = () => {
+    setOpen(false);
+  };
+
+  useClickOutside(menuRef, handleClickOutside);
+
   // Récupération de l'image de profil ou utilisation d'une initiale par défaut
   const userPhoto = localStorage.getItem('photoUrl');
   const userInitial = user?.login ? user.login.charAt(0).toUpperCase() : 'U';
   
   return (
-    <MenuContainer>
+    <MenuContainer ref={menuRef}>
       {/* Bouton du menu avec avatar ou initiale */}
       <MenuButton onClick={() => setOpen(!open)}>
         {userPhoto ? (
@@ -42,11 +50,11 @@ const UserMenu = ({ user, role, onLogout }) => {
           <DropdownItem onClick={() => handleNavigate('/profil')}>Profil</DropdownItem>
 
           {/* Options conditionnelles selon le rôle de l'utilisateur */}
-          {(role === 'gestionnaire' || role === 'admin') && (
+          {(role === 'professeur' || role === 'directeur') && (
             <DropdownItem onClick={() => handleNavigate('/gestion')}>Gestion</DropdownItem>
           )}
 
-          {role === 'admin' && (
+          {role === 'directeur' && (
             <DropdownItem onClick={() => handleNavigate('/admin')}>Administration</DropdownItem>
           )}
 

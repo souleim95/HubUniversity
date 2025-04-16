@@ -32,6 +32,7 @@ const Header = () => {
   const [lastScrollTop, setLastScrollTop] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
   const [toasts, setToasts] = useState([]);
+  const [mouseAtTop, setMouseAtTop] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -72,10 +73,16 @@ const Header = () => {
       setLastScrollTop(scrollTop <= 0 ? 0 : scrollTop);
     };
 
+    const handleMouseMove = (e) => {
+      setMouseAtTop(e.clientY < 150);
+    };
+
     window.addEventListener('scroll', handleScroll);
+    window.addEventListener('mousemove', handleMouseMove);
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('mousemove', handleMouseMove);
     };
   }, [lastScrollTop]);
 
@@ -223,6 +230,11 @@ const Header = () => {
   };
 
   const handleSelectObject = (obj, categoryKey) => {
+    // Réinitialiser les états de sélection
+    setSelectedCategory(null);
+    setSelectedRoom(null);
+    setSelectedEquipment(null);
+
     let targetCategory = categoryKey;
     let targetRoom = null;
     let targetEquipment = null;
@@ -247,6 +259,11 @@ const Header = () => {
         }
       }
     }
+
+    // Mettre à jour les états avec les nouvelles sélections
+    setSelectedCategory(targetCategory);
+    setSelectedRoom(targetRoom);
+    setSelectedEquipment(targetEquipment);
   
     toast.info(
       <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -255,7 +272,7 @@ const Header = () => {
         </span>
         <span style={{ fontSize: '0.9em', color: '#666' }}>
           {`${targetCategory.charAt(0).toUpperCase() + targetCategory.slice(1)} › ${
-            obj.type === 'Salle' ? obj.name : `Salle ${targetRoom} › ${obj.name}`
+            obj.type === 'Salle' ? obj.name : `${obj.name}`
           }`}
         </span>
       </div>,
@@ -289,7 +306,7 @@ const Header = () => {
 
   return (
     <HeaderContainer style={{
-      top: scrollDirection === 'down' ? '-100px' : '0',
+      top: (scrollDirection === 'up' || mouseAtTop) ? '0' : '-115px',
       transition: 'top 0.3s'
     }}>
       <Toast messages={toasts} removeToast={removeToast} />

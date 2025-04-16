@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 import dashboardBackground from '../assets/dashboard.png';
 import { 
   DashboardContainer,
@@ -137,7 +138,33 @@ const updateUserPoints = async (pointsToAdd) => {
       
       if (newRole !== currentRole) {
         sessionStorage.setItem('role', newRole);
-        alert(`Félicitations ! Vous êtes maintenant ${newRole === 'professeur' ? 'Gestionnaire' : 'Directeur'} !`);
+        toast.success(
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <span style={{ fontWeight: 'bold', marginBottom: '5px' }}>
+              Félicitations !
+            </span>
+            <span style={{ fontSize: '0.9em', color: '#666' }}>
+              {`Vous êtes maintenant ${newRole === 'professeur' ? 'Gestionnaire' : 'Directeur'} !`}
+            </span>
+          </div>,
+          {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            className: 'custom-toast',
+            style: {
+              background: '#f8f9fa',
+              border: '1px solid #e9ecef',
+              borderLeft: '4px solid #4caf50',
+              borderRadius: '8px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+            }
+          }
+        );
         window.location.reload();
       }
       
@@ -1414,20 +1441,20 @@ const Dashboard = () => {
                 type="range"
                 min="0"
                 max={obj.maxTime || 180}
-                step="10"
+                step="1"
                 value={obj.timer}
                 onChange={(e) => handler(obj.id, 'microwave_timer', e.target.value)}
                 disabled={isCooking || doorOpen || isFinished}
               />
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <ControlButton 
-                  onClick={() => handler(obj.id, 'microwave_timer', Math.max(0, obj.timer - 10))}
+                  onClick={() => handler(obj.id, 'microwave_timer', Math.max(0, obj.timer - 1))}
                   disabled={isCooking || doorOpen || obj.timer <= 0 || isFinished}>
                   <FaMinus />
                 </ControlButton>
                 <ValueDisplay>{obj.timer}s</ValueDisplay>
                 <ControlButton 
-                  onClick={() => handler(obj.id, 'microwave_timer', Math.min(obj.maxTime || 180, obj.timer + 10))}
+                  onClick={() => handler(obj.id, 'microwave_timer', Math.min(obj.maxTime || 180, obj.timer + 1))}
                   disabled={isCooking || doorOpen || obj.timer >= (obj.maxTime || 180) || isFinished}>
                   <FaPlus />
                 </ControlButton>

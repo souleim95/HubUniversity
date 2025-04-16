@@ -2,9 +2,21 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 
 const ProtectedRoute = ({ allowedRoles, children }) => {
-  const userRole = localStorage.getItem('role');
+  const userRole = sessionStorage.getItem('role');
 
-  if (!userRole || !allowedRoles.includes(userRole)) {
+  // Convertir les rôles autorisés en noms de rôles correspondants
+  const mappedRoles = allowedRoles.map(role => {
+    switch(role) {
+      case 'gestionnaire':
+        return 'professeur';
+      case 'admin':
+        return 'directeur';
+      default:
+        return role;
+    }
+  });
+
+  if (!userRole || !mappedRoles.includes(userRole)) {
     // Redirige vers l'accueil si le rôle n'est pas autorisé
     return <Navigate to="/" replace />;
   }

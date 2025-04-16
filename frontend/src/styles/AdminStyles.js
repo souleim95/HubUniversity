@@ -365,7 +365,7 @@ export const TabsContainer = styled.div`
 export const TabsList = styled.div`
   display: flex;
   gap: 1rem;
-  border-bottom: 2px solid rgb(4, 50, 255);
+  border-bottom: 2px solid #e5e7eb;
   padding-bottom: 1rem;
 `;
 
@@ -373,7 +373,7 @@ export const Tab = styled.button`
   padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;
   font-weight: 500;
-  color: ${props => props.active ? 'rgb(21, 58, 219)' : 'rgb(0,0,0)'};
+  color: ${props => props.active ? '#3b82f6' : '#6b7280'};
   background-color: ${props => props.active ? '#eff6ff' : 'transparent'};
   transition: all 0.2s ease-in-out;
 

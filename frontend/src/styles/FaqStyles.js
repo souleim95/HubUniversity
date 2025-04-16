@@ -27,7 +27,7 @@ export const FaqTitle = styled.h2`
 `;
 
 export const FaqContainer = styled.div`
-  max-width: 1000px;
+  max-width: 1400px;
   margin: 40px auto;
   padding: 20px 20px 20px 100px;
   position: relative;
@@ -57,12 +57,12 @@ export const FaqContent = styled.div`
 export const FaqColumn = styled.div`
   flex: 1;
   min-width: 300px;
-  max-width: 450px; /* Limiter la largeur maximale des colonnes */
-  margin: 0 auto; /* Centrer les colonnes */
+  max-width: 650px;
+  margin: 0 auto;
   
   @media (max-width: 768px) {
     flex: 100%;
-    max-width: 100%; /* En mode mobile, chaque colonne prend toute la largeur */
+    max-width: 100%;
   }
 `;
 
@@ -105,9 +105,9 @@ export const Question = styled.div`
 export const Answer = styled.div`
   padding: ${props => props.isOpen ? '18px 22px' : '0 22px'};
   background-color: #f9f9f9;
-  max-height: ${props => props.isOpen ? '500px' : '0'};
+  max-height: ${props => props.isOpen ? '1000px' : '0'};
   overflow: hidden;
-  transition: max-height 0.4s ease, padding 0.4s ease;
+  transition: max-height 0.6s ease, padding 0.4s ease;
   box-shadow: ${props => props.isOpen ? '0 4px 10px rgba(0, 0, 0, 0.05)' : 'none'};
   margin-bottom: 0; /* Éliminer l'espace en bas */
   border-top: 1px solid #eee;

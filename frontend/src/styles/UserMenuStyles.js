@@ -4,6 +4,7 @@ import styled from 'styled-components';
 export const MenuContainer = styled.div`
   position: relative;
   display: inline-block;
+  z-index: 1001;
 `;
 
 // Bouton de Menu avec des effets modernes
@@ -22,6 +23,8 @@ export const MenuButton = styled.div`
   transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
   user-select: none;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 1002;
 
   &:hover {
     background: linear-gradient(135deg, #2575fc, #6a11cb); /* Inversion du dégradé au survol */
@@ -33,13 +36,13 @@ export const MenuButton = styled.div`
 // Menu déroulant
 export const DropdownMenu = styled.div`
   position: absolute;
-  top: 68px;
+  top: 85px;
   right: -15px;
   background-color: white;
   border-radius: 16px; /* Coins arrondis pour le menu */
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15); /* Ombre suivant les coins arrondis */
   min-width: 240px;
-  z-index: 100;
+  z-index: 1003;
   animation: fadeIn 0.3s ease-in-out;
   overflow: hidden; /* Empêche le débordement du contenu */
   border: 1px solid rgba(0, 0, 0, 0.1); /* Ajout d'une bordure fine pour synchroniser les bords */

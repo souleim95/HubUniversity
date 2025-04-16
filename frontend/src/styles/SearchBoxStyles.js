@@ -184,3 +184,81 @@ export const SearchWrapper = styled.div`
   position: relative;
   z-index: 1001;
 `;
+
+export const SearchBoxContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  z-index: 1000;
+`;
+
+export const SearchIcon = styled.div`
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgb(15, 110, 173);
+  transition: transform 0.3s ease;
+  position: relative;
+  z-index: 1001;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+
+  svg {
+    width: 24px;
+    height: 24px;
+  }
+`;
+
+export const SearchInput = styled.input`
+  padding: 8px 12px;
+  border: 2px solid rgb(15, 110, 173);
+  border-radius: 20px;
+  font-size: 14px;
+  width: 200px;
+  transition: all 0.3s ease;
+  background-color: white;
+  color: #333;
+  position: absolute;
+  right: 40px;
+  opacity: ${props => props.isOpen ? '1' : '0'};
+  visibility: ${props => props.isOpen ? 'visible' : 'hidden'};
+  transform: ${props => props.isOpen ? 'translateX(0)' : 'translateX(20px)'};
+
+  &:focus {
+    outline: none;
+    width: 250px;
+    box-shadow: 0 0 5px rgba(15, 110, 173, 0.3);
+  }
+
+  &::placeholder {
+    color: #999;
+  }
+`;
+
+export const CloseButton = styled.div`
+  position: absolute;
+  right: 40px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  opacity: ${props => props.isOpen ? '1' : '0'};
+  visibility: ${props => props.isOpen ? 'visible' : 'hidden'};
+  transition: all 0.3s ease;
+  z-index: 1001;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    color: #666;
+  }
+
+  &:hover {
+    svg {
+      color: #333;
+    }
+  }
+`;

@@ -13,38 +13,42 @@ import ProtectedRoute from './components/ProtectedRoute';
 import GlobalStyle from './styles/GlobalStyle'; // Import du style global
 import { PageContainer, Content } from './styles/styles'; // Importez les styles flexbox
 import InfoBox from './components/InfoBox';
+import { PlatformProvider } from './context/PlatformContext';
+
 export default function App() {
   return (
-    <Router>
-      <GlobalStyle /> {/* Applique les styles globaux */}
-      <PageContainer> {/* Conteneur flexbox pour garantir que le footer reste en bas */}
-        <Header /> {/* Affiche le header */}
-        <Content>
-          <Routes>
-            <Route path="/" element={
-              <main>
-                <HeroSection />
-                <CampusMap />
-                <InfoBox />
-                <Faq />
-              </main>
-            } />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/gestion" element={
-              <ProtectedRoute allowedRoles={['gestionnaire', 'admin']}>
-                <Gestion />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin" element={
-              <ProtectedRoute allowedRoles={['admin']}>
-                <AdminPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/profil" element={<Profile />} />
-          </Routes>
-        </Content>
-        <Footer /> {/* Affiche le footer */}
-      </PageContainer>
-    </Router>
+    <PlatformProvider>
+      <Router>
+        <GlobalStyle /> {/* Applique les styles globaux */}
+        <PageContainer> {/* Conteneur flexbox pour garantir que le footer reste en bas */}
+          <Header /> {/* Affiche le header */}
+          <Content>
+            <Routes>
+              <Route path="/" element={
+                <main>
+                  <HeroSection />
+                  <CampusMap />
+                  <InfoBox />
+                  <Faq />
+                </main>
+              } />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/gestion" element={
+                <ProtectedRoute allowedRoles={['gestionnaire', 'admin']}>
+                  <Gestion />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin" element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AdminPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/profil" element={<Profile />} />
+            </Routes>
+          </Content>
+          <Footer /> {/* Affiche le footer */}
+        </PageContainer>
+      </Router>
+    </PlatformProvider>
   );
 }

@@ -6,16 +6,19 @@ import {
   MapContainer,
   TabsWrapper,
   Tabs,
-  Tab
+  Tab,
+  ObjectCard,
+  CardInner,
+  ObjectFront,
+  ObjectBack
 } from '../styles/CampusMapStyles';
-
-import { ObjectCard, CardInner, ObjectFront, ObjectBack } from '../styles/InteractiveCardStyles';
 
 import salleImage from '../assets/salle.jpg';
 import thermostatImage from '../assets/thermostat.jpg';
 
 const CampusMap = () => {
   const navigate = useNavigate();
+  const [flippedCard, setFlippedCard] = useState(null);
 
   const groupObjectsByType = () => {
     const grouped = {};
@@ -44,6 +47,10 @@ const CampusMap = () => {
   };
 
   const handleCardClick = (obj) => {
+    setFlippedCard(flippedCard === obj.id ? null : obj.id);
+  };
+
+  const handleCardDoubleClick = (obj) => {
     let targetCategory = null;
     let targetRoom = null;
     let targetEquipment = null;
@@ -78,33 +85,61 @@ const CampusMap = () => {
 
   return (
     <MapSection>
-      <h2 style={{ textAlign: 'center', fontSize: '2.5em', fontWeight: 'bold', color: '#333', marginBottom: '20px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.2)' }}>Campus Connecté</h2>
+      <h2 style={{ 
+        textAlign: 'center', 
+        fontSize: '2.5em', 
+        fontWeight: 'bold', 
+        color: '#202124',
+        marginBottom: '20px',
+        textShadow: '2px 2px 4px rgba(0, 0, 0, 0.1)'
+      }}>
+        Campus Connecté
+      </h2>
 
       <TabsWrapper>
         <Tabs>
           {objectTypes.map((type) => (
-            <Tab key={type} active={selectedType === type} onClick={() => setSelectedType(type)}>
+            <Tab 
+              key={type} 
+              active={selectedType === type} 
+              onClick={() => setSelectedType(type)}
+            >
               {type.charAt(0).toUpperCase() + type.slice(1)}s
             </Tab>
           ))}
         </Tabs>
       </TabsWrapper>
 
-      <h3 style={{ textAlign: 'center' }}>{selectedType.charAt(0).toUpperCase() + selectedType.slice(1)}s</h3>
       <MapContainer>
         {groupedObjects[selectedType].map((object) => (
-          <ObjectCard key={object.id} onClick={() => handleCardClick(object)}>
-            <CardInner>
+          <ObjectCard 
+            key={object.id}
+            onClick={() => handleCardClick(object)}
+            onDoubleClick={() => handleCardDoubleClick(object)}
+          >
+            <CardInner flipped={flippedCard === object.id}>
               <ObjectFront>
                 <img
                   src={getImageForType(object.type)}
                   alt={object.name}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  style={{ 
+                    width: '100%', 
+                    height: '70%', 
+                    objectFit: 'cover',
+                    borderRadius: '12px'
+                  }}
                 />
                 <h4>{object.name}</h4>
               </ObjectFront>
               <ObjectBack>
                 <p>{object.description || 'Ajoutez une note personnalisée ici'}</p>
+                <p style={{ 
+                  marginTop: '10px', 
+                  fontSize: '0.8rem', 
+                  color: '#1a73e8' 
+                }}>
+                  Double-cliquez pour accéder aux détails
+                </p>
               </ObjectBack>
             </CardInner>
           </ObjectCard>
