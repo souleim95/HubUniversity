@@ -65,7 +65,9 @@ function GestionPage() {
   const [inactiveCount, setInactiveCount] = useState(0);
   const [objectHistories, setObjectHistories] = useState({});
   const [selectedForChart, setSelectedForChart] = useState(null);
- 
+  const [editingObject, setEditingObject] = useState(null);
+  const [allObjects, setAllObjects] = useState([]);
+
   
 
   const [objectFormData, setObjectFormData] = useState({
@@ -175,33 +177,64 @@ const [editingSettingsFor, setEditingSettingsFor] = useState(null);
     a.click();
   };
   
+  const handleEditObject = (object) => {
+    setObjectFormData({
+      name: object.name,
+      description: object.description || '',
+      status: object.status,
+      type: object.type,
+      category: selectedCategory,
+      numero: object.id.replace(/^\D+/g, ''), // enlève le préfixe type "salle"
+      targetTemp: object.settings?.temperature || '',
+      brightnessSchedule: object.settings?.startTime && object.settings?.endTime
+        ? `${object.settings.startTime}-${object.settings.endTime}`
+        : ''
+    });
+    setEditingObject(object);
+    setShowObjectModal(true);
+  };
+  
   
   useEffect(() => {
-    const filteredObjects = fakeObjects
-      .filter(obj => !['grille_ecole', 'cam_urgence', 'detecteur_fumee', 'acces_parking', 'eclairage_parking', 'borne_recharge', 'detecteur_parking','capteur789'].includes(obj.id))
-      .map(obj => ({
-        ...obj,
-        settings: obj.settings || {
-          temperature: obj.targetTemp || null,
-          startTime: obj.schedule?.split('-')[0] || '',
-          endTime: obj.schedule?.split('-')[1] || ''
-        }
-      }));
+    // Ne charger fakeObjects qu'une seule fois (au montage)
+    if (allObjects.length === 0) {
+      const filteredObjects = fakeObjects
+        .filter(obj => !['grille_ecole', 'cam_urgence', 'detecteur_fumee', 'acces_parking', 'eclairage_parking', 'borne_recharge', 'detecteur_parking','capteur789'].includes(obj.id))
+        .map(obj => ({
+          ...obj,
+          settings: obj.settings || {
+            temperature: obj.targetTemp || null,
+            startTime: obj.schedule?.split('-')[0] || '',
+            endTime: obj.schedule?.split('-')[1] || ''
+          }
+        }));
   
-    const categoryObjects = filteredObjects.filter(object =>
+      setAllObjects(filteredObjects);
+    }
+  }, []); // 👈 ce useEffect ne tourne qu'une fois au montage
+
+  useEffect(() => {
+    const categoryObjects = allObjects.filter(object =>
       categories[selectedCategory]?.items.includes(object.id)
     );
-  
     setObjects(categoryObjects);
-    generateReports(categoryObjects); // <-- c'est CET appel qu'il faut garder
-  }, [selectedCategory]);
+    generateReports(categoryObjects);
+  }, [selectedCategory, allObjects]); // 👈 nouvelle dépendance ici
+  
+  
   
   
 
   // --------- Gestion des objets ---------
   const handleCategoryChange = (category) => {
     setSelectedCategory(category);
+    const categoryObjects = allObjects.filter(object =>
+      categories[category]?.items.includes(object.id)
+    );
+    setObjects(categoryObjects);
+    generateReports(categoryObjects);
   };
+  
 
   const handleAddObject = () => {
     setObjectFormData({ name: '', category: selectedCategory, status: 'active', priority: 'normal' });
@@ -247,9 +280,10 @@ const [editingSettingsFor, setEditingSettingsFor] = useState(null);
     const prefix = prefixMap[objectFormData.category] || 'obj';
     const fullId = `${prefix}${objectFormData.numero}`;
   
-    const idExists =
-      fakeObjects.some((obj) => obj.id === fullId) ||
-      objects.some((obj) => obj.id === fullId);
+    if (!editingObject) {
+      const idExists =
+        fakeObjects.some((obj) => obj.id === fullId) ||
+        allObjects.some((obj) => obj.id === fullId);
   
     if (idExists) {
       toast.error(
@@ -285,6 +319,7 @@ const [editingSettingsFor, setEditingSettingsFor] = useState(null);
     const newObject = {
       id: fullId,
       name: objectFormData.name,
+      description: objectFormData.description || '',
       type: objectFormData.type,
       status: objectFormData.status,
       location: fullId,
@@ -305,7 +340,10 @@ const [editingSettingsFor, setEditingSettingsFor] = useState(null);
     setObjects(updatedObjects);
     generateReports(updatedObjects); // 🟢 Maintenant c'est bon ✅
     setShowObjectModal(false);
+    setEditingObject(null);
   };
+  
+  
   
   
     
@@ -402,6 +440,32 @@ const confirmDeleteObject = () => {
     setShowAlertModal(true);
   };
 
+
+  const handleToggleStatus = (object) => {
+    const nextStatus = object.status === 'active'
+      ? 'inactive'
+      : object.status === 'inactive'
+      ? 'maintenance'
+      : 'active';
+  
+    const updatedAll = allObjects.map(obj =>
+      obj.id === object.id ? { ...obj, status: nextStatus } : obj
+    );
+  
+    setAllObjects(updatedAll);
+  };
+  
+  const isInefficient = (obj) => {
+    if (obj.type === 'Thermostat') {
+      return parseInt(obj.settings?.temperature) > 24;
+    }
+    if (obj.type === 'Éclairage') {
+      const [start, end] = [obj.settings?.startTime, obj.settings?.endTime];
+      return start === '00:00' && end === '23:59';
+    }
+    return false;
+  };
+  
   const handleOpenSettings = (object) => {
     setEditingSettingsFor(object);
   
@@ -501,6 +565,12 @@ const confirmDeleteObject = () => {
       <p><strong>Zone :</strong> {object.id}</p>
       <br></br>
       <p><strong>Statut :</strong> <StatusBadge status={object.status}>{object.status}</StatusBadge></p>
+      {isInefficient(object) && (
+  <p style={{ color: 'red', fontWeight: 'bold' }}>
+    ⚠️ Inefficace : paramètres à optimiser
+  </p>
+)}
+
       
       <ButtonGroup>
         <SecondaryButton onClick={() => handleCreateAlert(object)}>Créer une alerte</SecondaryButton>
@@ -512,6 +582,13 @@ const confirmDeleteObject = () => {
 </SecondaryButton>
 <SecondaryButton onClick={() => setSelectedForChart(object)}>
   Voir l'historique
+</SecondaryButton>
+<SecondaryButton onClick={() => handleEditObject(object)}>
+  Modifier
+</SecondaryButton>
+
+<SecondaryButton onClick={() => handleToggleStatus(object)}>
+  {object.status === 'active' ? 'Désactiver' : 'Activer'}
 </SecondaryButton>
 
 
@@ -781,8 +858,17 @@ const confirmDeleteObject = () => {
 )}
 
 <ButtonGroup>
-  <SecondaryButton type="button" onClick={() => setShowObjectModal(false)}>Annuler</SecondaryButton>
-  <PrimaryButton type="submit">Ajouter</PrimaryButton>
+<SecondaryButton type="button" onClick={() => {
+  setShowObjectModal(false);
+  setEditingObject(null);
+}}>
+  Annuler
+</SecondaryButton>
+
+<PrimaryButton type="submit">
+  {editingObject ? 'Modifier' : 'Ajouter'}
+</PrimaryButton>
+
 </ButtonGroup>
 
             </form>
