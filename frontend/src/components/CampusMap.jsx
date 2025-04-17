@@ -19,6 +19,7 @@ import thermostatImage from '../assets/thermostat.jpg';
 const CampusMap = () => {
   const navigate = useNavigate();
   const [flippedCard, setFlippedCard] = useState(null);
+  const isLoggedIn = !!sessionStorage.getItem('user'); 
 
   const groupObjectsByType = () => {
     const grouped = {};
@@ -51,9 +52,15 @@ const CampusMap = () => {
   };
 
   const handleCardDoubleClick = (obj) => {
+
+    // si pas connecté alors on rien faire 
+    if (!isLoggedIn) {
+      return;
+   }
     let targetCategory = null;
     let targetRoom = null;
     let targetEquipment = null;
+   
 
     if (obj.type === 'Salle') {
       targetRoom = obj.id;

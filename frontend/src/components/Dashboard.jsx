@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Navigate } from 'react-router-dom'; 
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import dashboardBackground from '../assets/dashboard.png';
@@ -216,7 +217,7 @@ const Dashboard = () => {
   const [tempInputValues, setTempInputValues] = useState({});
   const location = useLocation();
   const navigate = useNavigate();
-
+  const isLoggedIn = !!sessionStorage.getItem('user');
   const [userPoints, setUserPoints] = useState(parseInt(sessionStorage.getItem('points') || '0'));
 
 
@@ -2157,6 +2158,12 @@ const Dashboard = () => {
       </ObjectGrid>
     );
   };
+
+  if (!isLoggedIn) {
+    //renvoie vers la page d'acceuil
+    return <Navigate to="/" replace />;
+  }
+  
 
   return (
     <div style={{ position: 'relative', minHeight: '100vh', width: '100%' }}>

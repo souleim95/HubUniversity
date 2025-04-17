@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Navigate } from 'react-router-dom'; 
 import styled from 'styled-components';
 import Toast from './Toast';
 import {
@@ -23,12 +24,14 @@ import {
 import { FaLock, FaGlobe, FaTrashAlt, FaUser, FaCalendar, FaVenusMars } from 'react-icons/fa';
 import profileBackground from '../assets/profil.png';
 
+
 const Profile = () => {
+  const isLoggedIn = !!sessionStorage.getItem('user');
+  
   const [isPublic, setIsPublic] = useState(true);
   const [age, setAge] = useState('');
   const [photoUrl, setPhotoUrl] = useState(localStorage.getItem('photoUrl') || null);
   const [toasts, setToasts] = useState([]);
-
   const initialFormData = {
     pseudonyme: localStorage.getItem('user') || '',
     genre: localStorage.getItem('genre') || '',
@@ -192,6 +195,11 @@ const Profile = () => {
   const toggleConfirmNewPasswordVisibility = () => {
     setShowConfirmNewPassword(!showConfirmNewPassword);
   };
+
+  if (!isLoggedIn) {
+    //renvoie vers la page d'acceuil
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <>
