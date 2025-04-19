@@ -135,6 +135,17 @@ app.post("/api/login", async (req, res) => {
 
     const match = await bcrypt.compare(password, user.password);
 
+    // 3. Incrémentation automatique du score (+1)
+    const updateScoreResult = await pool.query(
+      `UPDATE users
+        SET score = COALESCE(score, 0) + 100
+        WHERE id = $1
+        RETURNING score`,
+      [user.id]
+    );
+    const newScore = updateScoreResult.rows[0].score;
+    
+
     if (match) {
       // On renvoie l'objet utilisateur sans le mot de passe.
       res.json({ 
@@ -144,7 +155,7 @@ app.post("/api/login", async (req, res) => {
           name: user.name, 
           email: user.email, 
           role: user.role, 
-          score: user.score
+          score: newScore
         }
       });
     } else {
