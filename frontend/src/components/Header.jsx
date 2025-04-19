@@ -21,7 +21,7 @@ import Toast from './Toast';
 
 const Header = () => {
   const [isFormOpen, setIsFormOpen] = useState(null); 
-  const [formData, setFormData] = useState({ name: '', email: '', role: '', password: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', role: '', password: '', formation: '' });
   const [userName, setUserName] = useState(sessionStorage.getItem('user') || null);
   const [role, setRole] = useState(sessionStorage.getItem('role') || null);
   const [userPoints, setUserPoints] = useState(parseInt(sessionStorage.getItem('points') || '0'));
@@ -111,7 +111,10 @@ const Header = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData(prevState => ({
+      ...prevState,
+      [name]: value,  // Mise à jour du champ spécifique
+    }));
   };
 
   const addToast = (text, type = 'info') => {
@@ -384,12 +387,13 @@ const Header = () => {
         )}
       </SearchContainer>
 
-      {(isFormOpen === 'signup' || isFormOpen === 'login') && (
+            {(isFormOpen === 'signup' || isFormOpen === 'login') && (
         <>
           <Overlay onClick={() => setIsFormOpen(null)} />
           <LoginFormContainer>
             <h2>{isFormOpen === 'signup' ? 'Inscription' : 'Connexion'}</h2>
             <form onSubmit={handleSubmit}>
+              {/* Champ Nom complet */}
               {isFormOpen === 'signup' && (
                 <input 
                   type="text" 
@@ -401,6 +405,7 @@ const Header = () => {
                 />
               )}
               
+              {/* Champ Email */}
               <input 
                 type="email" 
                 name="email" 
@@ -409,7 +414,8 @@ const Header = () => {
                 onChange={handleChange} 
                 required 
               />
-              
+
+              {/* Champ Mot de passe */}
               <div className="password-input">
                 <input 
                   type={showPassword ? "text" : "password"} 
@@ -428,6 +434,7 @@ const Header = () => {
                 </button>
               </div>
 
+              {/* Champ rôle (sélection d'étudiant ou enseignant) */}
               {isFormOpen === 'signup' && (
                 <select name="role" value={formData.role} onChange={handleChange} required>
                   <option value="">Sélectionnez votre rôle</option>
@@ -436,10 +443,21 @@ const Header = () => {
                 </select>
               )}
 
+              {/* Champ formation obligatoire */}
+              {isFormOpen === 'signup' && (
+                <select name="formation" value={formData.formation} onChange={handleChange} required>
+                  <option value="">Sélectionnez votre formation</option>
+                  <option value="Mathématique">Master Mathématiques</option>
+                  <option value="Informatique">Master Informatique</option>
+                </select>
+              )}
+
+              {/* Bouton d'envoi */}
               <button type="submit">
                 {isFormOpen === 'signup' ? 'Créer un compte' : 'Se connecter'}
               </button>
 
+              {/* Lien pour changer de formulaire */}
               <p>
                 {isFormOpen === 'login' ? 'Pas encore inscrit ?' : 'Déjà un compte ?'}{' '}
                 <button 
@@ -451,6 +469,7 @@ const Header = () => {
                 </button>
               </p>
 
+              {/* Bouton de fermeture */}
               <button type="button" onClick={() => setIsFormOpen(null)} className="close-btn">
                 Fermer
               </button>
