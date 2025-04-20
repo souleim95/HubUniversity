@@ -14,6 +14,7 @@ import GlobalStyle from './styles/GlobalStyle'; // Import du style global
 import { PageContainer, Content } from './styles/styles'; // Importez les styles flexbox
 import InfoBox from './components/InfoBox';
 import { PlatformProvider } from './context/PlatformContext';
+import Formation from './components/Formation';
 
 export default function App() {
   return (
@@ -33,6 +34,8 @@ export default function App() {
                 </main>
               } />
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/formation" element={<Formation />} />
+
               <Route path="/gestion" element={
                 <ProtectedRoute allowedRoles={['gestionnaire', 'admin']}>
                   <Gestion />
