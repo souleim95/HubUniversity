@@ -47,7 +47,6 @@ const UserMenu = ({ user, role, onLogout }) => {
       {open && (
         <DropdownMenu>
           <DropdownItem className="dashboard" onClick={() => handleNavigate('/dashboard')}>Tableau de bord</DropdownItem>
-          <DropdownItem onClick={() => handleNavigate('/formation')}>Formation</DropdownItem>
           <DropdownItem onClick={() => handleNavigate('/profil')}>Profil</DropdownItem>
 
           {/* Options conditionnelles selon le rôle de l'utilisateur */}

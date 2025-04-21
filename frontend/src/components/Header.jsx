@@ -307,6 +307,43 @@ const Header = () => {
     });
   };
 
+  const scrollToFaq = () => {
+    // Si nous ne sommes pas sur la page d'accueil, naviguer d'abord vers celle-ci
+    if (window.location.pathname !== '/') {
+      navigate('/');
+      // Attendre que la navigation soit terminée avant de faire défiler
+      setTimeout(() => {
+        const faqSection = document.getElementById('faq-section');
+        if (faqSection) {
+          faqSection.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    } else {
+      // Si nous sommes déjà sur la page d'accueil, simplement défiler
+      const faqSection = document.getElementById('faq-section');
+      if (faqSection) {
+        faqSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
+  const scrollToInfo = () => {
+    if (window.location.pathname !== '/') {
+      navigate('/');
+      setTimeout(() => {
+        const infoSection = document.getElementById('info-section');
+        if (infoSection) {
+          infoSection.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    } else {
+      const infoSection = document.getElementById('info-section');
+      if (infoSection) {
+        infoSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
   return (
     <HeaderContainer style={{
       top: (scrollDirection === 'up' || mouseAtTop) ? '0' : '-115px',
@@ -320,54 +357,60 @@ const Header = () => {
       </WelcomeChoices>
 
       <NavLinks>
-        {userName ? (
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            backgroundColor: '#f5f5f5', 
-            padding: '6px 12px', 
-            borderRadius: '20px',
-            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-            border: '1px solid #e0e0e0'
-          }}>
-            <span style={{ 
-              fontWeight: 'bold', 
-              marginRight: '10px'
-            }}>
-              Bonjour {userName}
-            </span>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <ConnectButton onClick={() => navigate('/formation')}>
+            Nos formations
+          </ConnectButton>
+          <ConnectButton onClick={scrollToInfo}>
+            Informations
+          </ConnectButton>
+          <ConnectButton onClick={scrollToFaq}>
+            FAQ
+          </ConnectButton>
+          
+          {userName ? (
             <div style={{ 
               display: 'flex', 
-              alignItems: 'center', 
-              gap: '10px' 
+              alignItems: 'center',
+              backgroundColor: '#f5f5f5', 
+              padding: '6px 12px', 
+              borderRadius: '20px',
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+              border: '1px solid #e0e0e0',
+              marginLeft: '1rem'
             }}>
-              <span style={{ 
-                backgroundColor: '#FFC107', 
-                color: '#333', 
-                padding: '3px 8px',
-                borderRadius: '12px',
-                fontSize: '0.85rem',
-                fontWeight: 'bold'
-              }}>
-                {userPoints} pts
+              <span style={{ fontWeight: 'bold', marginRight: '10px' }}>
+                Bonjour {userName}
               </span>
-              <span style={{ 
-                backgroundColor: getRoleColor(role), 
-                color: 'white', 
-                padding: '3px 8px',
-                borderRadius: '12px',
-                fontSize: '0.85rem',
-                fontWeight: 'bold'
-              }}>
-                {getRoleTitle(role)}
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ 
+                  backgroundColor: '#FFC107', 
+                  color: '#333', 
+                  padding: '3px 8px',
+                  borderRadius: '12px',
+                  fontSize: '0.85rem',
+                  fontWeight: 'bold'
+                }}>
+                  {userPoints} pts
+                </span>
+                <span style={{ 
+                  backgroundColor: getRoleColor(role), 
+                  color: 'white', 
+                  padding: '3px 8px',
+                  borderRadius: '12px',
+                  fontSize: '0.85rem',
+                  fontWeight: 'bold'
+                }}>
+                  {getRoleTitle(role)}
+                </span>
+              </div>
             </div>
-          </div>
-        ) : (
-          <ConnectButton onClick={() => toggleForm('login')}>
-            Connexion
-          </ConnectButton>
-        )}
+          ) : (
+            <ConnectButton onClick={() => toggleForm('login')}>
+              Connexion
+            </ConnectButton>
+          )}
+        </div>
       </NavLinks>
 
       <SearchContainer>

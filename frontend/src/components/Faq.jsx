@@ -118,7 +118,7 @@ const Faq = () => {
   const secondColumn = faqData.slice(midpoint);
 
   return (
-    <FaqContainer>
+    <FaqContainer id="faq-section">
       <FaqTitle>Foire aux questions</FaqTitle>
       <FaqContent>
         <FaqColumn>

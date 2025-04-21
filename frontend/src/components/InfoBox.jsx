@@ -11,7 +11,7 @@ import {
 
 export default function InfoBox() {
   return (
-    <InfoContainer>
+    <InfoContainer id="info-section">
       <InfoTitle style={{
         fontSize: '2em',
         fontWeight: 'bold',

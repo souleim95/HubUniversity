@@ -80,36 +80,21 @@ export const NavLinks = styled.div`
 
 export const ConnectButton = styled.button`
   padding: 8px 16px;
-  font-size: 14px;
-  background-color: rgb(15, 110, 173);
+  background-color: #3498db;
   color: white;
   border: none;
   border-radius: 20px;
-  font-weight: 600;
   cursor: pointer;
+  font-weight: bold;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  margin: auto;
-  display: block;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
 
   &:hover {
-    background-color: rgb(49, 137, 196);
-    transform: translateX(-50%) translateY(-2px);
+    background-color: #2980b9;
+    transform: translateY(-2px);
   }
 
-  @media (max-width: 768px) {
-    padding: 6px 12px;
-    font-size: 13px;
-    position: relative;
-    transform: none;
-    left: auto;
-
-    &:hover {
-      transform: translateY(-2px);
-    }
+  &:active {
+    transform: translateY(0);
   }
 `;
 
