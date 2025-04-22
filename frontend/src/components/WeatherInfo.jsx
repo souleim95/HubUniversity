@@ -12,16 +12,22 @@ import {
   ForecastDay,
   ForecastTemp,
   ForecastDate
-} from '../styles/WeatherStyles'; // Ajuste le chemin si nécessaire
+} from '../styles/WeatherStyles';
 
+/* 
+* Composant WeatherInfo : affiche les données météo actuelles + prévisions
+* Récupère les données depuis l’API WeatherAPI (ville : Cergy)
+* Gère les cas de chargement, d’erreur, et affiche un résumé clair de la météo
+* Les prévisions à 4 jours sont affichées avec icônes et températures
+*/
 export default function WeatherInfo() {
   const [weather, setWeather] = useState(null);
   const [forecast, setForecast] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const API_KEY = '47e393553f924e66b8a171010250704'; // Remplace par ta vraie clé API WeatherAPI
-  const city = 'Cergy'; // Nom de la ville à afficher
+  const API_KEY = '47e393553f924e66b8a171010250704'; // Clé API WeatherAPI
+  const city = 'Cergy'; // Ville cible pour la météo
 
   useEffect(() => {
     const fetchWeather = async () => {
@@ -31,26 +37,26 @@ export default function WeatherInfo() {
         );
         if (!response.ok) throw new Error('Erreur lors de la récupération de la météo');
         const data = await response.json();
-        setWeather(data.current);
-        setForecast(data.forecast.forecastday); // Données de prévision
+        setWeather(data.current); // Météo actuelle
+        setForecast(data.forecast.forecastday); // Prévision sur plusieurs jours
       } catch (err) {
-        setError(err.message);
+        setError(err.message); // Gestion des erreurs
       } finally {
-        setLoading(false);
+        setLoading(false); // Fin du chargement
       }
     };
 
     fetchWeather();
-  }, [city]); // Ajoute city dans les dépendances si tu veux mettre à jour la météo en fonction de la ville
+  }, [city]);
 
   if (loading) return <WeatherLoading>Chargement de la météo...</WeatherLoading>;
   if (error) return <WeatherError>{error}</WeatherError>;
 
-  const iconUrl = `https://${weather.condition.icon}`;
+  const iconUrl = `https://${weather.condition.icon}`; // Icône météo actuelle
 
   return (
     <WeatherContainer>
-      <WeatherTitle>Météo à {city}</WeatherTitle> {/* Utilisation de la variable city ici */}
+      <WeatherTitle>Météo à {city}</WeatherTitle>
       <WeatherDetails>
         <WeatherIcon src={iconUrl} alt={weather.condition.text} />
         <div>
@@ -59,6 +65,7 @@ export default function WeatherInfo() {
         </div>
       </WeatherDetails>
 
+      {/* Affichage des prévisions météo */}
       <ForecastContainer>
         {forecast.map((day, index) => (
           <ForecastDay key={index}>

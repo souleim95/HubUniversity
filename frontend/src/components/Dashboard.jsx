@@ -28,7 +28,7 @@ import {
   bodyDashboard
 } from '../styles/DashboardStyles';
 
-import { fakeObjects, categories, equipments } from '../data/fakeData';
+import { dataObjects, categories, equipments, POINTS_CONFIG } from '../data/projectData';
 import { 
   FaWifi, 
   FaThermometerHalf, 
@@ -76,28 +76,6 @@ import {
 
 import { getIcon } from '../utils/iconUtils'; 
 
-// Configuration pour le système de points et de niveaux
-const POINTS_CONFIG = {
-  // Points par interaction
-  BASIC_INTERACTION: 5,    // Pour les interactions simples
-  DEVICE_TOGGLE: 10,       // Pour allumer/éteindre un appareil
-  ADJUST_SETTING: 15,      // Pour ajuster des paramètres (thermostat, volume)
-  SPECIAL_TASK: 25,        // Pour des tâches spéciales (préparer café, utiliser microonde)
-  
-  // Multiplicateurs de points par rôle
-  ROLE_MULTIPLIERS: {
-    'eleve': 1,          // Élève : multiplicateur de base
-    'professeur': 1.5,     // Professeur : 1.5x les points
-    'directeur': 2         // Directeur : 2x les points
-  },
-
-  // Seuils de niveau
-  LEVEL_THRESHOLDS: {
-    'eleve': 0,
-    'professeur': 200,    // 200 points pour devenir gestionnaire
-    'directeur': 500      // 500 points pour devenir directeur
-  }
-};
 
 // Fonction utilitaire pour mettre à jour les points en communiquant avec le backend
 const updateUserPoints = async (pointsToAdd) => {
@@ -210,7 +188,7 @@ const showPointsToast = (points) => {
 };
 
 const Dashboard = () => {
-  const [objects, setObjects] = useState(fakeObjects);
+  const [objects, setObjects] = useState(dataObjects);
   const [selectedCategory, setSelectedCategory] = useState('salles');
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [roomEquipments, setRoomEquipments] = useState({});
@@ -1192,7 +1170,7 @@ const Dashboard = () => {
     const handler = isEquipment ? handleEquipmentControl : handleObjectControl;
     
     switch (obj.type) {
-      case 'Thermostat':
+      case 'Chauffage':
         return (
           <ObjectControls>
             <ValueDisplay>{obj.status === 'Inactif' ? 'Inactif' : `${obj.targetTemp}°C`}</ValueDisplay>
@@ -2111,7 +2089,7 @@ const Dashboard = () => {
                   <div>
                     <strong>{equip.name}</strong>
                     <p>État: {equip.status}</p>
-                    {equip.type === 'Thermostat' && (
+                    {equip.type === 'Chauffage' && (
                       <>
                         <p>Mode: {equip.mode}</p>
                         <p>Température: {equip.targetTemp}°C</p>

@@ -24,7 +24,11 @@ import {
 import { FaLock, FaGlobe, FaTrashAlt, FaUser, FaCalendar, FaVenusMars } from 'react-icons/fa';
 import profileBackground from '../assets/profil.png';
 
-
+/* 
+* Composant principal du profil utilisateur
+* Affiche les informations publiques et privées avec possibilité de modification et de changement de mot de passe
+* Inclut un système de toasts pour le retour utilisateur
+*/
 const Profile = () => {
   const isLoggedIn = !!sessionStorage.getItem('user');
   
@@ -32,6 +36,8 @@ const Profile = () => {
   const [age, setAge] = useState('');
   const [photoUrl, setPhotoUrl] = useState(localStorage.getItem('photoUrl') || null);
   const [toasts, setToasts] = useState([]);
+
+  // Initialisation des données du formulaire avec les informations enregistrées localement
   const initialFormData = {
     pseudonyme: localStorage.getItem('user') || '',
     genre: localStorage.getItem('genre') || '',
@@ -51,6 +57,7 @@ const Profile = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
 
+  // Calcul automatique de l'âge en fonction de la date de naissance fournie
   useEffect(() => {
     const storedPhotoUrl = localStorage.getItem('photoUrl');
     if (storedPhotoUrl) {
@@ -82,6 +89,7 @@ const Profile = () => {
   const handleInputChange = (e) => {
     const { name, value, type, files } = e.target;
     
+    // Gestion spécifique du champ "photo" : vérification de la taille et du type de fichier
     if (type === 'file') {
       const file = files[0];
       if (file) {
@@ -104,6 +112,7 @@ const Profile = () => {
     }));
   };
 
+  // Si une nouvelle photo a été uploadée, on la convertit en base64 pour l'affichage immédiat et la sauvegarde locale
   useEffect(() => {
     if (formData.photo instanceof File) {
       const reader = new FileReader();
@@ -135,6 +144,7 @@ const Profile = () => {
     setToasts(prev => prev.filter(toast => toast.id !== id));
   };
 
+   // Si l'utilisateur souhaite modifier son mot de passe, on vérifie l'ancien, la correspondance et la longueur du nouveau
   const handleSave = () => {
     if (formData.newPassword || formData.confirmNewPassword || formData.oldPassword) {
       if (!formData.oldPassword) {

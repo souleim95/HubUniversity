@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import WeatherInfo from './WeatherInfo'; // Assurez-vous d'importer WeatherInfo ici
+import WeatherInfo from './WeatherInfo';
 import {
   ScheduleContainer,
   MainTitle,
@@ -7,9 +7,16 @@ import {
   DirectionTitle,
   ErrorMessage,
   TrainInfo,
-  FlexContainer // Ajout d'un conteneur flex
+  FlexContainer
 } from '../styles/RerScheduleStyles';
 
+/*
+* Composant RerSchedule : affiche les horaires RER A depuis l’API SNCF en temps réel
+* Sépare les directions Paris et Cergy, avec mise à jour toutes les 30 secondes
+* Affiche les prochains trains disponibles, ou un message si aucun train n’est prévu
+* Permet d'accéder aux horaires complets en ouvrant les liens RATP correspondants
+* Inclut le composant WeatherInfo pour enrichir l'interface avec la météo actuelle
+*/
 export default function RerSchedule() {
   const [schedules, setSchedules] = useState({ toParis: [], toCergy: [] });
   const [lastUpdate, setLastUpdate] = useState(null);
@@ -35,7 +42,7 @@ export default function RerSchedule() {
         const data = await response.json();
         const arrivals = data.arrivals || [];
 
-        // Filtrer les arrivées selon la direction affichée
+        // Filtrage selon la direction des trains
         const toParis = arrivals.filter(arrival => {
           const dir = arrival.display_informations.direction.toLowerCase();
           return /paris|châtelet|nation|boissy|torcy|marne|chessy/.test(dir);
@@ -45,7 +52,7 @@ export default function RerSchedule() {
         );
         
         setSchedules({ toParis, toCergy });
-        setLastUpdate(new Date());
+        setLastUpdate(new Date()); // Enregistre l'heure de dernière mise à jour
       } catch (error) {
         setError('Erreur lors de la récupération des horaires');
         console.error('Erreur:', error);
@@ -64,10 +71,10 @@ export default function RerSchedule() {
       direction === 'paris'
         ? 'https://www.ratp.fr/horaires-rer?network-current=rer&networks=rer&line_rer=A&stop_point_rer=Boissy-Saint-Léger'
         : 'https://www.ratp.fr/horaires-rer?network-current=rer&networks=rer&line_rer=A&stop_point_rer=Cergy+le+Haut';
-    window.open(url, '_blank');
+    window.open(url, '_blank'); // Ouvre le lien dans un nouvel onglet
   };
 
-  // Fonction de formatage de l'heure
+  // Formatage des heures à partir des chaînes de datetime API
   const formatHeure = (dateTimeStr) => {
     if (!dateTimeStr || dateTimeStr.length < 13) return dateTimeStr;
     const heure = dateTimeStr.substring(9, 11);
@@ -78,14 +85,14 @@ export default function RerSchedule() {
   return (
     <div>
       <h3 style={{ fontSize: '1.8em', color: '#0f6ead', textAlign: 'center', marginBottom: '20px' }}>
-          Horaires RER A - Cergy Préfecture
-        </h3>
+        Horaires RER A - Cergy Préfecture
+      </h3>
       <small>Dernière mise à jour : {lastUpdate?.toLocaleTimeString()}</small>
       {loading && <p>Chargement des horaires...</p>}
       {error && <ErrorMessage>{error}</ErrorMessage>}
-  
+
       <div>
-        {/* Direction Paris */}
+        {/* Bloc des trains vers Paris */}
         <DirectionBox>
           <DirectionTitle onClick={() => handleDirectionClick('paris')}>
             Direction Paris ↗️
@@ -100,8 +107,8 @@ export default function RerSchedule() {
             <ErrorMessage>Aucun train disponible pour le moment</ErrorMessage>
           )}
         </DirectionBox>
-  
-        {/* Direction Cergy */}
+
+        {/* Bloc des trains vers Cergy */}
         <DirectionBox>
           <DirectionTitle onClick={() => handleDirectionClick('cergy')}>
             Direction Cergy ↗️
@@ -119,5 +126,4 @@ export default function RerSchedule() {
       </div>
     </div>
   );
-  
 }

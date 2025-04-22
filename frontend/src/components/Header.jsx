@@ -21,7 +21,7 @@ import hubCyLogo from '../assets/HubCyLogo.png';
 import SearchBox from './SearchBox';
 import UserMenu from './UserMenu';
 import { useNavigate } from 'react-router-dom';
-import { equipments, categories, fakeObjects } from '../data/fakeData';
+import { equipments, categories, dataObjects } from '../data/projectData';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Toast from './Toast';
@@ -67,13 +67,6 @@ const Header = () => {
     };
   }, []); // tableau de dépendances vide : l'effet s'exécute qu'une seule fois
   
-
-  //   return () => {
-  //     window.removeEventListener('storage', handleStorageChange);
-  //     clearInterval(interval);
-  //   };
-  // }, [userPoints, role]);
-  //supprime les données lors de la fermeture de la page 
 
   const getRoleTitle = (roleKey) => {
     switch(roleKey) {
@@ -405,7 +398,7 @@ const Header = () => {
   // Ajouter cette nouvelle fonction
   const performSearch = (text = searchText) => {
     try {
-      const results = fakeObjects.filter(obj => {
+      const results = dataObjects.filter(obj => {
         const textMatch = !text.trim() || 
           obj.name.toLowerCase().includes(text.toLowerCase()) || 
           obj.id.toLowerCase().includes(text.toLowerCase());
@@ -446,8 +439,8 @@ const Header = () => {
   }, [selectedType, selectedStatus, selectedCategory, isSearchWindowOpen]);
 
   // Extraire les types et statuts uniques des objets (comme dans SearchBox)
-  const objectTypes = [...new Set(fakeObjects.map(obj => obj.type))].sort();
-  const statusTypes = [...new Set(fakeObjects.map(obj => obj.status))].sort();
+  const objectTypes = [...new Set(dataObjects.map(obj => obj.type))].sort();
+  const statusTypes = [...new Set(dataObjects.map(obj => obj.status))].sort();
   const sortedCategories = Object.entries(categories)
     .map(([key, value]) => ({ key, name: value.name }))
     .sort((a, b) => a.name.localeCompare(b.name));

@@ -9,26 +9,28 @@ import {
 import { useNavigate } from 'react-router-dom';
 import useClickOutside from '../hooks/useClickOutside';
 
-// Composant de menu utilisateur avec options contextuelles selon le rôle
+/* 
+* Composant interactif de menu utilisateur
+* Affiche un avatar ou l'initiale de l'utilisateur avec un menu déroulant contextuel
+* Affiche dynamiquement les options selon le rôle : dashboard, profil, gestion, administration
+* Utilise un hook personnalisé pour gérer les clics en dehors du menu
+*/
 const UserMenu = ({ user, role, onLogout }) => {
-  // Gestion de l'état d'ouverture du menu déroulant
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false); // Contrôle l'ouverture du menu déroulant
   const menuRef = useRef(null);
   const navigate = useNavigate();
 
-  // Navigation vers une route et fermeture du menu
   const handleNavigate = (path) => {
     navigate(path);
-    setOpen(false);  
+    setOpen(false);  // Ferme le menu après navigation
   };
 
   const handleClickOutside = () => {
-    setOpen(false);
+    setOpen(false); // Ferme le menu si clic à l'extérieur
   };
 
-  useClickOutside(menuRef, handleClickOutside);
+  useClickOutside(menuRef, handleClickOutside); // Hook personnalisé pour clic extérieur
 
-  // Récupération de l'image de profil ou utilisation d'une initiale par défaut
   const userPhoto = localStorage.getItem('photoUrl');
   const userInitial = user?.login ? user.login.charAt(0).toUpperCase() : 'U';
   

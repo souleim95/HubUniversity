@@ -1,12 +1,10 @@
 import styled from 'styled-components';
-import './animations.css';
-  // Importation du fichier d'animations CSS
+
 
 export const HeaderContainer = styled.header`
   background-color: whitesmoke;
   width: 100%;
   position: fixed;
-  top: 0;
   left: 0;
   z-index: 1000;
   border-bottom: solid rgb(15, 110, 173) 3px;

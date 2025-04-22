@@ -37,10 +37,10 @@ import {
   Tab,
   ExportButton,
   bodyAdmin
-} from '../styles/AdminStyles.js';
+} from '../styles/AdminStyles';
 import { FaUsers, FaTools, FaShieldAlt, FaPalette, FaChartBar, FaPlus, FaEdit, FaTrash, FaDownload, FaExclamationTriangle, FaCheck, FaHistory, FaCog, FaUser, FaEye, FaEyeSlash } from 'react-icons/fa';
 // Importer les données depuis fakeData.js
-import { fakeObjects, categories, equipments } from '../data/fakeData';
+import { dataObjects, categories, equipments } from '../data/projectData';
 import { PlatformContext } from '../context/PlatformContext';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -64,7 +64,7 @@ function AdminPage() {
     });
 
     // États pour la gestion des objets connectés
-    const [objects, setObjects] = useState([]); // Sera rempli avec fakeObjects
+    const [objects, setObjects] = useState([]); // Sera rempli avec dataObjects
     const [categoryList, setCategoryList] = useState([]); // Liste des catégories
     const [showObjectModal, setShowObjectModal] = useState(false);
     const [objectFormData, setObjectFormData] = useState({
@@ -183,10 +183,10 @@ function AdminPage() {
     // Récupère la liste des objets et catégories depuis fakeData.js
     const fetchObjects = async () => {
         // Utiliser les données de fakeData
-        setObjects(fakeObjects);
+        setObjects(dataObjects);
         
         // Extraire les types uniques des objets
-        const uniqueTypes = [...new Set(fakeObjects.map(obj => obj.type))];
+        const uniqueTypes = [...new Set(dataObjects.map(obj => obj.type))];
         setCategoryList(uniqueTypes);
     };
 
@@ -195,14 +195,14 @@ function AdminPage() {
         // Générer des rapports basés sur les données réelles
         
         // Consommation énergétique: simuler basé sur le nombre d'objets actifs
-        const activeObjects = fakeObjects.filter(obj => obj.status === 'Actif' || obj.status === 'Allumé');
+        const activeObjects = dataObjects.filter(obj => obj.status === 'Actif' || obj.status === 'Allumé');
         const energyData = [
             { date: new Date().toISOString().split('T')[0], value: activeObjects.length * 50 }, // 50 unités par objet actif
             { date: new Date(Date.now() - 86400000).toISOString().split('T')[0], value: activeObjects.length * 45 }
         ];
         
         // Activité utilisateurs: simuler basée sur le nombre d'objets et de salles
-        const rooms = fakeObjects.filter(obj => obj.type === 'Salle');
+        const rooms = dataObjects.filter(obj => obj.type === 'Salle');
         const userActivityData = [
             { date: new Date().toISOString().split('T')[0], activeUsers: Math.min(users.length * 10, rooms.reduce((sum, room) => sum + (room.capacity || 20), 0)) },
             { date: new Date(Date.now() - 86400000).toISOString().split('T')[0], activeUsers: Math.min(users.length * 8, rooms.reduce((sum, room) => sum + (room.capacity || 20), 0)) }
@@ -210,7 +210,7 @@ function AdminPage() {
         
         // Usage des services: basé sur le nombre d'équipements par salle
         const equipmentCountByRoom = Object.keys(equipments).map(roomId => {
-            const room = fakeObjects.find(obj => obj.id === roomId);
+            const room = dataObjects.find(obj => obj.id === roomId);
             return {
                 service: room ? room.name : roomId,
                 usage: equipments[roomId].length
@@ -967,7 +967,7 @@ function AdminPage() {
                                 </TableHeader>
                                 <tbody>
                                     {Object.keys(equipments).map(roomId => {
-                                        const room = fakeObjects.find(obj => obj.id === roomId);
+                                        const room = dataObjects.find(obj => obj.id === roomId);
                                         if (!room) return null;
                                         
                                         return (
@@ -1447,7 +1447,7 @@ function AdminPage() {
                             <Card style={{ padding: '20px', textAlign: 'center' }}>
                                 <CardTitle>Taux d'Occupation</CardTitle>
                                 <StatValue style={{ color: '#FF9800', fontSize: '2.5rem' }}>
-                                    {fakeObjects.filter(obj => obj.type === 'Salle' && obj.status === 'Occupée').length} / {fakeObjects.filter(obj => obj.type === 'Salle').length}
+                                    {dataObjects.filter(obj => obj.type === 'Salle' && obj.status === 'Occupée').length} / {dataObjects.filter(obj => obj.type === 'Salle').length}
                                 </StatValue>
                                 <StatLabel>Salles occupées</StatLabel>
                                 <div style={{ 
@@ -1469,7 +1469,7 @@ function AdminPage() {
                                         position: 'relative'
                                     }}>
                                         <div style={{ 
-                                            width: `${(fakeObjects.filter(obj => obj.type === 'Salle' && obj.status === 'Occupée').length / fakeObjects.filter(obj => obj.type === 'Salle').length) * 100}%`, 
+                                            width: `${(dataObjects.filter(obj => obj.type === 'Salle' && obj.status === 'Occupée').length / dataObjects.filter(obj => obj.type === 'Salle').length) * 100}%`, 
                                             height: '100%', 
                                             backgroundColor: '#FF9800', 
                                             borderRadius: '15px 0 0 15px'
@@ -1483,7 +1483,7 @@ function AdminPage() {
                                             fontWeight: 'bold',
                                             color: '#333'
                                         }}>
-                                            {Math.round((fakeObjects.filter(obj => obj.type === 'Salle' && obj.status === 'Occupée').length / fakeObjects.filter(obj => obj.type === 'Salle').length) * 100)}%
+                                            {Math.round((dataObjects.filter(obj => obj.type === 'Salle' && obj.status === 'Occupée').length / dataObjects.filter(obj => obj.type === 'Salle').length) * 100)}%
                                         </span>
                                     </div>
                                 </div>

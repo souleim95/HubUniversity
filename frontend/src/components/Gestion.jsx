@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fakeObjects, categories } from '../data/fakeData';
+import { dataObjects, categories } from '../data/projectData';
 import {
   ResponsiveContainer,
   LineChart,
@@ -47,11 +47,11 @@ import {
   TableHeader,
   TableRow,
   ExportButton
-} from '../styles/AdminStyles.js';
+} from '../styles/AdminStyles';
 import { FaTools, FaCalendar, FaExclamationTriangle, FaPlus, FaTrash, FaChartBar,FaDownload } from 'react-icons/fa';
 
 const categoryToTypeMap = {
-  salles: ['Salle', 'Thermostat', 'Éclairage', 'Audio', 'Ventilation'],
+  salles: ['Salle', 'Chauffage', 'Éclairage', 'Audio', 'Ventilation'],
   ecole: ['Caméra', 'Porte', 'Éclairage', 'Panneau', 'Securite'],
   parking: ['Caméra', 'Capteur', 'Éclairage', 'Panneau', 'Borne']
 };
@@ -84,7 +84,7 @@ function GestionPage() {
     priority: 'normal',
     type: categoryToTypeMap[selectedCategory][0],
     numero: '',
-    targetTemp: '',             // pour les Thermostats
+    targetTemp: '',             // pour les Chauffages
   brightnessSchedule: '',     // pour Éclairage (horaire fonctionnement)
 
   });
@@ -124,7 +124,7 @@ const [editingSettingsFor, setEditingSettingsFor] = useState(null);
     }));
   
     const inefficients = objectsToAnalyze.filter(obj => {
-      if (obj.type === 'Thermostat') {
+      if (obj.type === 'Chauffage') {
         return parseInt(obj.settings?.temperature) > 24;
       }
       if (obj.type === 'Éclairage') {
@@ -200,9 +200,9 @@ const [editingSettingsFor, setEditingSettingsFor] = useState(null);
   
   
   useEffect(() => {
-    // Ne charger fakeObjects qu'une seule fois (au montage)
+    // Ne charger dataObjects qu'une seule fois (au montage)
     if (allObjects.length === 0) {
-      const filteredObjects = fakeObjects
+      const filteredObjects = dataObjects
         .filter(obj => !['grille_ecole', 'cam_urgence', 'detecteur_fumee', 'acces_parking', 'eclairage_parking', 'borne_recharge', 'detecteur_parking','capteur789'].includes(obj.id))
         .map(obj => ({
           ...obj,
@@ -294,7 +294,7 @@ const [editingSettingsFor, setEditingSettingsFor] = useState(null);
   
     if (!editingObject) {
       const idExists =
-        fakeObjects.some((obj) => obj.id === fullId) ||
+        dataObjects.some((obj) => obj.id === fullId) ||
         allObjects.some((obj) => obj.id === fullId);
   
       if (idExists) {
@@ -311,7 +311,7 @@ const [editingSettingsFor, setEditingSettingsFor] = useState(null);
       type: objectFormData.type,
       status: objectFormData.status,
       location: fullId,
-      ...(objectFormData.type === 'Thermostat' && {
+      ...(objectFormData.type === 'Chauffage' && {
         targetTemp: parseInt(objectFormData.targetTemp) || 0
       }),
       ...(objectFormData.type === 'Éclairage' && {
@@ -413,7 +413,7 @@ const handleRequestDeletion = (object) => {
   };
   
   const isInefficient = (obj) => {
-    if (obj.type === 'Thermostat') {
+    if (obj.type === 'Chauffage') {
       return parseInt(obj.settings?.temperature) > 24;
     }
     if (obj.type === 'Éclairage') {
@@ -572,7 +572,7 @@ const handleRequestDeletion = (object) => {
     <tbody>
       {alerts.map((alert) => (
         <TableRow key={alert.id}>
-          <TableCell>{fakeObjects.find(object => object.id === alert.objectId)?.name}</TableCell>
+          <TableCell>{dataObjects.find(object => object.id === alert.objectId)?.name}</TableCell>
           <TableCell>{alert.message}</TableCell>
         </TableRow>
       ))}
@@ -666,9 +666,6 @@ const handleRequestDeletion = (object) => {
 
 
 </Section>
-
-
-
       {/* Modal de création d'objet */}
       {showObjectModal && (
         <ModalOverlay onClick={() => setShowObjectModal(false)}>
@@ -743,7 +740,7 @@ const handleRequestDeletion = (object) => {
   />
 </FormGroup>
 
-{objectFormData.type === 'Thermostat' && (
+{objectFormData.type === 'Chauffage' && (
   <FormGroup>
     <Label>Température cible (°C)</Label>
     <Input
@@ -861,7 +858,7 @@ const handleRequestDeletion = (object) => {
     <ModalContent onClick={(e) => e.stopPropagation()}>
       <SectionTitle>Configurer {editingSettingsFor.name}</SectionTitle>
 
-      {editingSettingsFor.type === 'Thermostat' && (
+      {editingSettingsFor.type === 'Chauffage' && (
   <FormGroup>
     <Label>Température cible (°C)</Label>
     <Input

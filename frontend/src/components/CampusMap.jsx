@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fakeObjects, equipments, categories } from '../data/fakeData';
+import { dataObjects, equipments, categories } from '../data/projectData';
 import {
   MapSection,
   MapContainer,
@@ -14,7 +14,7 @@ import {
 } from '../styles/CampusMapStyles';
 
 import salleImage from '../assets/salle.jpg';
-import thermostatImage from '../assets/thermostat.jpg';
+import ChauffageImage from '../assets/thermostat.jpg';
 
 const CampusMap = () => {
   const navigate = useNavigate();
@@ -23,12 +23,31 @@ const CampusMap = () => {
 
   const groupObjectsByType = () => {
     const grouped = {};
-    fakeObjects.forEach((object) => {
+    
+    // Add main objects
+    dataObjects.forEach((object) => {
       if (!grouped[object.type]) {
         grouped[object.type] = [];
       }
       grouped[object.type].push(object);
     });
+
+    // Add equipment items from each room
+    Object.entries(equipments).forEach(([roomId, roomEquipments]) => {
+      roomEquipments.forEach((equipment) => {
+        if (!grouped[equipment.type]) {
+          grouped[equipment.type] = [];
+        }
+        // Add room reference to equipment
+        grouped[equipment.type].push({
+          ...equipment,
+          roomId,
+          roomName: dataObjects.find(obj => obj.id === roomId)?.name || '',
+          description: `${equipment.name} - ${dataObjects.find(obj => obj.id === roomId)?.name || ''}`
+        });
+      });
+    });
+
     return grouped;
   };
 
@@ -40,8 +59,8 @@ const CampusMap = () => {
     switch (type.toLowerCase()) {
       case 'salle':
         return salleImage;
-      case 'thermostat':
-        return thermostatImage;
+      case 'chauffage':
+        return ChauffageImage;
       default:
         return salleImage;
     }
@@ -118,7 +137,7 @@ const CampusMap = () => {
       </TabsWrapper>
 
       <MapContainer>
-        {groupedObjects[selectedType].map((object) => (
+        {groupedObjects[selectedType]?.map((object) => (
           <ObjectCard 
             key={object.id}
             onClick={() => handleCardClick(object)}
@@ -137,9 +156,11 @@ const CampusMap = () => {
                   }}
                 />
                 <h4>{object.name}</h4>
+
               </ObjectFront>
               <ObjectBack>
                 <p>{object.description || 'Ajoutez une note personnalisée ici'}</p>
+                
                 <p style={{ 
                   marginTop: '10px', 
                   fontSize: '0.8rem', 

@@ -3,7 +3,7 @@ import { FaSearch, FaTimes, FaFilter } from 'react-icons/fa';
 import { SearchContainer, SearchBar } from '../styles/HeaderStyles';
 import styled from 'styled-components';
 import {SearchResultsContainer, FiltersContainer, FilterSelect, ResultItem, NoResults, SearchButton, StyledFaTimes, ResultsHeader, SearchWrapper} from '../styles/SearchBoxStyles';
-import { fakeObjects, categories, equipments } from '../data/fakeData';
+import { dataObjects, categories, equipments } from '../data/projectData';
 import { getIcon } from '../utils/iconUtils'; 
 
 
@@ -19,10 +19,10 @@ const SearchBox = ({ onSelectObject, isOpen: externalIsOpen, onClose, onOpen }) 
   const searchContainerRef = useRef(null);
   
   // Extraire tous les types d'objets disponibles
-  const objectTypes = [...new Set(fakeObjects.map(obj => obj.type))].sort();
+  const objectTypes = [...new Set(dataObjects.map(obj => obj.type))].sort();
   
   // Extraire tous les statuts possibles
-  const statusTypes = [...new Set(fakeObjects.map(obj => obj.status))].sort();
+  const statusTypes = [...new Set(dataObjects.map(obj => obj.status))].sort();
 
   // Extraire et trier les catégories
   const sortedCategories = Object.entries(categories)
@@ -68,7 +68,6 @@ const SearchBox = ({ onSelectObject, isOpen: externalIsOpen, onClose, onOpen }) 
 
   // Optimisation de la fonction de recherche avec useCallback
   const performSearch = useCallback(() => {
-    // Ne pas rechercher si tous les filtres sont vides ou par défaut
     if (searchText.trim() === '' && filterType === 'all' && filterStatus === 'all' && filterCategory === 'all') {
       setSearchResults([]);
       setIsSearching(false);
@@ -78,32 +77,58 @@ const SearchBox = ({ onSelectObject, isOpen: externalIsOpen, onClose, onOpen }) 
     setIsSearching(true);
 
     try {
-      // Effectuer la recherche réelle
-      const results = fakeObjects.filter(obj => {
-        // Filtre par texte (nom ou id)
-        const textMatch = 
-          searchText.trim() === '' || 
+      let results = [];
+      
+      // Recherche dans les objets principaux
+      const mainObjects = dataObjects.filter(obj => {
+        const textMatch = searchText.trim() === '' || 
           obj.name.toLowerCase().includes(searchText.toLowerCase()) || 
           obj.id.toLowerCase().includes(searchText.toLowerCase());
         
-        // Filtre par type
         const typeMatch = filterType === 'all' || obj.type === filterType;
-        
-        // Filtre par statut
         const statusMatch = filterStatus === 'all' || obj.status === filterStatus;
-        
-        // Filtre par catégorie (utilise le mapping des catégories)
         let categoryMatch = filterCategory === 'all';
         
-        if (!categoryMatch && categories[filterCategory] && categories[filterCategory].items) {
+        if (!categoryMatch && categories[filterCategory]?.items) {
           categoryMatch = categories[filterCategory].items.includes(obj.id);
         }
         
-        // L'objet doit correspondre à tous les critères actifs
         return textMatch && typeMatch && statusMatch && categoryMatch;
       });
       
-      // Tri des résultats par nom pour une meilleure lisibilité
+      results.push(...mainObjects);
+
+      // Recherche dans les équipements de chaque salle
+      Object.entries(equipments).forEach(([roomId, roomEquipments]) => {
+        const roomEquipmentResults = roomEquipments.filter(equip => {
+          const textMatch = searchText.trim() === '' || 
+            equip.name.toLowerCase().includes(searchText.toLowerCase()) || 
+            equip.id.toLowerCase().includes(searchText.toLowerCase());
+          
+          const typeMatch = filterType === 'all' || equip.type === filterType;
+          const statusMatch = filterStatus === 'all' || equip.status === filterStatus;
+          let categoryMatch = filterCategory === 'all';
+          
+          // Vérifier la catégorie de la salle parente
+          if (!categoryMatch) {
+            for (const [catKey, catValue] of Object.entries(categories)) {
+              if (catValue.items && (catValue.items.includes(roomId) || catValue.items.includes(equip.id))) {
+                categoryMatch = catKey === filterCategory;
+                break;
+              }
+            }
+          }
+          
+          return textMatch && typeMatch && statusMatch && categoryMatch;
+        });
+
+        results.push(...roomEquipmentResults);
+      });
+
+      // Suppression des doublons par ID
+      results = [...new Map(results.map(item => [item.id, item])).values()];
+      
+      // Tri par nom
       results.sort((a, b) => a.name.localeCompare(b.name));
       
       setSearchResults(results);
@@ -153,7 +178,7 @@ const SearchBox = ({ onSelectObject, isOpen: externalIsOpen, onClose, onOpen }) 
         for (const [roomId, roomData] of Object.entries(equipments)) {
           if (roomData && roomData.some(equip => equip.id === obj.id)) {
             // Trouver la catégorie de la salle
-            const roomObj = fakeObjects.find(o => o.id === roomId);
+            const roomObj = dataObjects.find(o => o.id === roomId);
             if (roomObj) {
               for (const [catKey, catValue] of Object.entries(categories)) {
                 if (catValue.items && catValue.items.includes(roomObj.id)) {
