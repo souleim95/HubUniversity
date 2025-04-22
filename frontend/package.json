@@ -1,6 +1,7 @@
 {
   "name": "hub-university",
   "version": "0.1.0",
+  "proxy": "http://backend:5001",
   "private": true,
   "dependencies": {
     "react": "^18.2.0",

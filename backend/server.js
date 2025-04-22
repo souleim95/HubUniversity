@@ -18,7 +18,10 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:3000', // ou l'URL de votre frontend
+  credentials: true
+}));
 app.use(express.json());
 
 // Connexion à PostgreSQL
@@ -41,11 +44,18 @@ app.get("/api", (req, res) => res.send("Backend API is running 🚀"));
 app.get("/api/users", async (req, res) => {
   try {
     const query = `
-      SELECT u.id, u.name, u.email, COALESCE(u.score, 0) as score, r.nomRole as role, u.created_at 
-      FROM users u 
-      JOIN role r ON u.idRole = r.idRole
-      ORDER BY u.id
-    `;
+        SELECT 
+          u.id,
+          u.name,
+          u.email,
+          COALESCE(u.score, 0) AS score,
+          r.nomRole AS role,
+          u.created_at,
+          u.last_login
+        FROM users u
+        JOIN role r ON u.idRole = r.idRole
+        ORDER BY u.id
+      `;
     const { rows } = await pool.query(query);
     res.json(rows);
   } catch (err) {

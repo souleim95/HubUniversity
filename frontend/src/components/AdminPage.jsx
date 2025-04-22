@@ -170,25 +170,35 @@ function AdminPage() {
     const fetchUsers = async () => {
         setLoadingUsers(true);
         try {
-          const res = await fetch(`${process.env.REACT_APP_API_URL || ''}/api/users`);
-          if (!res.ok) throw new Error('Erreur réseau');
+          // Utilisez l'URL complète avec le port du backend
+          const res = await fetch('http://localhost:5001/api/users');
+          
+          if (!res.ok) {
+            const errorData = await res.json();
+            throw new Error(errorData.error || 'Erreur réseau');
+          }
+          
           const data = await res.json();
-          // Mapper les champs SQL → front
+          console.log("Données reçues:", data); // Ajoutez ce log pour le débogage
+          
           const formatted = data.map(u => ({
-            id:         u.id,
-            login:      u.name,
-            role:       u.role,
-            points:     u.score,
-            lastLogin:  new Date(u.created_at).toLocaleDateString('fr‑FR'),
+            id: u.id,
+            login: u.name,
+            email: u.email,
+            role: u.role,
+            points: u.score,
+            createdAt: new Date(u.created_at).toLocaleDateString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+            lastLogin: u.last_login ? new Date(u.last_login).toLocaleDateString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '—',
           }));
+          
           setUsers(formatted);
         } catch (err) {
-          console.error(err);
-          toast.error('Impossible de charger les utilisateurs');
+          console.error("Erreur détaillée:", err);
+          toast.error(`Erreur: ${err.message}`);
         } finally {
           setLoadingUsers(false);
         }
-      };
+    };
       
 
     // Récupère la liste des objets et catégories depuis fakeData.js
@@ -727,8 +737,10 @@ function AdminPage() {
                                 <TableHeader>
                                     <tr>
                                         <TableHeaderCell>Login</TableHeaderCell>
+                                        <TableHeaderCell>Email</TableHeaderCell>        
                                         <TableHeaderCell>Rôle</TableHeaderCell>
                                         <TableHeaderCell>Points</TableHeaderCell>
+                                        <TableHeaderCell>Inscription</TableHeaderCell>
                                         <TableHeaderCell>Dernière Connexion</TableHeaderCell>
                                         <TableHeaderCell>Actions</TableHeaderCell>
                                     </tr>
@@ -737,12 +749,14 @@ function AdminPage() {
                                     {users.map((user) => (
                                         <TableRow key={user.id}>
                                             <TableCell>{user.login}</TableCell>
+                                            <TableCell>{user.email}</TableCell>
                                             <TableCell>
                                                 <StatusBadge status={user.role}>
                                                     {user.role}
                                                 </StatusBadge>
                                             </TableCell>
                                             <TableCell>{user.points}</TableCell>
+                                            <TableCell>{user.createdAt}</TableCell>
                                             <TableCell>{user.lastLogin}</TableCell>
                                             <TableCell>
                                                 <ButtonGroup>
