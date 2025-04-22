@@ -25,6 +25,7 @@ import { equipments, categories, fakeObjects } from '../data/fakeData';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Toast from './Toast';
+import Formation from './Formation';
 
 const Header = () => {
   const [isFormOpen, setIsFormOpen] = useState(null); 
@@ -727,8 +728,16 @@ const Header = () => {
                 {isFormOpen === 'signup' && (
                   <select name="formation" value={formData.formation} onChange={handleChange} required>
                     <option value="">Sélectionnez votre formation</option>
-                    <option value="Mathématique">Master Mathématiques</option>
-                    <option value="Informatique">Master Informatique</option>
+                    <option value="INFORMATIQUE">INFORMATIQUE</option>
+                    <option value="GÉNIE CIVIL">GÉNIE CIVIL</option>
+                    <option value="BIOTECHNOLOGIES">BIOTECHNOLOGIES</option>
+                    <option value="MÉCANIQUE">MÉCANIQUE</option>
+                    <option value="MATHÉMATIQUES APPLIQUÉES">MATHÉMATIQUES APPLIQUÉES</option>
+                    <option value="BIOTECHNOLOGIES & CHIMIE (Chimie voie Recherche)">BIOTECHNOLOGIES & CHIMIE (Chimie voie Recherche)</option>
+                    <option value="BIOTECHNOLOGIES & CHIMIE (Biologie voie Recherche)">BIOTECHNOLOGIES & CHIMIE (Biologie voie Recherche)</option>
+                    <option value="GÉNIE CIVIL - ARCHITECTE (ENSA-V)">GÉNIE CIVIL - ARCHITECTE (ENSA-V)</option>
+                    <option value="DATA - HUMANITÉS DIGITALES (Sciences Po Saint-Germain-en-Laye)">DATA - HUMANITÉS DIGITALES (Sciences Po Saint-Germain-en-Laye)</option>
+                    <option value="INFORMATIQUE - DESIGNER (CY École de Design)">INFORMATIQUE - DESIGNER (CY École de Design)</option>
                   </select>
                 )}
 
