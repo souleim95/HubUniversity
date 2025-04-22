@@ -169,16 +169,27 @@ function AdminPage() {
     // À remplacer par une vraie implémentation d'API plus tard
     const fetchUsers = async () => {
         setLoadingUsers(true);
-        // Simulation d'appel API avec délai artificiel
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        const mockUsers = [
-            { id: 1, login: 'user1', role: 'student', points: 100, lastLogin: '2024-07-26' },
-            { id: 2, login: 'gest1', role: 'gestionnaire', points: 50, lastLogin: '2024-07-25' },
-            { id: 3, login: 'admin1', role: 'admin', points: 1000, lastLogin: '2024-07-26' },
-        ];
-        setUsers(mockUsers);
-        setLoadingUsers(false);
-    };
+        try {
+          const res = await fetch(`${process.env.REACT_APP_API_URL || ''}/api/users`);
+          if (!res.ok) throw new Error('Erreur réseau');
+          const data = await res.json();
+          // Mapper les champs SQL → front
+          const formatted = data.map(u => ({
+            id:         u.id,
+            login:      u.name,
+            role:       u.role,
+            points:     u.score,
+            lastLogin:  new Date(u.created_at).toLocaleDateString('fr‑FR'),
+          }));
+          setUsers(formatted);
+        } catch (err) {
+          console.error(err);
+          toast.error('Impossible de charger les utilisateurs');
+        } finally {
+          setLoadingUsers(false);
+        }
+      };
+      
 
     // Récupère la liste des objets et catégories depuis fakeData.js
     const fetchObjects = async () => {
@@ -286,19 +297,38 @@ function AdminPage() {
     };
 
     // Sauvegarde les modifications d'un utilisateur
-    const handleUserSubmit = async (e) => {
+    const handleUserSubmit = async e => {
         e.preventDefault();
-        
-        // Met à jour ou crée un utilisateur selon le contexte
-        if (selectedUser) {
-            setUsers(users.map(user => 
-                user.id === selectedUser.id ? { ...user, ...userFormData } : user
-            ));
-        } else {
-            setUsers([...users, { id: Date.now(), ...userFormData }]);
+        try {
+          const payload = {
+            name:     userFormData.login,
+            email:    userFormData.email,     // à ajouter dans votre formData si besoin
+            role:     userFormData.role,
+            password: userFormData.password,  // laisser vide si pas modif
+          };
+          if (selectedUser) {
+            // modification
+            await fetch(`/api/users/${selectedUser.id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+            });
+          } else {
+            // création
+            await fetch(`/api/users`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+            });
+          }
+          await fetchUsers();               // raffraîchir la liste
+          setShowUserModal(false);
+        } catch (err) {
+          console.error(err);
+          toast.error('Erreur lors de la sauvegarde');
         }
-        setShowUserModal(false);
-    };
+      };
+      
 
     // --------- Gestion des objets connectés ---------
 
