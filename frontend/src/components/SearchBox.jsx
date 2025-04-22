@@ -7,7 +7,7 @@ import { fakeObjects, categories, equipments } from '../data/fakeData';
 import { getIcon } from '../utils/iconUtils'; 
 
 
-const SearchBox = ({ onSelectObject }) => {
+const SearchBox = ({ onSelectObject, isOpen: externalIsOpen, onClose, onOpen }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [filterType, setFilterType] = useState('all');
@@ -48,21 +48,21 @@ const SearchBox = ({ onSelectObject }) => {
     };
   }, [isOpen]);
 
+  // Synchroniser l'état externe avec l'état interne
+  useEffect(() => {
+    if (externalIsOpen !== undefined) {
+      setIsOpen(externalIsOpen);
+    }
+  }, [externalIsOpen]);
+
   const toggleSearch = () => {
-    setIsOpen(!isOpen);
-    if (isOpen) {
-      setSearchText('');
-      setFilterType('all');
-      setFilterStatus('all');
-      setFilterCategory('all');
-      setSearchResults([]);
-    } else {
-      // Focus sur l'input quand on ouvre la recherche
-      setTimeout(() => {
-        if (searchInputRef.current) {
-          searchInputRef.current.focus();
-        }
-      }, 100);
+    const newState = !isOpen;
+    setIsOpen(newState);
+    if (!newState && onClose) {
+      onClose();
+    }
+    if (newState && onOpen) {
+      onOpen();
     }
   };
 

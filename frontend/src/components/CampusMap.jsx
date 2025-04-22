@@ -91,7 +91,7 @@ const CampusMap = () => {
   };
 
   return (
-    <MapSection>
+    <MapSection id="campus-section">
       <h2 style={{ 
         textAlign: 'center', 
         fontSize: '2.5em', 
