@@ -187,6 +187,48 @@ const showPointsToast = (points) => {
   }, 3000);
 };
 
+/*
+ * Composant Dashboard : Interface principale de contrôle des objets connectés
+ * 
+ * Fonctionnalités principales :
+ * - Gestion des points utilisateur et progression
+ * - Contrôle en temps réel des objets et équipements
+ * - Surveillance des états et statuts
+ * - Gestion des alertes et maintenances
+ * 
+ * Architecture :
+ * 1. États et Configurations
+ *    - Gestion des états des objets et équipements
+ *    - Configuration des points et niveaux
+ *    - États des modals et interfaces
+ * 
+ * 2. Gestionnaires d'événements
+ *    - handleObjectControl : Contrôle des objets principaux
+ *    - handleEquipmentControl : Contrôle des équipements
+ *    - handleSelectResult : Navigation et sélection
+ * 
+ * 3. Systèmes de surveillance
+ *    - Surveillance des filtres de ventilation
+ *    - Monitoring des niveaux de cafetière
+ *    - Suivi des cycles de lave-vaisselle
+ *    - Contrôle du micro-ondes
+ * 
+ * 4. Sécurité et Validation
+ *    - Vérification des accès
+ *    - Gestion des alertes incendie
+ *    - Validation des actions utilisateur
+ * 
+ * 5. Interface utilisateur
+ *    - Rendu conditionnel selon les rôles
+ *    - Gestion des contrôles par type d'objet
+ *    - Organisation par catégories
+ * 
+ * 6. Système de points
+ *    - Attribution des points par action
+ *    - Multiplicateurs selon les rôles
+ *    - Niveaux et progressions
+ */
+
 const Dashboard = () => {
   const [objects, setObjects] = useState(dataObjects);
   const [selectedCategory, setSelectedCategory] = useState('salles');

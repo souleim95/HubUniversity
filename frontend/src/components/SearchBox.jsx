@@ -3,23 +3,52 @@ import { FaSearch, FaTimes, FaFilter } from 'react-icons/fa';
 import { SearchContainer, SearchBar } from '../styles/HeaderStyles';
 import styled from 'styled-components';
 import {SearchResultsContainer, FiltersContainer, FilterSelect, ResultItem, NoResults, SearchButton, StyledFaTimes, ResultsHeader, SearchWrapper} from '../styles/SearchBoxStyles';
-import { dataObjects, categories, equipments } from '../data/projectData';
+import { dataObjects, categories, equipments, objectTypes } from '../data/projectData';
 import { getIcon } from '../utils/iconUtils'; 
 
+/*
+ * Composant SearchBox : Barre de recherche intelligente
+ * 
+ * Caractéristiques principales :
+ * 1. Interface utilisateur :
+ *    - Barre de recherche extensible
+ *    - Filtres dynamiques (type, statut, catégorie)
+ *    - Résultats en temps réel
+ *    - Animations fluides
+ * 
+ * 2. Fonctionnalités de recherche :
+ *    - Recherche par nom ou identifiant
+ *    - Filtrage multi-critères
+ *    - Gestion des objets et équipements
+ *    - Navigation contextuelle
+ * 
+ * 3. Performance et UX :
+ *    - Debouncing des recherches
+ *    - Recherche optimisée avec useCallback
+ *    - Fermeture automatique au clic extérieur
+ *    - Retour visuel immédiat
+ * 
+ * 4. Accessibilité :
+ *    - Labels ARIA
+ *    - Navigation au clavier
+ *    - Messages d'état clairs
+ */
 
 const SearchBox = ({ onSelectObject, isOpen: externalIsOpen, onClose, onOpen }) => {
+  // États pour gérer l'interface de recherche et les filtres
   const [isOpen, setIsOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
-  const [filterType, setFilterType] = useState('all');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [filterCategory, setFilterCategory] = useState('all');
-  const [searchResults, setSearchResults] = useState([]);
-  const [isSearching, setIsSearching] = useState(false);
+  const [filterType, setFilterType] = useState('all');     // Filtre par type
+  const [filterStatus, setFilterStatus] = useState('all'); // Filtre par statut
+  const [filterCategory, setFilterCategory] = useState('all'); // Filtre par catégorie
+  
+  // États pour les résultats et le chargement
+  const [searchResults, setSearchResults] = useState([]); // Résultats de recherche
+  const [isSearching, setIsSearching] = useState(false); // État de chargement
+  
+  // Références pour la gestion du focus et des clics
   const searchInputRef = useRef(null);
   const searchContainerRef = useRef(null);
-  
-  // Extraire tous les types d'objets disponibles
-  const objectTypes = [...new Set(dataObjects.map(obj => obj.type))].sort();
   
   // Extraire tous les statuts possibles
   const statusTypes = [...new Set(dataObjects.map(obj => obj.status))].sort();
@@ -29,7 +58,7 @@ const SearchBox = ({ onSelectObject, isOpen: externalIsOpen, onClose, onOpen }) 
     .map(([key, value]) => ({ key, name: value.name }))
     .sort((a, b) => a.name.localeCompare(b.name));
 
-  // Gestionnaire de clic à l'extérieur pour fermer la recherche
+  // Gestion des interactions extérieures (clic hors zone)
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (searchContainerRef.current && !searchContainerRef.current.contains(event.target)) {
@@ -66,7 +95,7 @@ const SearchBox = ({ onSelectObject, isOpen: externalIsOpen, onClose, onOpen }) 
     }
   };
 
-  // Optimisation de la fonction de recherche avec useCallback
+  // Fonction optimisée de recherche avec gestion des filtres
   const performSearch = useCallback(() => {
     if (searchText.trim() === '' && filterType === 'all' && filterStatus === 'all' && filterCategory === 'all') {
       setSearchResults([]);
@@ -217,7 +246,9 @@ const SearchBox = ({ onSelectObject, isOpen: externalIsOpen, onClose, onOpen }) 
   };
 
   return (
+    // Wrapper principal avec gestion des interactions
     <SearchWrapper ref={searchContainerRef}>
+      {/* Barre de recherche expansible avec animations */}
       <SearchContainer isOpen={isOpen}>
         <SearchButton 
           onClick={toggleSearch} 
@@ -240,12 +271,12 @@ const SearchBox = ({ onSelectObject, isOpen: externalIsOpen, onClose, onOpen }) 
             onChange={(e) => setSearchText(e.target.value)}
             placeholder="Rechercher par nom ou identifiant..."
             style={{ 
-              transition: 'width 0.3s ease, opacity 0.3s ease, top 0.3s ease', // Added top transition
+              transition: 'width 0.3s ease, opacity 0.3s ease, top 0.3s ease',
               opacity: isOpen ? '1' : '0',
               width: isOpen ? 'calc(100% - 50px)' : '0',
               boxShadow: isOpen ? '0 2px 6px rgba(0,0,0,0.1)' : 'none',
-              top: isOpen ? '2px' : '-50px', // Adjusted top position
-              position: 'relative', // Ensure relative positioning
+              top: isOpen ? '2px' : '-50px', 
+              position: 'relative', 
               right: '0'
             }}
           />

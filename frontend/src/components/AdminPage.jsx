@@ -1,3 +1,17 @@
+/*
+ * Composant AdminPage : Interface d'administration complète
+ * - Gestion des utilisateurs (CRUD, rôles, droits)
+ * - Gestion des objets et services (CRUD, catégories, états)
+ * - Administration de la sécurité et maintenance
+ * - Personnalisation de la plateforme (thèmes, validation)
+ * - Génération de rapports et statistiques
+ * - Gestion des alertes et des demandes
+ * - Suivi des métriques et performances
+ * - Interface organisée par onglets pour une navigation claire
+ * - Modals pour les actions importantes
+ * - Système de confirmation pour les actions critiques
+ */
+
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -1930,4 +1944,4 @@ function AdminPage() {
     );
 }
 
-export default AdminPage; 
+export default AdminPage;

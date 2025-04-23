@@ -1,3 +1,14 @@
+/*
+ * Composant CampusMap : Carte interactive du campus
+ * 
+ * Fonctionnalités principales :
+ * - Visualisation des objets connectés par type
+ * - Navigation interactive entre les différentes catégories
+ * - Interface de type "carte retournable" pour plus d'informations
+ * - Navigation conditionnelle vers le tableau de bord
+ */
+
+// Imports et configuration
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { dataObjects, equipments, categories } from '../data/projectData';
@@ -17,14 +28,16 @@ import salleImage from '../assets/salle.jpg';
 import ChauffageImage from '../assets/thermostat.jpg';
 
 const CampusMap = () => {
+  // Gestion de la navigation et des états
   const navigate = useNavigate();
-  const [flippedCard, setFlippedCard] = useState(null);
-  const isLoggedIn = !!sessionStorage.getItem('user'); 
+  const [flippedCard, setFlippedCard] = useState(null); // Carte actuellement retournée
+  const isLoggedIn = !!sessionStorage.getItem('user'); // Vérification connexion
 
+  // Fonction de regroupement des objets par type
   const groupObjectsByType = () => {
     const grouped = {};
     
-    // Add main objects
+    // Groupement des objets principaux
     dataObjects.forEach((object) => {
       if (!grouped[object.type]) {
         grouped[object.type] = [];
@@ -32,18 +45,18 @@ const CampusMap = () => {
       grouped[object.type].push(object);
     });
 
-    // Add equipment items from each room
+    // Groupement des équipements par salle
     Object.entries(equipments).forEach(([roomId, roomEquipments]) => {
       roomEquipments.forEach((equipment) => {
         if (!grouped[equipment.type]) {
           grouped[equipment.type] = [];
         }
-        // Add room reference to equipment
+        // Ajout des informations de la salle parente
         grouped[equipment.type].push({
           ...equipment,
           roomId,
           roomName: dataObjects.find(obj => obj.id === roomId)?.name || '',
-          description: `${equipment.name} - ${dataObjects.find(obj => obj.id === roomId)?.name || ''}`
+          description: `${equipment.description}`
         });
       });
     });
@@ -53,8 +66,9 @@ const CampusMap = () => {
 
   const groupedObjects = groupObjectsByType();
   const objectTypes = Object.keys(groupedObjects);
-  const [selectedType, setSelectedType] = useState(objectTypes[0]);
+  const [selectedType, setSelectedType] = useState(objectTypes[0]); // Type d'objet sélectionné
 
+  // Sélection de l'image selon le type d'objet
   const getImageForType = (type) => {
     switch (type.toLowerCase()) {
       case 'salle':
@@ -62,17 +76,20 @@ const CampusMap = () => {
       case 'chauffage':
         return ChauffageImage;
       default:
-        return salleImage;
+        return salleImage; // Image par défaut
     }
   };
 
+  // Gestionnaires d'événements pour les interactions
   const handleCardClick = (obj) => {
+    // Gestion du retournement des cartes
     setFlippedCard(flippedCard === obj.id ? null : obj.id);
   };
 
   const handleCardDoubleClick = (obj) => {
+    // Navigation vers le dashboard avec les paramètres appropriés
 
-    // si pas connecté alors on rien faire 
+    // si pas connecté alors on fait rien
     if (!isLoggedIn) {
       return;
    }
@@ -111,6 +128,10 @@ const CampusMap = () => {
 
   return (
     <MapSection id="campus-section">
+      {/* Interface utilisateur avec :
+          - En-tête avec titre
+          - Système d'onglets pour la navigation
+          - Grille de cartes interactives */}
       <h2 style={{ 
         textAlign: 'center', 
         fontSize: '2.5em', 

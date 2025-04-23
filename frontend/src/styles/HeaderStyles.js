@@ -287,3 +287,59 @@ export const LoginFormContainer = styled.div`
     padding: 20px;
   }
 `;
+
+export const Filter = styled.select`
+  flex: 1;
+  min-width: 100px;
+  padding: 8px;
+  border-radius: 8px;
+  border: 2px solid #e0e0e0;
+  background-color: white;
+  cursor: pointer;
+  outline: none;
+  font-size: 14px;
+  color: #333;
+  transition: all 0.2s ease;
+  
+  /* Style des options */
+  option {
+    padding: 8px;
+    background-color: white;
+    color: #333;
+    font-size: 14px;
+
+    &:first-child {
+      font-weight: bold;
+      color: #0f6ead;
+    }
+
+    &:hover {
+      background-color: #e3f2fd;
+    }
+  }
+
+  /* Style au survol */
+  &:hover {
+    border-color: #0f6ead;
+    box-shadow: 0 2px 4px rgba(15, 110, 173, 0.1);
+  }
+
+  /* Style au focus */
+  &:focus {
+    border-color: #0f6ead;
+    box-shadow: 0 0 0 2px rgba(15, 110, 173, 0.2);
+  }
+
+  /* Style pour les options sélectionnées */
+  &:not([multiple]) option:checked {
+    background-color: #e3f2fd;
+    color: #0f6ead;
+  }
+
+  
+  /* Style responsive */
+  @media (max-width: 768px) {
+    min-width: 80px;
+    font-size: 13px;
+  }
+`;

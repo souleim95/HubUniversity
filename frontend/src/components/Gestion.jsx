@@ -1,3 +1,21 @@
+/*
+ * Composant GestionPage : Interface d'administration des objets connectés
+ * 
+ * Fonctionnalités principales :
+ * - Gestion CRUD complète des objets connectés (création, lecture, modification, suppression)
+ * - Filtrage par catégorie (salles, école, parking)
+ * - Surveillance en temps réel des statuts et alertes
+ * - Génération de rapports et statistiques
+ * - Gestion des réservations de salles
+ * 
+ * Structure du code :
+ * 1. Déclaration des états (useState)
+ * 2. Fonctions utilitaires et gestionnaires d'événements
+ * 3. Hooks d'effets (useEffect)
+ * 4. Rendu du composant
+ */
+
+// Import des dépendances et composants nécessaires
 import React, { useState, useEffect } from 'react';
 import { dataObjects, categories } from '../data/projectData';
 import {
@@ -9,7 +27,6 @@ import {
   Tooltip,
   CartesianGrid,
 } from 'recharts';
-
 
 import {
   AdminContainer,
@@ -50,32 +67,31 @@ import {
 } from '../styles/AdminStyles';
 import { FaTools, FaCalendar, FaExclamationTriangle, FaPlus, FaTrash, FaChartBar,FaDownload } from 'react-icons/fa';
 
+// Configuration des types d'objets autorisés par catégorie
 const categoryToTypeMap = {
-  salles: ['Salle', 'Chauffage', 'Éclairage', 'Audio', 'Ventilation'],
-  ecole: ['Caméra', 'Porte', 'Éclairage', 'Panneau', 'Securite'],
-  parking: ['Caméra', 'Capteur', 'Éclairage', 'Panneau', 'Borne']
+  salles: ['Salle', 'Chauffage', 'Éclairage', 'Audio', 'Ventilation'],  // Équipements disponibles dans les salles
+  ecole: ['Caméra', 'Porte', 'Éclairage', 'Panneau', 'Securite'],      // Équipements de sécurité école
+  parking: ['Caméra', 'Capteur', 'Éclairage', 'Panneau', 'Borne']      // Équipements parking
 };
 
-
-
 function GestionPage() {
-  // --------- États pour la gestion des objets ---------
-  const [objects, setObjects] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('salles');
-  const [showObjectModal, setShowObjectModal] = useState(false);
-  const [inactiveCount, setInactiveCount] = useState(0);
-  const [objectHistories, setObjectHistories] = useState({});
+  // États pour la gestion des objets
+  const [objects, setObjects] = useState([]); // Liste des objets filtrés par catégorie
+  const [selectedCategory, setSelectedCategory] = useState('salles'); // Catégorie active
+  const [showObjectModal, setShowObjectModal] = useState(false); // Visibilité modal d'ajout/édition
+  const [inactiveCount, setInactiveCount] = useState(0); // Nombre d'objets inactifs
+  const [objectHistories, setObjectHistories] = useState({}); // Historique des consommations
+  const [allObjects, setAllObjects] = useState([]); // Liste complète des objets
+
+  // États pour les alertes et confirmations
+  const [showAlert, setShowAlert] = useState(false); // Affichage des messages d'alerte
+  const [alertMessage, setAlertMessage] = useState(''); // Contenu du message d'alerte
+  const [showConfirmation, setShowConfirmation] = useState(false); // Dialogue de confirmation
+  const [confirmationMessage, setConfirmationMessage] = useState(''); // Message de confirmation
+  const [confirmationAction, setConfirmationAction] = useState(null); // Action à exécuter après confirmation
+
   const [selectedForChart, setSelectedForChart] = useState(null);
   const [editingObject, setEditingObject] = useState(null);
-  const [allObjects, setAllObjects] = useState([]);
-
-  const [showAlert, setShowAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState('');
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  const [confirmationMessage, setConfirmationMessage] = useState('');
-  const [confirmationAction, setConfirmationAction] = useState(null);
-
-  
 
   const [objectFormData, setObjectFormData] = useState({
     name: '',
@@ -85,16 +101,12 @@ function GestionPage() {
     type: categoryToTypeMap[selectedCategory][0],
     numero: '',
     targetTemp: '',             // pour les Chauffages
-  brightnessSchedule: '',     // pour Éclairage (horaire fonctionnement)
-
+    brightnessSchedule: '',     // pour Éclairage (horaire fonctionnement)
   });
   const [objectSettings, setObjectSettings] = useState({});
-const [editingSettingsFor, setEditingSettingsFor] = useState(null);
+  const [editingSettingsFor, setEditingSettingsFor] = useState(null);
 
-  
-  
-
-  // --------- États pour la gestion des réservations ---------
+  // États pour la gestion des réservations
   const [reservations, setReservations] = useState([]);
   const [showReservationModal, setShowReservationModal] = useState(false);
   const [reservationFormData, setReservationFormData] = useState({
@@ -103,33 +115,36 @@ const [editingSettingsFor, setEditingSettingsFor] = useState(null);
     time: '',
   });
 
-  // --------- États pour la gestion des alertes ---------
+  // États pour la gestion des alertes
   const [alerts, setAlerts] = useState([]);
   const [showAlertModal, setShowAlertModal] = useState(false);
   const [selectedAlert, setSelectedAlert] = useState(null);
 
-  // --------- États pour les rapports ---------
+  // États pour les rapports
   const [reports, setReports] = useState({
     energyConsumption: [],
     objectUsage: [],
   });
 
+  // Générateur de rapports et statistiques
   const generateReports = (objectsToAnalyze) => {
     const today = new Date().toISOString().split('T')[0];
   
+    // Création des données de consommation
     const energyData = objectsToAnalyze.map(obj => ({
       id: obj.id,
       date: today,
-      value: obj.status === 'active' ? 50 : 20
+      value: obj.status === 'active' ? 50 : 20 // Simulation de consommation
     }));
   
+    // Détection des objets inefficaces
     const inefficients = objectsToAnalyze.filter(obj => {
       if (obj.type === 'Chauffage') {
-        return parseInt(obj.settings?.temperature) > 24;
+        return parseInt(obj.settings?.temperature) > 24; // Température trop élevée
       }
       if (obj.type === 'Éclairage') {
         const [start, end] = [obj.settings?.startTime, obj.settings?.endTime];
-        return start === '00:00' && end === '23:59';
+        return start === '00:00' && end === '23:59'; // Éclairage 24/7
       }
       return false;
     });
@@ -152,9 +167,10 @@ const [editingSettingsFor, setEditingSettingsFor] = useState(null);
     const inactifs = objectsToAnalyze.filter(obj => obj.status === 'inactive');
     setInactiveCount(inactifs.length);
   };
-  
 
+  // Fonction d'export des rapports
   const handleExportReport = (type) => {
+    // Validation des données
     const data = reports[type];
     if (!data || data.length === 0) {
       setAlertMessage("Aucune donnée à exporter");
@@ -162,6 +178,7 @@ const [editingSettingsFor, setEditingSettingsFor] = useState(null);
       return;
     }
   
+    // Conversion et téléchargement
     const csv = convertToCSV(data);
     downloadCSV(csv, `${type}_report.csv`);
   };
@@ -169,7 +186,7 @@ const [editingSettingsFor, setEditingSettingsFor] = useState(null);
   const convertToCSV = (data) => {
     const headers = Object.keys(data[0]);
     const rows = data.map(obj => headers.map(key => obj[key]));
-    return [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    return [headers.join(','), ...rows.map(r => r.join(',')).join('\n')];
   };
   
   const downloadCSV = (csv, filename) => {
@@ -197,8 +214,8 @@ const [editingSettingsFor, setEditingSettingsFor] = useState(null);
     setEditingObject(object);
     setShowObjectModal(true);
   };
-  
-  
+
+  // Effet pour charger les données initiales
   useEffect(() => {
     // Ne charger dataObjects qu'une seule fois (au montage)
     if (allObjects.length === 0) {
@@ -224,62 +241,8 @@ const [editingSettingsFor, setEditingSettingsFor] = useState(null);
     setObjects(categoryObjects);
     generateReports(categoryObjects);
   }, [selectedCategory, allObjects]); // 👈 nouvelle dépendance ici
-  
-  
-  
-  
 
-  // --------- Gestion des objets ---------
-  const handleCategoryChange = (category) => {
-    setSelectedCategory(category);
-    const categoryObjects = allObjects.filter(object =>
-      categories[category]?.items.includes(object.id)
-    );
-    setObjects(categoryObjects);
-    generateReports(categoryObjects);
-  };
-  
-
-
-  
-  
-  
-
-  const handleAddObject = () => {
-    setObjectFormData({ name: '', category: selectedCategory, status: 'active', priority: 'normal' });
-    setShowObjectModal(true);
-  };
-
-
-  
-
-  
-  
-
-  // --------- Gestion des réservations ---------
-  const handleAddReservation = () => {
-    setReservationFormData({ room: '', date: '', time: '' });
-    setShowReservationModal(true);
-  };
-
-  const handleEditReservation = (reservation) => {
-    setReservationFormData({
-      room: reservation.room,
-      date: reservation.date,
-      time: reservation.time,
-    });
-    setShowReservationModal(true);
-  };
-
-  const handleDeleteReservation = (reservationId) => {
-    setConfirmationMessage('Êtes-vous sûr de vouloir supprimer cette réservation ?');
-    setShowConfirmation(true);
-    setConfirmationAction(() => () => {
-      setReservations(reservations.filter(reservation => reservation.id !== reservationId));
-      setShowConfirmation(false);
-    });
-  };
-
+  // Gestionnaire pour la soumission du formulaire d'objet
   const handleObjectSubmit = (e) => {
     e.preventDefault();
   
@@ -348,32 +311,60 @@ const [editingSettingsFor, setEditingSettingsFor] = useState(null);
     setShowObjectModal(false);
     setEditingObject(null);
   };
-  
-  
-  
-  
-    
-  
 
-// --------- Gestion des objets ---------
-const handleRequestDeletion = (object) => {
-  // Créer une alerte pour demander la suppression de l'objet
-  setConfirmationMessage(`Êtes-vous sûr de vouloir demander la suppression de ${object.name} ?`);
-  setShowConfirmation(true);
-  setConfirmationAction(() => () => {
-    // Ici tu peux envoyer un message ou une alerte à l'administrateur, par exemple en ajoutant l'objet à une liste des objets à supprimer
-    setAlertMessage(`La demande de suppression pour l'objet ${object.name} a été envoyée à l'administrateur.`);
-    setShowAlert(true);
-    
-    // Tu peux également maintenir une liste d'objets à supprimer (à traiter côté serveur ou administrateur)
-    setAlerts(prevAlerts => [...prevAlerts, { message: `Demande de suppression pour ${object.name}`, objectId: object.id }]);
-    setShowConfirmation(false);
-  });
+  // Gestionnaire pour les actions sur les alertes
+
+  const handleCategoryChange = (category) => {
+    setSelectedCategory(category);
+    const categoryObjects = allObjects.filter(object =>
+      categories[category]?.items.includes(object.id)
+    );
+    setObjects(categoryObjects);
+    generateReports(categoryObjects);
+  };
+
+  const handleAddObject = () => {
+    setObjectFormData({ name: '', category: selectedCategory, status: 'active', priority: 'normal' });
+    setShowObjectModal(true);
+  };
+
+  const handleAddReservation = () => {
+    setReservationFormData({ room: '', date: '', time: '' });
+    setShowReservationModal(true);
+  };
+
+  const handleEditReservation = (reservation) => {
+    setReservationFormData({
+      room: reservation.room,
+      date: reservation.date,
+      time: reservation.time,
+    });
+    setShowReservationModal(true);
+  };
+
+  const handleDeleteReservation = (reservationId) => {
+    setConfirmationMessage('Êtes-vous sûr de vouloir supprimer cette réservation ?');
+    setShowConfirmation(true);
+    setConfirmationAction(() => () => {
+      setReservations(reservations.filter(reservation => reservation.id !== reservationId));
+      setShowConfirmation(false);
+    });
+  };
+
+  const handleRequestDeletion = (object) => {
+    // Créer une alerte pour demander la suppression de l'objet
+    setConfirmationMessage(`Êtes-vous sûr de vouloir demander la suppression de ${object.name} ?`);
+    setShowConfirmation(true);
+    setConfirmationAction(() => () => {
+      // Ici tu peux envoyer un message ou une alerte à l'administrateur, par exemple en ajoutant l'objet à une liste des objets à supprimer
+      setAlertMessage(`La demande de suppression pour l'objet ${object.name} a été envoyée à l'administrateur.`);
+      setShowAlert(true);
+      
+      // Tu peux également maintenir une liste d'objets à supprimer (à traiter côté serveur ou administrateur)
+      setAlerts(prevAlerts => [...prevAlerts, { message: `Demande de suppression pour ${object.name}`, objectId: object.id }]);
+      setShowConfirmation(false);
+    });
 };
-
-
- 
-
 
   // --------- Gestion des alertes ---------
   const handleCreateAlert = (object) => {
@@ -396,7 +387,6 @@ const handleRequestDeletion = (object) => {
     setSelectedAlert(alert);
     setShowAlertModal(true);
   };
-
 
   const handleToggleStatus = (object) => {
     const nextStatus = object.status === 'active'
@@ -443,7 +433,6 @@ const handleRequestDeletion = (object) => {
     });
   };
   
-  
   const handleReservationSubmit = (e) => {
     e.preventDefault();
   
@@ -467,7 +456,6 @@ const handleRequestDeletion = (object) => {
   
     setShowReservationModal(false);
   };
-  
 
   return (
     <AdminContainer>
@@ -515,157 +503,144 @@ const handleRequestDeletion = (object) => {
         </SectionHeader>
 
         <Grid>
-  {objects.map((object) => (
-    <Card key={object.id}>
-      <CardTitle>{object.name}</CardTitle>
-      <p><strong>Zone :</strong> {object.id}</p>
-      <br></br>
-      <p><strong>Statut :</strong> <StatusBadge status={object.status}>{object.status}</StatusBadge></p>
-      {isInefficient(object) && (
-  <p style={{ color: 'red', fontWeight: 'bold' }}>
-    ⚠️ Inefficace : paramètres à optimiser
-  </p>
-)}
-
-      
-      <ButtonGroup>
-        <SecondaryButton onClick={() => handleCreateAlert(object)}>Créer une alerte</SecondaryButton>
-        <PrimaryButton onClick={() => handleRequestDeletion(object)}>
-          <FaTrash /> Demander la suppression
-        </PrimaryButton>
-        <SecondaryButton onClick={() => handleOpenSettings(object)}>
-  Configurer
-</SecondaryButton>
-<SecondaryButton onClick={() => setSelectedForChart(object)}>
-  Voir l’historique
-</SecondaryButton>
-<SecondaryButton onClick={() => handleEditObject(object)}>
-  Modifier
-</SecondaryButton>
-
-<SecondaryButton onClick={() => handleToggleStatus(object)}>
-  {object.status === 'active' ? 'Désactiver' : 'Activer'}
-</SecondaryButton>
-
-
-      </ButtonGroup>
-    </Card>
-    
-  ))}
-</Grid>
-
+          {objects.map((object) => (
+            <Card key={object.id}>
+              <CardTitle>{object.name}</CardTitle>
+              <p><strong>Zone :</strong> {object.id}</p>
+              <br></br>
+              <p><strong>Statut :</strong> <StatusBadge status={object.status}>{object.status}</StatusBadge></p>
+              {isInefficient(object) && (
+                <p style={{ color: 'red', fontWeight: 'bold' }}>
+                  ⚠️ Inefficace : paramètres à optimiser
+                </p>
+              )}
+              <ButtonGroup>
+                <SecondaryButton onClick={() => handleCreateAlert(object)}>Créer une alerte</SecondaryButton>
+                <PrimaryButton onClick={() => handleRequestDeletion(object)}>
+                  <FaTrash /> Demander la suppression
+                </PrimaryButton>
+                <SecondaryButton onClick={() => handleOpenSettings(object)}>
+                  Configurer
+                </SecondaryButton>
+                <SecondaryButton onClick={() => setSelectedForChart(object)}>
+                  Voir l’historique
+                </SecondaryButton>
+                <SecondaryButton onClick={() => handleEditObject(object)}>
+                  Modifier
+                </SecondaryButton>
+                <SecondaryButton onClick={() => handleToggleStatus(object)}>
+                  {object.status === 'active' ? 'Désactiver' : 'Activer'}
+                </SecondaryButton>
+              </ButtonGroup>
+            </Card>
+          ))}
+        </Grid>
       </Section>
-      <Section>
-  <SectionHeader>
-    <SectionTitle>
-      <FaExclamationTriangle /> Alertes
-    </SectionTitle>
-  </SectionHeader>
-
-  <Table>
-    <TableHeader>
-      <tr>
-        <TableHeaderCell>Objet</TableHeaderCell>
-        <TableHeaderCell>Message</TableHeaderCell>
-      </tr>
-    </TableHeader>
-    <tbody>
-      {alerts.map((alert) => (
-        <TableRow key={alert.id}>
-          <TableCell>{dataObjects.find(object => object.id === alert.objectId)?.name}</TableCell>
-          <TableCell>{alert.message}</TableCell>
-        </TableRow>
-      ))}
-    </tbody>
-  </Table>
-</Section>
 
       <Section>
-  <SectionHeader>
-    <SectionTitle>
-      <FaCalendar /> Réservations de Salles
-    </SectionTitle>
-    <ActionButton onClick={handleAddReservation}>
-      <FaPlus /> Ajouter une réservation
-    </ActionButton>
-  </SectionHeader>
+        <SectionHeader>
+          <SectionTitle>
+            <FaExclamationTriangle /> Alertes
+          </SectionTitle>
+        </SectionHeader>
 
-  <Table>
-    <TableHeader>
-      <tr>
-        <TableHeaderCell>Salle</TableHeaderCell>
-        <TableHeaderCell>Date</TableHeaderCell>
-        <TableHeaderCell>Heure</TableHeaderCell>
-        <TableHeaderCell>Actions</TableHeaderCell>
-      </tr>
-    </TableHeader>
-    <tbody>
-      {reservations.map((reservation) => (
-        <TableRow key={reservation.id}>
-          <TableCell>{reservation.room}</TableCell>
-          <TableCell>{reservation.date}</TableCell>
-          <TableCell>{reservation.time}</TableCell>
-          <TableCell>
+        <Table>
+          <TableHeader>
+            <tr>
+              <TableHeaderCell>Objet</TableHeaderCell>
+              <TableHeaderCell>Message</TableHeaderCell>
+            </tr>
+          </TableHeader>
+          <tbody>
+            {alerts.map((alert) => (
+              <TableRow key={alert.id}>
+                <TableCell>{dataObjects.find(object => object.id === alert.objectId)?.name}</TableCell>
+                <TableCell>{alert.message}</TableCell>
+              </TableRow>
+            ))}
+          </tbody>
+        </Table>
+      </Section>
+
+      <Section>
+        <SectionHeader>
+          <SectionTitle>
+            <FaCalendar /> Réservations de Salles
+          </SectionTitle>
+          <ActionButton onClick={handleAddReservation}>
+            <FaPlus /> Ajouter une réservation
+          </ActionButton>
+        </SectionHeader>
+
+        <Table>
+          <TableHeader>
+            <tr>
+              <TableHeaderCell>Salle</TableHeaderCell>
+              <TableHeaderCell>Date</TableHeaderCell>
+              <TableHeaderCell>Heure</TableHeaderCell>
+              <TableHeaderCell>Actions</TableHeaderCell>
+            </tr>
+          </TableHeader>
+          <tbody>
+            {reservations.map((reservation) => (
+              <TableRow key={reservation.id}>
+                <TableCell>{reservation.room}</TableCell>
+                <TableCell>{reservation.date}</TableCell>
+                <TableCell>{reservation.time}</TableCell>
+                <TableCell>
+                  <ButtonGroup>
+                    <SecondaryButton onClick={() => handleEditReservation(reservation)}>Modifier</SecondaryButton>
+                    <PrimaryButton onClick={() => handleDeleteReservation(reservation.id)}>Supprimer</PrimaryButton>
+                  </ButtonGroup>
+                </TableCell>
+              </TableRow>
+            ))}
+          </tbody>
+        </Table>
+      </Section>
+
+      <Section>
+        <SectionHeader style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '1rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap' }}>
+            <SectionTitle>
+              <FaChartBar /> Rapports d'Utilisation & Efficacité
+            </SectionTitle>
             <ButtonGroup>
-              <SecondaryButton onClick={() => handleEditReservation(reservation)}>Modifier</SecondaryButton>
-              <PrimaryButton onClick={() => handleDeleteReservation(reservation.id)}>Supprimer</PrimaryButton>
+              <ExportButton onClick={() => handleExportReport('energyConsumption')}>
+                <FaDownload /> Exporter conso
+              </ExportButton>
+              <ExportButton onClick={() => handleExportReport('objectUsage')}>
+                <FaDownload /> Exporter objets inefficaces
+              </ExportButton>
             </ButtonGroup>
-          </TableCell>
-        </TableRow>
-      ))}
-    </tbody>
-  </Table>
-</Section>
+          </div>
+        </SectionHeader>
 
-<Section>
-<SectionHeader style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '1rem' }}>
-  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap' }}>
-    <SectionTitle>
-      <FaChartBar /> Rapports d'Utilisation & Efficacité
-    </SectionTitle>
-    <ButtonGroup>
-      <ExportButton onClick={() => handleExportReport('energyConsumption')}>
-        <FaDownload /> Exporter conso
-      </ExportButton>
-      <ExportButton onClick={() => handleExportReport('objectUsage')}>
-        <FaDownload /> Exporter objets inefficaces
-      </ExportButton>
-    </ButtonGroup>
-  </div>
+        <StatsGrid>
+          <StatCard>
+            <StatValue>
+              {reports.energyConsumption.reduce((sum, e) => sum + e.value, 0)} kWh
+            </StatValue>
+            <StatLabel>Consommation Totale</StatLabel>
+          </StatCard>
+          <StatCard>
+            <StatValue>{inactiveCount}</StatValue>
+            <StatLabel>Objets Inactifs</StatLabel>
+          </StatCard>
+        </StatsGrid>
 
-</SectionHeader>
+        <SectionTitle style={{ marginTop: '2rem' }}>Graphique de consommation</SectionTitle>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={reports.energyConsumption}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="date" />
+            <YAxis />
+            <Tooltip />
+            <Line type="monotone" dataKey="value" stroke="#8884d8" strokeWidth={2} />
+          </LineChart>
+        </ResponsiveContainer>
+      </Section>
 
-
-  
-
-  <StatsGrid>
-    <StatCard>
-      <StatValue>
-        {reports.energyConsumption.reduce((sum, e) => sum + e.value, 0)} kWh
-      </StatValue>
-      <StatLabel>Consommation Totale</StatLabel>
-    </StatCard>
-    <StatCard>
-  <StatValue>{inactiveCount}</StatValue>
-  <StatLabel>Objets Inactifs</StatLabel>
-</StatCard>
-
-  </StatsGrid>
-  <SectionTitle style={{ marginTop: '2rem' }}>Graphique de consommation</SectionTitle>
-
-
-<ResponsiveContainer width="100%" height={300}>
-  <LineChart data={reports.energyConsumption}>
-    <CartesianGrid strokeDasharray="3 3" />
-    <XAxis dataKey="date" />
-    <YAxis />
-    <Tooltip />
-    <Line type="monotone" dataKey="value" stroke="#8884d8" strokeWidth={2} />
-  </LineChart>
-</ResponsiveContainer>
-
-
-</Section>
       {/* Modal de création d'objet */}
       {showObjectModal && (
         <ModalOverlay onClick={() => setShowObjectModal(false)}>
@@ -682,28 +657,26 @@ const handleRequestDeletion = (object) => {
                 />
               </FormGroup>
               <FormGroup>
-  <Label>Catégorie</Label>
-  <Select
-    value={objectFormData.category}
-    onChange={(e) => {
-      const selectedCategory = e.target.value;
-      const validTypes = categoryToTypeMap[selectedCategory] || [];
-      setObjectFormData({
-        ...objectFormData,
-        category: selectedCategory,
-        type: validTypes[0] || '',
-      });
-    }}
-  >
-    {Object.keys(categories).map((categoryKey) => (
-      <option key={categoryKey} value={categoryKey}>
-        {categories[categoryKey].name}
-      </option>
-    ))}
-  </Select>
-</FormGroup>
-
-
+                <Label>Catégorie</Label>
+                <Select
+                  value={objectFormData.category}
+                  onChange={(e) => {
+                    const selectedCategory = e.target.value;
+                    const validTypes = categoryToTypeMap[selectedCategory] || [];
+                    setObjectFormData({
+                      ...objectFormData,
+                      category: selectedCategory,
+                      type: validTypes[0] || '',
+                    });
+                  }}
+                >
+                  {Object.keys(categories).map((categoryKey) => (
+                    <option key={categoryKey} value={categoryKey}>
+                      {categories[categoryKey].name}
+                    </option>
+                  ))}
+                </Select>
+              </FormGroup>
               <FormGroup>
                 <Label>Statut</Label>
                 <Select
@@ -716,122 +689,109 @@ const handleRequestDeletion = (object) => {
                 </Select>
               </FormGroup>
               <FormGroup>
-  <Label>Type d’objet</Label>
-  <Select
-    value={objectFormData.type}
-    onChange={(e) => setObjectFormData({ ...objectFormData, type: e.target.value })}
-  >
-    {(categoryToTypeMap[objectFormData.category] || []).map((type) => (
-      <option key={type} value={type}>{type}</option>
-    ))}
-  </Select>
-</FormGroup>
-
-
-
-<FormGroup>
-  <Label>Numéro</Label>
-  <Input
-    type="text"
-    placeholder="Ex : 102"
-    value={objectFormData.numero}
-    onChange={(e) => setObjectFormData({ ...objectFormData, numero: e.target.value })}
-    required
-  />
-</FormGroup>
-
-{objectFormData.type === 'Chauffage' && (
-  <FormGroup>
-    <Label>Température cible (°C)</Label>
-    <Input
-      type="number"
-      min="10"
-      max="30"
-      value={objectFormData.targetTemp}
-      onChange={(e) => setObjectFormData({ ...objectFormData, targetTemp: e.target.value })}
-    />
-  </FormGroup>
-)}
-
-{objectFormData.type === 'Éclairage' && (
-  <FormGroup>
-    <Label>Plage horaire (ex: 08:00-18:00)</Label>
-    <Input
-      type="text"
-      value={objectFormData.brightnessSchedule}
-      onChange={(e) => setObjectFormData({ ...objectFormData, brightnessSchedule: e.target.value })}
-      placeholder="08:00-18:00"
-    />
-  </FormGroup>
-)}
-
-<ButtonGroup>
-<SecondaryButton type="button" onClick={() => {
-  setShowObjectModal(false);
-  setEditingObject(null);
-}}>
-  Annuler
-</SecondaryButton>
-
-<PrimaryButton type="submit">
-  {editingObject ? 'Modifier' : 'Ajouter'}
-</PrimaryButton>
-
-</ButtonGroup>
-
+                <Label>Type d’objet</Label>
+                <Select
+                  value={objectFormData.type}
+                  onChange={(e) => setObjectFormData({ ...objectFormData, type: e.target.value })}
+                >
+                  {(categoryToTypeMap[objectFormData.category] || []).map((type) => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </Select>
+              </FormGroup>
+              <FormGroup>
+                <Label>Numéro</Label>
+                <Input
+                  type="text"
+                  placeholder="Ex : 102"
+                  value={objectFormData.numero}
+                  onChange={(e) => setObjectFormData({ ...objectFormData, numero: e.target.value })}
+                  required
+                />
+              </FormGroup>
+              {objectFormData.type === 'Chauffage' && (
+                <FormGroup>
+                  <Label>Température cible (°C)</Label>
+                  <Input
+                    type="number"
+                    min="10"
+                    max="30"
+                    value={objectFormData.targetTemp}
+                    onChange={(e) => setObjectFormData({ ...objectFormData, targetTemp: e.target.value })}
+                  />
+                </FormGroup>
+              )}
+              {objectFormData.type === 'Éclairage' && (
+                <FormGroup>
+                  <Label>Plage horaire (ex: 08:00-18:00)</Label>
+                  <Input
+                    type="text"
+                    value={objectFormData.brightnessSchedule}
+                    onChange={(e) => setObjectFormData({ ...objectFormData, brightnessSchedule: e.target.value })}
+                    placeholder="08:00-18:00"
+                  />
+                </FormGroup>
+              )}
+              <ButtonGroup>
+                <SecondaryButton type="button" onClick={() => {
+                  setShowObjectModal(false);
+                  setEditingObject(null);
+                }}>
+                  Annuler
+                </SecondaryButton>
+                <PrimaryButton type="submit">
+                  {editingObject ? 'Modifier' : 'Ajouter'}
+                </PrimaryButton>
+              </ButtonGroup>
             </form>
           </ModalContent>
         </ModalOverlay>
       )}
 
-{showReservationModal && (
-  <ModalOverlay onClick={() => setShowReservationModal(false)}>
-    <ModalContent onClick={(e) => e.stopPropagation()}>
-      <SectionTitle>Ajouter une réservation</SectionTitle>
-      <form onSubmit={handleReservationSubmit}>
-        <FormGroup>
-          <Label>Salle</Label>
-          <Select
-            value={reservationFormData.room}
-            onChange={(e) => setReservationFormData({ ...reservationFormData, room: e.target.value })}
-          >
-            {objects.filter(obj => obj.type === 'Salle').map((object) => (
-              <option key={object.id} value={object.name}>{object.name}</option>
-            ))}
-          </Select>
-        </FormGroup>
-
-        <FormGroup>
-          <Label>Date</Label>
-          <Input
-            type="date"
-            value={reservationFormData.date}
-            onChange={(e) => setReservationFormData({ ...reservationFormData, date: e.target.value })}
-            required
-          />
-        </FormGroup>
-
-        <FormGroup>
-          <Label>Heure</Label>
-          <Input
-            type="time"
-            value={reservationFormData.time}
-            onChange={(e) => setReservationFormData({ ...reservationFormData, time: e.target.value })}
-            required
-          />
-        </FormGroup>
-
-        <ButtonGroup>
-          <SecondaryButton type="button" onClick={() => setShowReservationModal(false)}>
-            Annuler
-          </SecondaryButton>
-          <PrimaryButton type="submit">Réserver</PrimaryButton>
-        </ButtonGroup>
-      </form>
-    </ModalContent>
-  </ModalOverlay>
-)}
-
+      {showReservationModal && (
+        <ModalOverlay onClick={() => setShowReservationModal(false)}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <SectionTitle>Ajouter une réservation</SectionTitle>
+            <form onSubmit={handleReservationSubmit}>
+              <FormGroup>
+                <Label>Salle</Label>
+                <Select
+                  value={reservationFormData.room}
+                  onChange={(e) => setReservationFormData({ ...reservationFormData, room: e.target.value })}
+                >
+                  {objects.filter(obj => obj.type === 'Salle').map((object) => (
+                    <option key={object.id} value={object.name}>{object.name}</option>
+                  ))}
+                </Select>
+              </FormGroup>
+              <FormGroup>
+                <Label>Date</Label>
+                <Input
+                  type="date"
+                  value={reservationFormData.date}
+                  onChange={(e) => setReservationFormData({ ...reservationFormData, date: e.target.value })}
+                  required
+                />
+              </FormGroup>
+              <FormGroup>
+                <Label>Heure</Label>
+                <Input
+                  type="time"
+                  value={reservationFormData.time}
+                  onChange={(e) => setReservationFormData({ ...reservationFormData, time: e.target.value })}
+                  required
+                />
+              </FormGroup>
+              <ButtonGroup>
+                <SecondaryButton type="button" onClick={() => setShowReservationModal(false)}>
+                  Annuler
+                </SecondaryButton>
+                <PrimaryButton type="submit">Réserver</PrimaryButton>
+              </ButtonGroup>
+            </form>
+          </ModalContent>
+        </ModalOverlay>
+      )}
 
       {/* Modal des alertes */}
       {showAlertModal && (
@@ -853,125 +813,115 @@ const handleRequestDeletion = (object) => {
         </ModalOverlay>
       )}
 
-{editingSettingsFor && (
-  <ModalOverlay onClick={() => setEditingSettingsFor(null)}>
-    <ModalContent onClick={(e) => e.stopPropagation()}>
-      <SectionTitle>Configurer {editingSettingsFor.name}</SectionTitle>
-
-      {editingSettingsFor.type === 'Chauffage' && (
-  <FormGroup>
-    <Label>Température cible (°C)</Label>
-    <Input
-      type="number"
-      value={objectSettings.temperature}
-      onChange={(e) =>
-        setObjectSettings((prev) => ({ ...prev, temperature: e.target.value }))
-      }
-      placeholder="Ex : 22"
-    />
-  </FormGroup>
-)}
-
-{editingSettingsFor.type === 'Éclairage' && (
-  <>
-    <FormGroup>
-      <Label>Heure de début</Label>
-      <Input
-        type="time"
-        value={objectSettings.startTime}
-        onChange={(e) =>
-          setObjectSettings((prev) => ({ ...prev, startTime: e.target.value }))
-        }
-      />
-    </FormGroup>
-
-    <FormGroup>
-      <Label>Heure de fin</Label>
-      <Input
-        type="time"
-        value={objectSettings.endTime}
-        onChange={(e) =>
-          setObjectSettings((prev) => ({ ...prev, endTime: e.target.value }))
-        }
-      />
-    </FormGroup>
-  </>
-)}
-
-
-      <ButtonGroup>
-        <SecondaryButton onClick={() => setEditingSettingsFor(null)}>Annuler</SecondaryButton>
-        <PrimaryButton onClick={() => {
-  const updatedObjects = objects.map(obj =>
-    obj.id === editingSettingsFor.id
-      ? { ...obj, settings: { ...objectSettings } }
-      : obj
-  );
-
-  setObjects(updatedObjects);
-  generateReports(updatedObjects); // Mets à jour les rapports ici aussi
-  setEditingSettingsFor(null);
-}}>
-  Enregistrer
-</PrimaryButton>
-
-      </ButtonGroup>
-    </ModalContent>
-  </ModalOverlay>
-)}
-
-
-{selectedForChart && (
-  <ModalOverlay onClick={() => setSelectedForChart(null)}>
-    <ModalContent onClick={(e) => e.stopPropagation()}>
-      <SectionTitle>Consommation de {selectedForChart.name}</SectionTitle>
-
-      {objectHistories[selectedForChart.id]?.length > 0 ? (
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={objectHistories[selectedForChart.id]}>
-            <XAxis dataKey="date" />
-            <YAxis />
-            <Tooltip />
-            <Line type="monotone" dataKey="value" stroke="#8884d8" strokeWidth={2} />
-          </LineChart>
-        </ResponsiveContainer>
-      ) : (
-        <p>Aucune donnée disponible pour cet objet.</p>
+      {editingSettingsFor && (
+        <ModalOverlay onClick={() => setEditingSettingsFor(null)}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <SectionTitle>Configurer {editingSettingsFor.name}</SectionTitle>
+            {editingSettingsFor.type === 'Chauffage' && (
+              <FormGroup>
+                <Label>Température cible (°C)</Label>
+                <Input
+                  type="number"
+                  value={objectSettings.temperature}
+                  onChange={(e) =>
+                    setObjectSettings((prev) => ({ ...prev, temperature: e.target.value }))
+                  }
+                  placeholder="Ex : 22"
+                />
+              </FormGroup>
+            )}
+            {editingSettingsFor.type === 'Éclairage' && (
+              <>
+                <FormGroup>
+                  <Label>Heure de début</Label>
+                  <Input
+                    type="time"
+                    value={objectSettings.startTime}
+                    onChange={(e) =>
+                      setObjectSettings((prev) => ({ ...prev, startTime: e.target.value }))
+                    }
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Label>Heure de fin</Label>
+                  <Input
+                    type="time"
+                    value={objectSettings.endTime}
+                    onChange={(e) =>
+                      setObjectSettings((prev) => ({ ...prev, endTime: e.target.value }))
+                    }
+                  />
+                </FormGroup>
+              </>
+            )}
+            <ButtonGroup>
+              <SecondaryButton onClick={() => setEditingSettingsFor(null)}>Annuler</SecondaryButton>
+              <PrimaryButton onClick={() => {
+                const updatedObjects = objects.map(obj =>
+                  obj.id === editingSettingsFor.id
+                    ? { ...obj, settings: { ...objectSettings } }
+                    : obj
+                );
+                setObjects(updatedObjects);
+                generateReports(updatedObjects); // Mets à jour les rapports ici aussi
+                setEditingSettingsFor(null);
+              }}>
+                Enregistrer
+              </PrimaryButton>
+            </ButtonGroup>
+          </ModalContent>
+        </ModalOverlay>
       )}
 
-      <ButtonGroup>
-        <PrimaryButton onClick={() => setSelectedForChart(null)}>Fermer</PrimaryButton>
-      </ButtonGroup>
-    </ModalContent>
-  </ModalOverlay>
-)}
+      {selectedForChart && (
+        <ModalOverlay onClick={() => setSelectedForChart(null)}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <SectionTitle>Consommation de {selectedForChart.name}</SectionTitle>
+            {objectHistories[selectedForChart.id]?.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={objectHistories[selectedForChart.id]}>
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="value" stroke="#8884d8" strokeWidth={2} />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <p>Aucune donnée disponible pour cet objet.</p>
+            )}
+            <ButtonGroup>
+              <PrimaryButton onClick={() => setSelectedForChart(null)}>Fermer</PrimaryButton>
+            </ButtonGroup>
+          </ModalContent>
+        </ModalOverlay>
+      )}
 
-{showAlert && (
-  <ModalOverlay onClick={() => setShowAlert(false)}>
-    <ModalContent onClick={(e) => e.stopPropagation()}>
-      <SectionTitle>Alerte</SectionTitle>
-      <p>{alertMessage}</p>
-      <ButtonGroup>
-        <PrimaryButton onClick={() => setShowAlert(false)}>OK</PrimaryButton>
-      </ButtonGroup>
-    </ModalContent>
-  </ModalOverlay>
-)}
+      {showAlert && (
+        <ModalOverlay onClick={() => setShowAlert(false)}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <SectionTitle>Alerte</SectionTitle>
+            <p>{alertMessage}</p>
+            <ButtonGroup>
+              <PrimaryButton onClick={() => setShowAlert(false)}>OK</PrimaryButton>
+            </ButtonGroup>
+          </ModalContent>
+        </ModalOverlay>
+      )}
 
-{showConfirmation && (
-  <ModalOverlay onClick={() => setShowConfirmation(false)}>
-    <ModalContent onClick={(e) => e.stopPropagation()}>
-      <SectionTitle>Confirmation</SectionTitle>
-      <p>{confirmationMessage}</p>
-      <ButtonGroup>
-        <SecondaryButton onClick={() => setShowConfirmation(false)}>Annuler</SecondaryButton>
-        <PrimaryButton onClick={() => confirmationAction()}>Confirmer</PrimaryButton>
-      </ButtonGroup>
-    </ModalContent>
-  </ModalOverlay>
-)}
-
+      {showConfirmation && (
+        <ModalOverlay onClick={() => setShowConfirmation(false)}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <SectionTitle>Confirmation</SectionTitle>
+            <p>{confirmationMessage}</p>
+            <ButtonGroup>
+              <SecondaryButton onClick={() => setShowConfirmation(false)}>Annuler</SecondaryButton>
+              <PrimaryButton onClick={() => confirmationAction()}>Confirmer</PrimaryButton>
+            </ButtonGroup>
+          </ModalContent>
+        </ModalOverlay>
+      )}
     </AdminContainer>
   );
 }
+
 export default GestionPage;

@@ -11,7 +11,8 @@ import {
   ConnectButton,
   LoginFormContainer, 
   Overlay,
-  SearchContainer
+  SearchContainer,
+  Filter
 } from '../styles/HeaderStyles';
 import {
   FiltersContainer,
@@ -21,11 +22,51 @@ import hubCyLogo from '../assets/HubCyLogo.png';
 import SearchBox from './SearchBox';
 import UserMenu from './UserMenu';
 import { useNavigate } from 'react-router-dom';
-import { equipments, categories, dataObjects } from '../data/projectData';
+import { equipments, categories, dataObjects, objectTypes } from '../data/projectData';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Toast from './Toast';
 import Formation from './Formation';
+
+/*
+ * Composant Header : Barre de navigation principale et gestion des utilisateurs
+ * 
+ * Fonctionnalités principales :
+ * 1. Authentification
+ *    - Gestion de la connexion/inscription
+ *    - Validation des formulaires
+ *    - Gestion des sessions
+ * 
+ * 2. Navigation
+ *    - Menu principal
+ *    - Navigation entre les sections
+ *    - Défilement automatique
+ * 
+ * 3. Recherche
+ *    - Barre de recherche intégrée
+ *    - Filtres avancés
+ *    - Résultats en temps réel
+ * 
+ * 4. Interface utilisateur
+ *    - Menu utilisateur
+ *    - Affichage des points
+ *    - Gestion du rôle
+ * 
+ * 5. Notifications
+ *    - Système de toast
+ *    - Alertes utilisateur
+ *    - Messages de confirmation
+ * 
+ * 6. Responsivité
+ *    - Adaptation mobile
+ *    - Menu burger
+ *    - Gestion de la visibilité
+ * 
+ * 7. États
+ *    - Gestion des modals
+ *    - États des formulaires
+ *    - Configuration de la recherche
+ */
 
 const Header = () => {
   const [isFormOpen, setIsFormOpen] = useState(null); 
@@ -395,35 +436,65 @@ const Header = () => {
     performSearch(text);
   };
 
-  // Ajouter cette nouvelle fonction
+  // Mise à jour de la fonction performSearch
   const performSearch = (text = searchText) => {
     try {
-      const results = dataObjects.filter(obj => {
-        const textMatch = !text.trim() || 
+      let results = [];
+      
+      // Recherche dans les objets principaux
+      const mainObjects = dataObjects.filter(obj => {
+        const textMatch = text.trim() === '' || 
           obj.name.toLowerCase().includes(text.toLowerCase()) || 
           obj.id.toLowerCase().includes(text.toLowerCase());
         
         const typeMatch = selectedType === 'all' || obj.type === selectedType;
         const statusMatch = selectedStatus === 'all' || obj.status === selectedStatus;
-        
         let categoryMatch = selectedCategory === 'all';
-        if (!categoryMatch && categories[selectedCategory]) {
+        
+        if (!categoryMatch && categories[selectedCategory]?.items) {
           categoryMatch = categories[selectedCategory].items.includes(obj.id);
+        }
+        
+        return textMatch && typeMatch && statusMatch && categoryMatch;
+      });
+      
+      results.push(...mainObjects);
+  
+      // Recherche dans les équipements de chaque salle
+      Object.entries(equipments).forEach(([roomId, roomEquipments]) => {
+        const roomEquipmentResults = roomEquipments.filter(equip => {
+          const textMatch = text.trim() === '' || 
+            equip.name.toLowerCase().includes(text.toLowerCase()) || 
+            equip.id.toLowerCase().includes(text.toLowerCase());
           
-          if (!categoryMatch && obj.type !== 'Salle') {
-            for (const [roomId, roomEquips] of Object.entries(equipments)) {
-              if (categories[selectedCategory].items.includes(roomId) && 
-                  roomEquips.some(equip => equip.id === obj.id)) {
-                categoryMatch = true;
+          const typeMatch = selectedType === 'all' || equip.type === selectedType;
+          const statusMatch = selectedStatus === 'all' || equip.status === selectedStatus;
+          let categoryMatch = selectedCategory === 'all';
+          
+          // Vérifier la catégorie de la salle parente
+          if (!categoryMatch) {
+            for (const [catKey, catValue] of Object.entries(categories)) {
+              if (catValue.items && (catValue.items.includes(roomId) || catValue.items.includes(equip.id))) {
+                categoryMatch = catKey === selectedCategory;
                 break;
               }
             }
           }
-        }
-        
-        return typeMatch && statusMatch && categoryMatch && (textMatch || !text.trim());
+          
+          return textMatch && typeMatch && statusMatch && categoryMatch;
+        });
+  
+        results.push(...roomEquipmentResults);
       });
-      
+  
+      // Suppression des doublons par ID et tri
+      results = [...new Map(results.map(item => [item.id, item])).values()];
+      results.sort((a, b) => {
+        if (a.type === selectedType && b.type !== selectedType) return -1;
+        if (a.type !== selectedType && b.type === selectedType) return 1;
+        return a.name.localeCompare(b.name);
+      });
+  
       setSearchResults(results);
     } catch (error) {
       console.error("Erreur lors de la recherche:", error);
@@ -439,7 +510,6 @@ const Header = () => {
   }, [selectedType, selectedStatus, selectedCategory, isSearchWindowOpen]);
 
   // Extraire les types et statuts uniques des objets (comme dans SearchBox)
-  const objectTypes = [...new Set(dataObjects.map(obj => obj.type))].sort();
   const statusTypes = [...new Set(dataObjects.map(obj => obj.status))].sort();
   const sortedCategories = Object.entries(categories)
     .map(([key, value]) => ({ key, name: value.name }))
@@ -781,7 +851,7 @@ const Header = () => {
               position: 'fixed',
               bottom: '80px',
               right: '10px',
-              width: '350px',
+              width: '400px',
               height: '500px',
               backgroundColor: 'white',
               borderRadius: '15px',
@@ -816,62 +886,49 @@ const Header = () => {
               <div style={{
                 padding: '10px',
                 backgroundColor: '#f8f8f8',
-                borderBottom: '1px solid #eee'
+                borderBottom: '1px solid #eee',
+                display: 'flex',
+                gap: '8px',
+                flexWrap: 'wrap'
               }}>
-                <div style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '10px'
-                }}>
-                  <select 
-                    value={selectedType}
-                    onChange={(e) => setSelectedType(e.target.value)}
-                    style={{
-                      padding: '8px',
-                      borderRadius: '4px',
-                      border: '1px solid #ddd'
-                    }}
-                  >
-                    <option value="all">Tous les types</option>
-                    {objectTypes.map(type => (
-                      <option key={type} value={type}>{type}</option>
-                    ))}
-                  </select>
+                <Filter 
+                  value={selectedType}
+                  onChange={(e) => setSelectedType(e.target.value)}
+                  size="5"
+                >
+                  <option value="all">Types</option>
+                  {objectTypes.map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </Filter>
+                  
+                <Filter 
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  size="5"
+                >
+                  <option value="all">Statuts</option>
+                  {statusTypes.map(status => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </Filter>
 
-                  <select 
-                    value={selectedStatus}
-                    onChange={(e) => setSelectedStatus(e.target.value)}
-                    style={{
-                      padding: '8px',
-                      borderRadius: '4px',
-                      border: '1px solid #ddd'
-                    }}
-                  >
-                    <option value="all">Tous les statuts</option>
-                    {statusTypes.map(status => (
-                      <option key={status} value={status}>{status}</option>
-                    ))}
-                  </select>
-
-                  <select 
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    style={{
-                      padding: '8px',
-                      borderRadius: '4px',
-                      border: '1px solid #ddd'
-                    }}
-                  >
-                    <option value="all">Toutes les catégories</option>
-                    {sortedCategories.map(category => (
-                      <option key={category.key} value={category.key}>{category.name}</option>
-                    ))}
-                  </select>
-                </div>
+                <Filter 
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  size="5"
+                >
+                  <option value="all" backgroundColor="white">Catégories</option>
+                  {sortedCategories.map(category => (
+                    <option key={category.key} value={category.key}>
+                      {category.name}
+                    </option>
+                  ))}
+                </Filter>
               </div>
             )}
 
-            {/* Zone des résultats (scrollable) */}
+            {/* Zone des résultats (scrollable) - Mise à jour */}
             <div style={{ 
               flex: 1, 
               overflowY: 'auto',
@@ -886,15 +943,18 @@ const Header = () => {
                     key={item.id} 
                     onClick={() => handleSelectObject(item)}
                     style={{
-                      padding: '10px',
+                      padding: '12px',
                       borderRadius: '8px',
                       backgroundColor: '#f8f9fa',
                       cursor: 'pointer',
                       border: '1px solid #eee',
-                      transition: 'all 0.2s ease'
+                      transition: 'all 0.2s ease',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '4px'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#f0f0f0';
+                      e.currentTarget.style.backgroundColor = '#e3f2fd';
                       e.currentTarget.style.borderColor = '#0f6ead';
                     }}
                     onMouseLeave={(e) => {
@@ -902,9 +962,40 @@ const Header = () => {
                       e.currentTarget.style.borderColor = '#eee';
                     }}
                   >
-                    <div style={{ fontWeight: 'bold' }}>{item.name}</div>
-                    <div style={{ fontSize: '0.9em', color: '#666' }}>
-                      Type: {item.type} | Status: {item.status}
+                    <div style={{ 
+                      fontWeight: 'bold',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}>
+                      <span>{item.name}</span>
+                      <span style={{
+                        fontSize: '0.8em',
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        backgroundColor: item.type === 'Salle' ? '#0f6ead' : '#4caf50',
+                        color: 'white'
+                      }}>
+                        {item.type}
+                      </span>
+                    </div>
+                    <div style={{ 
+                      fontSize: '0.9em', 
+                      color: '#666',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}>
+                      <span>{item.id}</span>
+                      <span style={{
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        backgroundColor: item.status === 'Disponible' ? '#4caf50' : '#f44336',
+                        color: 'white',
+                        fontSize: '0.8em'
+                      }}>
+                        {item.status}
+                      </span>
                     </div>
                   </div>
                 ))
@@ -914,9 +1005,11 @@ const Header = () => {
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center',
-                  color: '#666'
+                  color: '#666',
+                  textAlign: 'center',
+                  padding: '20px'
                 }}>
-                  {searchText ? 'Aucun résultat' : 'Commencez à taper pour rechercher'}
+                  {searchText ? 'Aucun résultat trouvé pour votre recherche' : 'Commencez à taper pour rechercher'}
                 </div>
               )}
             </div>

@@ -1,3 +1,12 @@
+/*
+ * Composant Faq : Foire aux questions interactive
+ * - Affiche une liste de questions/réponses organisée en deux colonnes
+ * - Gère un système d'accordéon pour afficher/masquer les réponses
+ * - Utilise des animations pour l'ouverture/fermeture des réponses
+ * - Maintient l'état d'ouverture/fermeture pour chaque question
+ * - Charge les données depuis un fichier de configuration externe
+ */
+
 import React, { useState } from 'react';
 import { 
   FaqContainer, 

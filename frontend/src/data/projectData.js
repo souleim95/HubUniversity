@@ -87,7 +87,30 @@ export const formationsData = {
     }
   }
 };
- 
+
+export const objectTypes = [
+  'Salle',
+  'Projecteur',
+  'Chauffage',
+  'Éclairage',
+  'Store',
+  'Audio',
+  'Ventilation',
+  'Distributeur',
+  'Cafetiere',
+  'Microwave',
+  'AirSensor',
+  'Dishwasher',
+  'Scanner',
+  'Borne',
+  'Caméra',
+  'Capteur',
+  'Detecteur',
+  'Panneau',
+  'Barriere',
+  'Grille',
+  'Securite'
+].sort();
   
 export const dataObjects = [
   {
@@ -108,17 +131,6 @@ export const dataObjects = [
       capacity: 200,
       reservedBy: null,
       description: "La salle la plus intelligente du campus ! Elle fait même les devoirs à votre place... ou pas 🤖❌"
-  },
-  {
-      id: 'thermo123',
-      name: 'Chauffage - Salle Informatique',
-      type: 'Chauffage',
-      status: 'Inactif',
-      temperature: 21,
-      targetTemp: 0,
-      previousTargetTemp: 20,
-      mode: 'auto',
-      description: "Ce Chauffage est si précis qu'il détecte quand un prof raconte une blague pas drôle - la température monte ! 🌡️😅"
   },
   {
       id: 'cam456',
@@ -297,7 +309,7 @@ export const dataObjects = [
 export const categories = {
   salles: {
     name: 'Salles',
-    items: ['salle101', 'amphiA', 'refectoire', 'labo_chimie', 'biblio', 'salle_sport', 'thermo_salle101', 'thermo_amphiA', 'thermo_ref', 'hotte_labo', 'scanner_biblio', 'ventilation_gym', 'proj_salle101', 'proj_amphiA', 'light_salle101', 'light_amphiA', 'light_ref', 'store_salle101', 'store_amphiA', 'store_ref', 'audio_amphiA', 'distributeur_boissons', 'distributeur_snacks', 'cafetiere_auto', 'microwave_ref', 'air_quality', 'dishwasher', 'detecteur_gaz', 'bornes_pret', 'detecteur_rfid', 'score_board', 'sono_gym']
+    items: ['salle101', 'amphiA', 'refectoire', 'labo_chimie', 'biblio', 'salle_sport', 'thermo_salle101', 'thermo_amphiA', 'thermo_ref', 'hotte_labo', 'scanner_biblio', 'ventilation_gym', 'proj_salle101', 'proj_amphiA', 'light_salle101', 'light_amphiA', 'light_ref', 'store_salle101', 'store_amphiA', 'store_ref', 'audio_amphiA', 'distributeur_boissons', 'distributeur_snacks', 'cafetiere_auto', 'microwave_ref', 'air_quality', 'dishwasher', 'detecteur_gaz', 'bornes_pret', 'detecteur_rfid', 'score_board', 'sono_gym', 'thermo123']
   },
   ecole: {
     name: 'École',
@@ -315,17 +327,19 @@ export const equipments = {
       id: 'proj_salle101',
       name: 'Projecteur - Salle Informatique',
       type: 'Projecteur',
-      status: 'Éteint'
+      status: 'Éteint',
+      description: "Le projecteur qui refuse d'afficher les slides moches. Il a du goût ! 🎬😎"
     },
     {
-      id: 'thermo_salle101',
+      id: 'thermo123',
       name: 'Chauffage - Salle Informatique',
       type: 'Chauffage',
       status: 'Inactif',
       temperature: 21,
       targetTemp: 0,
-      previousTargetTemp: 22,
-      mode: 'auto'
+      previousTargetTemp: 20,
+      mode: 'auto',
+      description: "Ce Chauffage est si précis qu'il détecte quand un prof raconte une blague pas drôle - la température monte ! 🌡️😅"
     },
     {
       id: 'light_salle101',
@@ -333,13 +347,15 @@ export const equipments = {
       type: 'Éclairage',
       status: 'Éteint',
       brightness: 0,
-      previousBrightness: 80
+      previousBrightness: 80,
+      description: "Lumière qui s'éteint automatiquement dès qu'un étudiant s'endort. Bonne nuit ! 💡😴"
     },
     {
       id: 'store_salle101',
       name: 'Store - Salle Informatique',
       type: 'Store',
-      status: 'Fermé'
+      status: 'Fermé',
+      description: "Le store qui descend tout seul dès qu'il voit le soleil... ou un PowerPoint trop lumineux ! 🪟🌞"
     }
   ],
   'amphiA': [
@@ -347,7 +363,8 @@ export const equipments = {
       id: 'proj_amphiA',
       name: 'Projecteur - Amphithéâtre GIA1',
       type: 'Projecteur',
-      status: 'Éteint'
+      status: 'Éteint',
+      description: "Projecteur qui bug uniquement pendant les soutenances importantes. Coïncidence ? 🤔🎥"
     },
     {
       id: 'thermo_amphiA',
@@ -357,7 +374,8 @@ export const equipments = {
       temperature: 21,
       targetTemp: 0,
       previousTargetTemp: 22,
-      mode: 'auto'
+      mode: 'auto',
+      description: "Chauffage qui ne fonctionne que quand il n'y a personne dans l'amphi. Logique ! 🔥🙃"
     },
     {
       id: 'light_amphiA',
@@ -365,13 +383,15 @@ export const equipments = {
       type: 'Éclairage',
       status: 'Éteint',
       brightness: 0,
-      previousBrightness: 80
+      previousBrightness: 80,
+      description: "Éclairage qui clignote pour applaudir les meilleurs exposés. Ou juste pour embêter tout le monde. 💡👏"
     },
     {
       id: 'store_amphiA',
       name: 'Store - Amphithéâtre GIA1',
       type: 'Store',
-      status: 'Fermé'
+      status: 'Fermé',
+      description: "Store qui se bloque exprès pendant les projections de films. Suspense garanti ! 🎬🪟"
     },
     {
       id: 'audio_amphiA',
@@ -380,7 +400,8 @@ export const equipments = {
       status: 'Mute',
       volume: 0,
       previousVolume: 50,
-      mode: 'Stéréo'
+      mode: 'Stéréo',
+      description: "Le son qui grésille uniquement quand le prof chante. Dommage pour les oreilles ! 🔊🎤"
     }
   ],
   'refectoire': [
@@ -403,7 +424,8 @@ export const equipments = {
       },
       temperature: 4,
       needsMaintenance: false,
-      lastMaintenance: '2024-01-15'
+      lastMaintenance: '2024-01-15',
+      description: "Le distributeur qui ne donne jamais la boisson que tu veux du premier coup. Surprise ! 🥤🎲"
     },
     {
       id: 'distributeur_snacks',
@@ -422,7 +444,8 @@ export const equipments = {
       },
       temperature: 6,
       needsMaintenance: false,
-      lastMaintenance: '2024-01-15'
+      lastMaintenance: '2024-01-15',
+      description: "Le distributeur qui bloque toujours ton snack préféré. Il a ses têtes ! 🍫🚫"
     },
     {
       id: 'cafetiere_auto',
@@ -436,7 +459,8 @@ export const equipments = {
       temperature: 92,
       mode: 'Veille',
       isCleaning: false,
-      lastCleaning: '2024-01-18'
+      lastCleaning: '2024-01-18',
+      description: "La cafetière qui fait du décaféiné quand tu as le plus besoin de caféine. Cruelle ! ☕😵"
     },
     {
       id: 'microwave_ref',
@@ -447,7 +471,8 @@ export const equipments = {
       mode: 'Veille',
       timer: 0,
       maxTime: 10,
-      doorStatus: 'Fermée'
+      doorStatus: 'Fermée',
+      description: "Le micro-ondes qui bipe plus fort que la sonnerie de fin de cours. Bon appétit ! 🍲🔔"
     },
     {
       id: 'thermo_ref',
@@ -457,7 +482,8 @@ export const equipments = {
       temperature: 21,
       targetTemp: 0,
       previousTargetTemp: 22,
-      mode: 'auto'
+      mode: 'auto',
+      description: "Chauffage qui s'arrête dès que tu enlèves ta veste. Il te teste ! 🧥❄️"
     },
     {
       id: 'light_ref',
@@ -467,14 +493,16 @@ export const equipments = {
       brightness: 0,
       previousBrightness: 80,
       mode: 'Auto',
-      autoSchedule: true
+      autoSchedule: true,
+      description: "Lumière qui s'adapte à ton humeur... ou pas. Parfois, c'est ambiance boîte de nuit à midi ! 💡🕺"
     },
     {
       id: 'store_ref',
       name: 'Store - Réfectoire',
       type: 'Store',
       status: 'Ouvert',
-      position: 100
+      position: 100,
+      description: "Store qui refuse de s'ouvrir quand il pleut. Il veut te protéger... ou t'embêter ! 🌧️🪟"
     },
     {
       id: 'air_quality',
@@ -484,7 +512,8 @@ export const equipments = {
       co2Level: 450,
       co2Threshold: 1000,
       humidity: 45,
-      lastMeasure: '2024-01-19T10:30:00'
+      lastMeasure: '2024-01-19T10:30:00',
+      description: "Le capteur qui panique dès qu'il sent une pizza quatre fromages. Respire ! 🍕😱"
     },
     {
       id: 'dishwasher',
@@ -497,7 +526,8 @@ export const equipments = {
       waterTemp: 65,
       rinseAidLevel: 80,
       rinseAidMaxCapacity: 100,
-      rinseAidLowThreshold: 20
+      rinseAidLowThreshold: 20,
+      description: "Le lave-vaisselle qui finit toujours son cycle après la pause déjeuner. Timing parfait ! 🍽️⏰"
     }
   ],
   'labo_chimie': [
@@ -512,7 +542,8 @@ export const equipments = {
       filterStatus: 'OK',
       filterLife: 95,
       filterChangeThreshold: 10,
-      lastMaintenance: '2024-01-10'
+      lastMaintenance: '2024-01-10',
+      description: "La hotte qui fait plus de bruit qu'un prof en colère. Protection auditive non fournie ! 🧪🔊"
     },
     {
       id: 'detecteur_gaz',
@@ -523,7 +554,8 @@ export const equipments = {
       alertThreshold: 50,
       batteryLevel: 95,
       batteryLowThreshold: 15,
-      lastAlert: null
+      lastAlert: null,
+      description: "Détecteur qui sonne même quand tu ouvres un paquet de chips. Sécurité maximale ! 🥔🚨"
     }
   ],
   'biblio': [
@@ -534,7 +566,8 @@ export const equipments = {
       status: 'Disponible',
       lastScan: '2024-01-19T15:30:00',
       lastScannedItem: null,
-      scanResult: null
+      scanResult: null,
+      description: "Scanner qui refuse de scanner les livres de 1000 pages. Il a ses limites ! 📚🛑"
     },
     {
       id: 'bornes_pret',
@@ -543,7 +576,8 @@ export const equipments = {
       status: 'Actif',
       lastTransaction: '2024-01-19T16:45:00',
       lastTransactionDetails: { type: null, itemId: null, userId: null },
-      authState: 'idle'
+      authState: 'idle',
+      description: "La borne qui bug toujours quand tu es pressé. Elle aime te faire patienter ! ⏳📖"
     },
     {
       id: 'detecteur_rfid',
@@ -551,7 +585,8 @@ export const equipments = {
       type: 'Securite',
       status: 'Actif',
       lastDetection: null,
-      alarmTriggerItem: null
+      alarmTriggerItem: null,
+      description: "Le portique qui sonne même quand tu n'as rien volé. Coupable jusqu'à preuve du contraire ! 🚨😇"
     }
   ],
   'salle_sport': [
@@ -564,7 +599,8 @@ export const equipments = {
       minSpeed: 10,
       maxSpeed: 100,
       mode: 'Off',
-      availableModes: ['Off', 'Auto', 'Manual']
+      availableModes: ['Off', 'Auto', 'Manual'],
+      description: "Ventilation qui souffle plus fort quand tu es déjà essoufflé. Merci pour l'effort ! 🏃💨"
     },
     {
       id: 'score_board',
@@ -576,7 +612,8 @@ export const equipments = {
         away: 0
       },
       timer: 0,
-      period: 1
+      period: 1,
+      description: "Le tableau qui oublie toujours le score de ton équipe. Mémoire sélective ! 🏆🤔"
     },
     {
       id: 'sono_gym',
@@ -586,7 +623,8 @@ export const equipments = {
       volume: 0,
       previousVolume: 60,
       input: 'bluetooth',
-      availableInputs: ['bluetooth', 'aux', 'radio']
+      availableInputs: ['bluetooth', 'aux', 'radio'],
+      description: "Sono qui diffuse du hard rock pendant le yoga. Ambiance garantie ! 🎸🧘"
     }
   ]
 };

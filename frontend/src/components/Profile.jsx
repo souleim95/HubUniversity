@@ -1,3 +1,27 @@
+/*
+ * Composant Profile : Gestion du profil utilisateur
+ * 
+ * Structure :
+ * 1. États pour les données utilisateur
+ * 2. Gestion des formulaires (infos perso, mot de passe)
+ * 3. Système de toasts pour les notifications
+ * 4. Gestion de la photo de profil
+ * 
+ * Fonctionnement :
+ * - Stockage local des données utilisateur
+ * - Validation des entrées utilisateur
+ * - Upload et preview d'images
+ * - Gestion des mots de passe avec masquage
+ * - Notifications via système de toasts
+ * - Double vue (publique/privée)
+ * 
+ * Sécurité :
+ * - Vérification de connexion
+ * - Validation des formats de fichiers
+ * - Limites de taille pour les uploads
+ * - Masquage sécurisé des mots de passe
+ */
+
 import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom'; 
 import styled from 'styled-components';
@@ -30,15 +54,18 @@ import profileBackground from '../assets/profil.png';
 * Inclut un système de toasts pour le retour utilisateur
 */
 const Profile = () => {
+  // Vérification de l'authentification
   const isLoggedIn = !!sessionStorage.getItem('user');
   
-  const [isPublic, setIsPublic] = useState(true);
-  const [age, setAge] = useState('');
+  // États pour la gestion du profil
+  const [isPublic, setIsPublic] = useState(true);  // Vue publique/privée
+  const [age, setAge] = useState('');              // Âge calculé
   const [photoUrl, setPhotoUrl] = useState(localStorage.getItem('photoUrl') || null);
   const [toasts, setToasts] = useState([]);
 
-  // Initialisation des données du formulaire avec les informations enregistrées localement
+  // Données initiales du formulaire
   const initialFormData = {
+    // Configuration initiale des champs
     pseudonyme: localStorage.getItem('user') || '',
     genre: localStorage.getItem('genre') || '',
     dateNaissance: localStorage.getItem('dateNaissance') || '',
@@ -57,8 +84,9 @@ const Profile = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
 
-  // Calcul automatique de l'âge en fonction de la date de naissance fournie
+  // Effets pour la gestion des données
   useEffect(() => {
+    // Chargement de la photo
     const storedPhotoUrl = localStorage.getItem('photoUrl');
     if (storedPhotoUrl) {
       setPhotoUrl(storedPhotoUrl);
@@ -66,6 +94,7 @@ const Profile = () => {
   }, []);
 
   useEffect(() => {
+    // Calcul de l'âge
     if (formData.dateNaissance) {
       const birthDate = new Date(formData.dateNaissance);
       const today = new Date();
@@ -213,7 +242,10 @@ const Profile = () => {
 
   return (
     <>
+      {/* Système de notifications */}
       <Toast messages={toasts} removeToast={removeToast} />
+      
+      {/* Interface du profil */}
       <BackgroundContainer>
         <img src={profileBackground} alt="Profile background" />
       </BackgroundContainer>
