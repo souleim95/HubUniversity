@@ -26,6 +26,11 @@ export const InfoContent = styled.div`
     flex-direction: column;
     align-items: center;
   }
+
+  @media (min-width: 1200px) {
+  gap: 15px;
+}
+
 `;
 
 
@@ -55,7 +60,7 @@ export const TrainBox = styled.div`
 export const WeatherBox = styled.div`
   flex: 1; /* Permet à la boîte météo de prendre l'espace disponible */
   padding: 20px;
-  background-color:;
+  background-color: #ffffff;
   border-radius: 14px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease, box-shadow 0.3s ease;

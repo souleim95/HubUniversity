@@ -1,12 +1,19 @@
 import styled from 'styled-components';
 
+
+
 export const AdminContainer = styled.div`
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem;
-  background-color:rgba(212, 213, 247, 0.9);
+  background-color: rgba(212, 213, 247, 0.9);
   min-height: 130vh;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
 `;
+
 
 export const AdminHeader = styled.div`
   background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
@@ -51,7 +58,10 @@ export const SectionHeader = styled.div`
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
   border-bottom: 2px solid #e5e7eb;
+  flex-wrap: wrap;
+  gap: 1rem;
 `;
+
 
 export const SectionTitle = styled.h2`
   font-size: 1.5rem;
@@ -93,7 +103,14 @@ export const Table = styled.table`
   border-collapse: separate;
   border-spacing: 0;
   margin-top: 1rem;
+
+  @media (max-width: 600px) {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
 `;
+
 
 export const TableHeader = styled.thead`
   background-color: #f3f4f6;
@@ -132,6 +149,18 @@ export const Grid = styled.div`
   margin-top: 1rem;
 `;
 
+export const StatCard = styled.div`
+  background: white;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  text-align: center;
+
+  @media (max-width: 480px) {
+    padding: 1rem;
+  }
+`;
+
 export const Card = styled.div`
   background: white;
   border-radius: 0.75rem;
@@ -142,7 +171,12 @@ export const Card = styled.div`
   &:hover {
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   }
+
+  @media (max-width: 480px) {
+    padding: 1rem;
+  }
 `;
+
 
 export const CardTitle = styled.h3`
   font-size: 1.125rem;
@@ -305,13 +339,6 @@ export const StatsGrid = styled.div`
   margin-bottom: 1.5rem;
 `;
 
-export const StatCard = styled.div`
-  background: white;
-  padding: 1.5rem;
-  border-radius: 0.75rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  text-align: center;
-`;
 
 export const StatValue = styled.div`
   font-size: 2rem;
@@ -364,10 +391,12 @@ export const TabsContainer = styled.div`
 
 export const TabsList = styled.div`
   display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
   border-bottom: 2px solid #e5e7eb;
   padding-bottom: 1rem;
 `;
+
 
 export const Tab = styled.button`
   padding: 0.75rem 1.5rem;

@@ -1,11 +1,3 @@
-import styled from 'styled-components';
-
-export const ObjectControls = styled.div`
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1px solid #eee;
-`;
-
 export const ObjectItem = styled.div`
   display: flex;
   flex-direction: column;
@@ -19,19 +11,59 @@ export const ObjectItem = styled.div`
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   }
+
+  @media (max-width: 480px) {
+    padding: 15px;
+  }
 `;
 
 export const ObjectHeader = styled.div`
   display: flex;
   align-items: center;
   margin-bottom: 15px;
+  flex-wrap: wrap;
+
+  @media (max-width: 480px) {
+    justify-content: center;
+    text-align: center;
+    gap: 10px;
+  }
 `;
 
-export const ValueDisplay = styled.div`
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: #2c3e50;
-  margin: 5px 0;
+export const ObjectControls = styled.div`
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+`;
+
+export const ControlButton = styled.button`
+  padding: 8px 15px;
+  margin: 5px;
+  border: none;
+  border-radius: 5px;
+  background: ${props => props.active ? '#4CAF50' : '#f0f0f0'};
+  color: ${props => props.active ? 'white' : 'black'};
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: ${props => props.active ? '#45a049' : '#e0e0e0'};
+    cursor: pointer;
+  }
+
+  @media (max-width: 480px) {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+  }
 `;
 
 export const RangeSlider = styled.input`
@@ -56,26 +88,26 @@ export const RangeSlider = styled.input`
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-    
+
     &::-webkit-slider-thumb {
       background: #ccc;
       cursor: not-allowed;
     }
   }
+
+  @media (max-width: 480px) {
+    height: 12px;
+  }
 `;
 
-export const ControlButton = styled.button`
-  padding: 8px 15px;
-  margin: 5px;
-  border: none;
-  border-radius: 5px;
-  background: ${props => props.active ? '#4CAF50' : '#f0f0f0'};
-  color: ${props => props.active ? 'white' : 'black'};
-  cursor: pointer;
-  transition: all 0.2s;
+export const ValueDisplay = styled.div`
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #2c3e50;
+  margin: 5px 0;
 
-  &:hover {
-    background: ${props => props.active ? '#45a049' : '#e0e0e0'};
-    cursor: pointer;
+  @media (max-width: 480px) {
+    font-size: 1rem;
+    text-align: center;
   }
 `;

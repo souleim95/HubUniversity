@@ -4,13 +4,17 @@ import styled from 'styled-components';
 export const PageContainer = styled.div`
   display: flex;
   flex-direction: column;
-  min-height: 100vh;  // Assure que le conteneur prend toute la hauteur de la fenêtre
+  min-height: 100vh;
 `;
 
 // Contenu principal de la page
 export const Content = styled.main`
-  flex: 1;  // Ce conteneur prendra l'espace restant
+  flex: 1;
   padding: 20px;
+
+  @media (max-width: 480px) {
+    padding: 15px 10px;
+  }
 `;
 
 // Footer
@@ -23,9 +27,13 @@ export const FooterContainer = styled.footer`
   flex-wrap: wrap;
   justify-content: center;
   gap: 15px;
-  padding: 10px;
+  padding: 20px 10px;
   text-align: center;
-  margin-top: auto;  // Cela assure que le footer est poussé en bas
+  margin-top: auto;
+
+  @media (max-width: 480px) {
+    padding: 15px 5px;
+  }
 `;
 
 export const Names = styled.div`
@@ -92,5 +100,9 @@ export const Logo = styled.img`
 
   @media (max-width: 768px) {
     height: 6vh;
+  }
+
+  @media (max-width: 480px) {
+    height: 5vh;
   }
 `;

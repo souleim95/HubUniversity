@@ -13,6 +13,13 @@ const Button = styled.button`
   &:hover {
     background-color: rgb(12, 90, 140);
   }
+
+  @media (max-width: 480px) {
+  width: 100%;
+  text-align: center;
+}
+
 `;
+
 
 export default Button;

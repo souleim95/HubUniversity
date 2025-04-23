@@ -6,6 +6,10 @@ export const SignupSection = styled.section`
   max-width: 1200px;
   margin: auto;
   width: 100%;
+
+  @media (max-width: 768px) {
+    padding: 40px 20px;
+  }
 `;
 
 export const Form = styled.form`
@@ -15,20 +19,33 @@ export const Form = styled.form`
   display: flex;
   flex-direction: column;
   gap: 1rem;
+
+  @media (max-width: 480px) {
+    width: 100%;
+  }
+`;
+
+const sharedInputStyles = `
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+
+  &:focus {
+    outline: none;
+    border-color: rgb(15, 110, 173);
+    box-shadow: 0 0 0 2px rgba(15, 110, 173, 0.1);
+  }
 `;
 
 export const Input = styled.input`
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 1rem;
+  ${sharedInputStyles}
 `;
 
 export const Select = styled.select`
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 1rem;
+  ${sharedInputStyles}
+  background-color: #fff;
 `;
 
 export const Button = styled.button`
@@ -45,5 +62,9 @@ export const Button = styled.button`
   &:hover {
     background-color: rgb(49, 137, 196);
     transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 `;

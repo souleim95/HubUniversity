@@ -15,6 +15,21 @@ export const WeatherContainer = styled.div`
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     cursor: pointer;
   }
+
+  @media (max-width: 480px) {
+    padding: 15px;
+  }
+`;
+
+export const WeatherDetails = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+  }
 `;
 
 export const WeatherTitle = styled.h2`
@@ -25,13 +40,6 @@ export const WeatherTitle = styled.h2`
   margin-bottom: 15px;
   letter-spacing: -0.5px;
   text-transform: capitalize;
-`;
-
-export const WeatherDetails = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
 `;
 
 export const WeatherIcon = styled.img`
@@ -82,17 +90,30 @@ export const ForecastContainer = styled.div`
   justify-content: space-between;
   margin-top: 25px;
   gap: 15px;
-  overflow-x: auto;  // Permet un défilement horizontal si les prévisions sont trop larges
+  overflow-x: auto;
   padding-bottom: 10px;
-`;
 
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f5f5f5;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 8px;
+  }
+`;
 
 export const ForecastDay = styled.div`
   text-align: center;
   background-color: #f7fafc;
   padding: 15px;
   border-radius: 12px;
-  width: 30%;
+  min-width: 110px;
+  flex-shrink: 0;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 
@@ -117,4 +138,3 @@ export const ForecastDate = styled.div`
   font-weight: 500;
   text-transform: capitalize;
 `;
-

@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 
+// Animation (si besoin)
 export const BackgroundContainer = styled.div`
   position: fixed;
   top: 0;
@@ -32,6 +33,17 @@ export const ProfileContainer = styled.div`
   z-index: 1;
   backdrop-filter: blur(5px);
   top: 20px;
+
+  @media (max-width: 768px) {
+    margin: 10px;
+    padding: 15px;
+  }
+
+  @media (max-width: 480px) {
+  padding: 10px;
+  top: 10px;
+}
+
 `;
 
 export const Header = styled.div`
@@ -43,8 +55,17 @@ export const Header = styled.div`
   border-bottom: 1px solid #eee;
 
   h2 {
-    color: rgb(255, 255, 255);
+    color: #fff;
   }
+
+  @media (max-width: 480px) {
+  flex-direction: column;
+  align-items: flex-start;
+  h2 {
+    font-size: 1.3rem;
+  }
+}
+
 `;
 
 export const InfoSection = styled.div`
@@ -56,9 +77,9 @@ export const ProfileCard = styled.div`
   padding: 20px;
   margin-bottom: 20px;
   border-radius: 10px;
-  background-color:rgb(54, 94, 141);
+  background-color: rgb(54, 94, 141);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  color: rgb(255, 255, 255);
+  color: white;
 `;
 
 export const InputField = styled.input`
@@ -90,7 +111,6 @@ export const SaveButton = styled.button`
 
   &:hover {
     background-color: #4cae4c;
-    cursor: pointer;
   }
 
   &.changed {
@@ -99,6 +119,11 @@ export const SaveButton = styled.button`
     &:hover {
       background-color: #c9302c;
     }
+  }
+
+  &:focus {
+    outline: 3px dashed #4cae4c;
+    outline-offset: 3px;
   }
 `;
 
@@ -111,7 +136,7 @@ export const ChangePasswordSection = styled.div`
 
   h3 {
     margin-bottom: 15px;
-    color: rgb(255, 255, 255);
+    color: white;
   }
 `;
 
@@ -143,22 +168,24 @@ export const ToggleViewButton = styled.button`
 
   &:hover {
     background-color: #0056b3;
-    cursor: pointer;
+  }
+
+  &:focus {
+    outline: 3px dashed #0056b3;
+    outline-offset: 3px;
   }
 `;
-
 
 export const ProfilePictureContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   margin-bottom: 20px;
-  background-color:rgba(255, 255, 255, 0.94); /* Subtle background */
+  background-color: rgba(255, 255, 255, 0.94);
   padding: 15px;
   border-radius: 10px;
 `;
 
-// Styled component for the profile picture
 export const ProfilePicture = styled.img`
   width: 150px;
   height: 150px;
@@ -166,16 +193,20 @@ export const ProfilePicture = styled.img`
   object-fit: cover;
   margin-bottom: 10px;
   border: 3px solid #ddd;
-  box-shadow: 0 4px 8px rgba(2, 2, 2, 0.94); /* Add shadow */
+  box-shadow: 0 4px 8px rgba(2, 2, 2, 0.94);
 
   &:hover {
     transform: scale(1.1);
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
     cursor: pointer;
   }
+
+  @media (max-width: 480px) {
+    width: 100px;
+    height: 100px;
+  }
 `;
 
-// Styled component for the delete button
 export const DeleteButton = styled.button`
   background-color: #e74c3c;
   color: white;
@@ -188,6 +219,11 @@ export const DeleteButton = styled.button`
 
   &:hover {
     background-color: #c0392b;
+  }
+
+  &:focus {
+    outline: 3px dashed #c0392b;
+    outline-offset: 3px;
   }
 `;
 

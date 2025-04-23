@@ -35,6 +35,10 @@ export const DashboardContainer = styled.div`
   @media (max-width: 768px) {
     padding: 25px;
   }
+    @media (max-width: 480px) {
+  padding: 20px 10px;
+}
+
 `;
 
 export const Header = styled.header`
@@ -47,20 +51,31 @@ export const Header = styled.header`
   h2 {
     font-size: 2.2rem;
     margin: 0;
+        @media (max-width: 480px) {
+  font-size: 1.5rem;
+}
   }
 
   p {
     font-size: 1rem;
     margin: 10px 0;
   }
+
+
 `;
 
 export const InfoSection = styled.section`
   display: flex;
   justify-content: space-between;
-  gap: 20px;
   flex-wrap: wrap;
+  gap: 20px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
 `;
+
 
 export const ProfileCard = styled.div`
   background-color: white;
@@ -75,6 +90,11 @@ export const ProfileCard = styled.div`
     margin: 10px 0;  // Augmenter l'espace entre les paragraphes
     font-size: 1.1rem;  // Augmenter la taille de la police
   }
+
+  @media (max-width: 768px) {
+  max-width: 100%;
+}
+
 `;
 
 
@@ -124,6 +144,13 @@ export const ObjectGrid = styled.div`
   gap: 20px;
   padding: 20px;
   margin-top: 20px;
+
+  @media (max-width: 480px) {
+  grid-template-columns: 1fr;
+  gap: 15px;
+  padding: 10px;
+}
+
 `;
 
 export const ObjectItem = styled.div`

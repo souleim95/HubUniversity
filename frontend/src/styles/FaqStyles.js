@@ -44,6 +44,10 @@ export const FaqContainer = styled.div`
   @media (max-width: 768px) {
     padding: 20px;
   }
+
+  @media (max-width: 480px) {
+    padding: 15px;
+  }
 `;
 
 export const FaqContent = styled.div`
@@ -52,6 +56,11 @@ export const FaqContent = styled.div`
   justify-content: space-between;
   gap: 20px;
   width: 100%;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    align-items: center;
+  }
 `;
 
 export const FaqColumn = styled.div`
@@ -84,7 +93,7 @@ export const FaqItem = styled.div`
 
 export const Question = styled.div`
   padding: 18px 22px;
-  background-color:rgb(33, 86, 140);
+  background-color: rgb(33, 86, 140);
   color: white;
   cursor: pointer;
   display: flex;
@@ -100,6 +109,11 @@ export const Question = styled.div`
     background-color: #34495e;
     cursor: pointer;
   }
+
+  @media (max-width: 480px) {
+    font-size: 14px;
+    padding: 14px 16px;
+  }
 `;
 
 export const Answer = styled.div`
@@ -107,12 +121,12 @@ export const Answer = styled.div`
   background-color: #f9f9f9;
   max-height: ${props => props.isOpen ? '1000px' : '0'};
   overflow: hidden;
-  transition: max-height 0.6s ease, padding 0.4s ease;
+  transition: max-height 0.6s ease, padding 0.4s ease, opacity 0.3s ease;
   box-shadow: ${props => props.isOpen ? '0 4px 10px rgba(0, 0, 0, 0.05)' : 'none'};
-  margin-bottom: 0; /* Éliminer l'espace en bas */
+  opacity: ${props => props.isOpen ? 1 : 0};
+  margin-bottom: 0;
   border-top: 1px solid #eee;
   font-size: 14px;
   line-height: 1.6;
   color: #555;
 `;
-

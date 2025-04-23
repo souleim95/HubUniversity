@@ -1,17 +1,16 @@
 import styled from 'styled-components';
+import { FaUser } from 'react-icons/fa';
 
-// Menu Container
 export const MenuContainer = styled.div`
   position: relative;
   display: inline-block;
   z-index: 1001;
 `;
 
-// Bouton de Menu avec des effets modernes
 export const MenuButton = styled.div`
   width: 50px;
   height: 50px;
-  background: linear-gradient(135deg, #6a11cb, #2575fc); /* Dégradé vibrant */
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
   color: white;
   border-radius: 50%;
   display: flex;
@@ -27,25 +26,30 @@ export const MenuButton = styled.div`
   z-index: 1002;
 
   &:hover {
-    background: linear-gradient(135deg, #2575fc, #6a11cb); /* Inversion du dégradé au survol */
-    transform: scale(1.15); /* Effet de zoom */
+    background: linear-gradient(135deg, #2575fc, #6a11cb);
+    transform: scale(1.15);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  @media (max-width: 480px) {
+    width: 45px;
+    height: 45px;
+    font-size: 1.1rem;
   }
 `;
 
-// Menu déroulant
 export const DropdownMenu = styled.div`
   position: absolute;
-  top: 85px;
-  right: -15px;
+  top: 65px;
+  right: 0;
   background-color: white;
-  border-radius: 16px; /* Coins arrondis pour le menu */
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15); /* Ombre suivant les coins arrondis */
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
   min-width: 240px;
   z-index: 1003;
   animation: fadeIn 0.3s ease-in-out;
-  overflow: hidden; /* Empêche le débordement du contenu */
-  border: 1px solid rgba(0, 0, 0, 0.1); /* Ajout d'une bordure fine pour synchroniser les bords */
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.1);
 
   @keyframes fadeIn {
     from {
@@ -59,63 +63,46 @@ export const DropdownMenu = styled.div`
   }
 `;
 
-// Item du menu avec un style plus interactif
 export const DropdownItem = styled.div`
   padding: 16px 24px;
   cursor: pointer;
   color: #2575fc;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 500;
   transition: background-color 0.3s ease, color 0.3s ease;
-  width: 100%; /* Prend toute la largeur disponible */
-  text-align: center; /* Centrer le texte */
-  box-sizing: border-box; /* Inclut le padding et la bordure dans la largeur totale */
-  
+  text-align: center;
+  border-bottom: 1px solid #eaeaea;
+
   &:hover {
     background-color: #f0f4ff;
     color: #6a11cb;
   }
 
-  /* Ajout d'une ligne sous chaque élément pour mieux délimiter */
-  &:not(:last-child) {
-    border-bottom: 1px solid #eaeaea;
-  }
-
-  &:first-child {
-    border-top-left-radius: 16px; /* Coins arrondis pour le premier élément */
-    border-top-right-radius: 16px;
-  }
   &:last-child {
-    border-top-left-radius: 20px;
-    border-top-right-radius: 20px;
-    border-bottom-left-radius: 2px;
-    border-bottom-right-radius: 1px;
+    border-bottom: none;
   }
 
   &.logout {
-    color: #ff4d4f; /* Couleur rouge pour indiquer une action importante */
-    font-weight: bold; /* Mettre en évidence */
-    transition: background-color 0.3s ease, color 0.3s ease;
+    color: #ff4d4f;
+    font-weight: bold;
 
     &:hover {
-      background-color: #ffecec; /* Couleur de survol spécifique */
-      color: #d9363e; /* Rouge plus foncé au survol */
+      background-color: #ffecec;
+      color: #d9363e;
     }
   }
 
   &.dashboard {
-    color:rgb(17, 68, 97); /* Bleu clair pour un effet moderne */
-    font-weight: bold; /* Mettre en évidence */
-    transition: background-color 0.3s ease, color 0.3s ease;
+    color: rgb(17, 68, 97);
+    font-weight: bold;
 
     &:hover {
-      background-color: #eaf6ff; /* Couleur de survol spécifique */
-      color: #1a73e8; /* Bleu plus foncé au survol */
+      background-color: #eaf6ff;
+      color: #1a73e8;
     }
   }
 `;
 
-// Ajout d'icône et d'autres éléments pour un design moderne
 export const ProfileIcon = styled.div`
   width: 100px;
   height: 100px;
@@ -127,7 +114,7 @@ export const ProfileIcon = styled.div`
   align-items: center;
   font-size: 1.6rem;
   font-weight: bold;
-  margin-right: 20px;
+  margin: 10px auto;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 

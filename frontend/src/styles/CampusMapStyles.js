@@ -1,11 +1,13 @@
 import styled from 'styled-components';
 
 export const MapSection = styled.section`
-  padding: 2rem;
+  padding: 2rem 1rem;
   background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
   min-height: 100vh;
-  width: 103%;
+  width: 100%;
+  box-sizing: border-box;
 `;
+
 
 export const MapContainer = styled.div`
   display: grid;
@@ -20,13 +22,14 @@ export const TabsWrapper = styled.div`
   display: flex;
   justify-content: flex-start;
   margin-bottom: 2rem;
-  padding: 0 20px;
-  margin-left: -55px;
+  padding: 0 1rem;
+  overflow-x: auto;
 `;
+
 
 export const Tabs = styled.div`
   display: flex;
-
+  flex-wrap: wrap;
   gap: 12px;
   background: rgba(255, 255, 255, 0.8);
   padding: 8px;
@@ -67,6 +70,10 @@ export const ObjectCard = styled.div`
     transform: translateY(-5px);
     box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
   }
+
+    @media (max-width: 480px) {
+    height: 220px;
+  }
 `;
 
 export const CardInner = styled.div`
@@ -99,6 +106,12 @@ export const ObjectFront = styled.div`
     font-size: 1.2rem;
     font-weight: 500;
   }
+
+  @media (max-width: 480px) {
+  padding: 12px;
+
+}
+
 `;
 
 export const ObjectBack = styled.div`
@@ -121,4 +134,10 @@ export const ObjectBack = styled.div`
     font-size: 0.95rem;
     line-height: 1.5;
   }
+
+  @media (max-width: 480px) {
+  padding: 12px;
+
+}
+
 `;
