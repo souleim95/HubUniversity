@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 
+
 export const HeaderContainer = styled.header`
   background-color: whitesmoke;
   width: 100%;
@@ -9,17 +10,16 @@ export const HeaderContainer = styled.header`
   border-bottom: solid rgb(15, 110, 173) 3px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   padding: 10px 20px;
   flex-wrap: wrap;
-  height: auto;
-  gap: 10px;
+  justify-content: space-between;
+  height: 115px;
 
   @media (max-width: 768px) {
     flex-direction: column;
-    align-items: center;
+    height: auto;
     padding: 10px;
-    gap: 12px;
+    gap: 10px;
   }
 `;
 
@@ -28,6 +28,7 @@ export const WelcomeChoices = styled.div`
   align-items: center;
   border-right: solid rgb(15, 110, 173) 3px;
   padding-right: 20px;
+  height: 100%;
 
   a {
     text-decoration: none;
@@ -49,21 +50,36 @@ export const WelcomeChoices = styled.div`
   }
 
   @media (max-width: 768px) {
+    flex: 1 1 100%;
+    justify-content: center;
     border: none;
-    padding: 0;
+    padding: 5px 0;
+    height: auto;
+  }
+
+  @media (max-width: 480px) {
     flex-direction: column;
-    align-items: center;
+    gap: 5px;
+    text-align: center;
+
+    img {
+      height: 40px;
+    }
+
+    a {
+      font-size: 1rem;
+    }
   }
 `;
+
 
 export const NavLinks = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  flex: 1 1 100%;
-  width: 100%;
+  gap: 15px;
+  height: 100%;
+  flex: 1;
 
   span {
     color: #2C5282;
@@ -74,11 +90,19 @@ export const NavLinks = styled.div`
     background-color: rgba(44, 82, 130, 0.1);
   }
 
+  @media (max-width: 768px) {
+    flex: 1 1 100%;
+    justify-content: center;
+    margin-top: 10px;
+    height: auto;
+  }
+
   @media (max-width: 480px) {
-    gap: 6px;
+    flex-direction: column;
+    gap: 8px;
+
     span {
-      font-size: 0.85rem;
-      padding: 6px 10px;
+      font-size: 0.95rem;
     }
   }
 `;
@@ -101,22 +125,14 @@ export const ConnectButton = styled.button`
   &:active {
     transform: translateY(0);
   }
-
-  @media (max-width: 480px) {
-    padding: 6px 12px;
-    font-size: 0.85rem;
-  }
 `;
 
 export const SearchContainer = styled.div`
-  position: absolute;
-  top: 10px;
-  right: 20px;
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 20px;
+  height: 100%;
   color: rgb(15, 110, 173);
-  z-index: 1001;
 
   div {
     cursor: pointer;
@@ -126,19 +142,22 @@ export const SearchContainer = styled.div`
   }
 
   @media (max-width: 768px) {
-    position: static;
-    width: 100%;
+    flex: 1 1 100%;
     justify-content: center;
     margin-top: 10px;
+    height: auto;
+  }
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 10px;
   }
 `;
-
-
 
 export const SearchBar = styled.input`
   position: fixed;
   top: 70px;
-  right: 60px;
+  right: 10px;
   width: 250px;
   padding: 10px;
   border: 2px solid rgb(15, 110, 173);
@@ -151,9 +170,9 @@ export const SearchBar = styled.input`
   z-index: 1009;
 
   @media (max-width: 480px) {
-    width: 200px;
-    padding: 8px;
-    right: 10px;
+    width: 90%;
+    top: 100px;
+    right: 5%;
   }
 `;
 
@@ -180,11 +199,155 @@ export const LoginFormContainer = styled.div`
   width: 380px;
   animation: slideIn 0.5s ease-in-out;
 
+  h2 {
+    color: rgb(15, 110, 173);
+    font-size: 24px;
+    margin-bottom: 25px;
+    text-align: center;
+    font-weight: 600;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    border: 2px solid #eef2f7;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: #f8fafc;
+
+    &:focus {
+      outline: none;
+      border-color: rgb(15, 110, 173);
+      background: white;
+      box-shadow: 0 0 0 3px rgba(15, 110, 173, 0.1);
+    }
+  }
+
+  button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    cursor: pointer;
+
+    &:not(.switch-form):not(.close-btn) {
+      background: rgb(15, 110, 173);
+      color: white;
+      margin-top: 10px;
+
+      &:hover {
+        background: rgb(12, 90, 143);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(15, 110, 173, 0.2);
+      }
+    }
+  }
+
+  .switch-form {
+    background: none;
+    color: rgb(15, 110, 173);
+    text-decoration: underline;
+    padding: 0;
+    margin: 0;
+    width: auto;
+    display: inline;
+
+    &:hover {
+      color: rgb(12, 90, 143);
+    }
+  }
+
+  p {
+    margin: 20px 0;
+    text-align: center;
+    color: #64748b;
+    font-size: 14px;
+  }
+
+  .close-btn {
+    background: #ef4444;
+    color: white;
+    margin-top: 15px;
+
+    &:hover {
+      background: #dc2626;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+    }
+  }
+
+  .password-input {
+    position: relative;
+    width: 100%;
+    margin-bottom: 16px;
+
+    input {
+      margin-bottom: 0;
+      padding-right: 40px;
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 12px;
+      top: 2px;
+      background: none;
+      border: none;
+      padding: 0;
+      width: auto;
+      height: auto;
+      color: #666;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      svg {
+        width: 24px;
+        height: 24px;
+        transition: transform 0.2s ease;
+      }
+
+      &:hover svg {
+        transform: scale(1.15);
+      }
+
+      &:active svg {
+        transform: scale(0.95);
+        opacity: 0.1;
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    width: 95%;
+    padding: 25px;
+  }
+
   @media (max-width: 480px) {
     width: 90%;
-    padding: 20px;
+    padding: 20px 15px;
+
+    h2 {
+      font-size: 20px;
+    }
+
+    input, select {
+      padding: 10px 12px;
+      font-size: 13px;
+    }
+
+    button {
+      font-size: 14px;
+      padding: 10px;
+    }
   }
 `;
+
 
 export const Filter = styled.select`
   flex: 1;
@@ -230,8 +393,13 @@ export const Filter = styled.select`
     color: #0f6ead;
   }
 
-  @media (max-width: 480px) {
+  @media (max-width: 768px) {
     min-width: 80px;
     font-size: 13px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 12px;
+    min-width: 70px;
   }
 `;
