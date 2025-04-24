@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { RiEyeLine, RiEyeOffLine, RiArrowUpSLine, RiArrowDownSLine, 
+import React from 'react';
+import { RiEyeLine, RiEyeOffLine, 
          RiBookLine, RiBuildingLine, RiInformationLine, RiQuestionLine, 
          RiDashboardLine, RiSettings4Line, RiAdminLine, RiUserLine, RiLogoutBoxLine,
          RiSearchLine } from 'react-icons/ri';
@@ -14,19 +14,14 @@ import {
   SearchContainer,
   Filter
 } from '../styles/HeaderStyles';
-import {
-  FiltersContainer,
-  ResultItem,
-} from '../styles/SearchBoxStyles';
+
 import hubCyLogo from '../assets/HubCyLogo.png';
-import SearchBox from './SearchBox';
 import UserMenu from './UserMenu';
-import { useNavigate } from 'react-router-dom';
-import { equipments, categories, dataObjects, objectTypes } from '../data/projectData';
-import { toast, ToastContainer } from 'react-toastify';
+import { objectTypes } from '../data/projectData';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Toast from './Toast';
-import { useHeaderState } from '../const/constHeader';
+import { useHeaderState } from '../hooks/useHeader';
 
 /*
  * Composant Header : Barre de navigation principale et gestion des utilisateurs
@@ -70,33 +65,28 @@ import { useHeaderState } from '../const/constHeader';
 
 const Header = () => {
 
+  // Externalisation de nos const et de nos states dans un fichier constHeader.js
   const {
     handleLogout, handleSubmit,
-    validateForm,
     handleSelectObject, getRoleTitle, getRoleColor,
-    toggleForm, handleChange, addToast, removeToast,
+    toggleForm, handleChange, removeToast,
     scrollToCampus, scrollToInfo, scrollToFaq,
     handleSearchButtonClick, renderSidebarButton,
     sortedCategories, handleSearch,
-    statusTypes, performSearch,
+    statusTypes, 
     isFormOpen, setIsFormOpen,
-    formData, setFormData,
-    userName, setUserName,
-    role, setRole, toggleHeader,
-    userPoints, setUserPoints,
+    formData, 
+    userName, 
+    role,
+    userPoints, 
     selectedCategory, setSelectedCategory,
-    selectedRoom, setSelectedRoom,
-    selectedEquipment, setSelectedEquipment,
     showPassword, setShowPassword,
-    toasts, setToasts,
-    isHeaderVisible, setIsHeaderVisible,
-    mousePosition, setMousePosition,
+    toasts,
     isSidebarVisible, setIsSidebarVisible,
-    isSearchOpen, setIsSearchOpen,
-    isSearchWindowOpen, setIsSearchWindowOpen,
+    isSearchWindowOpen,
     showFilters, setShowFilters,
-    searchText, setSearchText,
-    searchResults, setSearchResults,
+    searchText, 
+    searchResults, 
     selectedType, setSelectedType,
     selectedStatus, setSelectedStatus,
     navigate

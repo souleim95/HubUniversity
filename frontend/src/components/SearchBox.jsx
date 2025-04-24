@@ -1,10 +1,10 @@
 import React from 'react';
-import { FaSearch, FaTimes, FaFilter } from 'react-icons/fa';
+import { FaSearch, FaFilter } from 'react-icons/fa';
 import { SearchContainer, SearchBar } from '../styles/HeaderStyles';
 import { SearchResultsContainer, FiltersContainer, FilterSelect, ResultItem, NoResults, SearchButton, StyledFaTimes, ResultsHeader, SearchWrapper } from '../styles/SearchBoxStyles';
 import { objectTypes } from '../data/projectData';
 import { getIcon } from '../utils/iconUtils';
-import { useSearchState } from '../const/constSearch';
+import { useSearchState } from '../hooks/useSearch';
 
 /*
  * Composant SearchBox : Barre de recherche intelligente
@@ -35,6 +35,8 @@ import { useSearchState } from '../const/constSearch';
  */
 
 const SearchBox = ({ onSelectObject, isOpen: externalIsOpen, onClose, onOpen }) => {
+
+  // Externalisation de nos const et de nos states dans un fichier constSearch.js
   const {
     isOpen,
     searchText,

@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import WeatherInfo from './WeatherInfo';
 import {
-  ScheduleContainer,
-  MainTitle,
   DirectionBox,
   DirectionTitle,
   ErrorMessage,
-  TrainInfo,
-  FlexContainer
+  TrainInfo
 } from '../styles/RerScheduleStyles';
 
 /*

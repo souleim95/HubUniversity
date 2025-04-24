@@ -1,5 +1,4 @@
 import React from 'react';
-import styled from 'styled-components';
 import welcomeVideo from '../assets/welcome.mp4';
 import { 
   HeroContainer, 

@@ -31,70 +31,66 @@ import {
   StatsGrid, StatCard, StatValue, StatLabel,
   AlertBanner,
   TabsContainer, TabsList, Tab,
-  ExportButton,
-  bodyAdmin
+  ExportButton
 } from '../styles/AdminStyles';
 import { FaUsers, FaTools, FaShieldAlt, FaPalette, FaChartBar, FaPlus, FaEdit, FaTrash, FaDownload, FaExclamationTriangle, FaCheck, FaHistory, FaCog, FaUser, FaEye, FaEyeSlash } from 'react-icons/fa';
 // Importer les données depuis fakeData.js
-import { dataObjects, categories, equipments } from '../data/projectData';
+import { dataObjects, equipments } from '../data/projectData';
 import { PlatformContext } from '../context/PlatformContext';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { useAdminState } from '../const/constAdmin';
+import { useAdminState } from '../hooks/useAdmin';
 
 function AdminPage() {
   const { platformSettings, setPlatformSettings } = useContext(PlatformContext);
+
+  // Externalisation de nos const et de nos states dans un fichier constAdmin.js
   const {
-    navigate, applyGlobalRules, 
-	users, setUsers, alerts, setAlerts,
-    loadingUsers, setLoadingUsers,
+    applyGlobalRules, 
+	  users, alerts, setAlerts,
+    loadingUsers, 
     showUserModal, setShowUserModal,
-    selectedUser, setSelectedUser,
+    selectedUser, 
     showUserPassword, setShowUserPassword,
     userFormData, setUserFormData,
     objects, setObjects,
-    categoryList, setCategoryList,
+    categoryList, 
     showObjectModal, setShowObjectModal,
     objectFormData, setObjectFormData,
     newCategory, setNewCategory,
     showCategoryModal, setShowCategoryModal,
     globalRules, setGlobalRules,
-    reports, setReports,
-    selectedReport, setSelectedReport,
+    reports,
     activeTab, setActiveTab,
     showAlertModal, setShowAlertModal,
-    selectedObject, setSelectedObject,
-    selectedAlert, setSelectedAlert,
-    userHistory, setUserHistory,
-    selectedUserHistory, setSelectedUserHistory,
+    selectedObject, 
+    selectedAlert, 
+    userHistory,
     historyFilter, setHistoryFilter,
     showDeleteUserModal, setShowDeleteUserModal,
     showDeleteCategoryModal, setShowDeleteCategoryModal,
     showDeleteObjectModal, setShowDeleteObjectModal,
     showEquipmentModal, setShowEquipmentModal,
     showApproveModal, setShowApproveModal,
-    selectedItemToDelete, setSelectedItemToDelete,
-    selectedEquipmentInfo, setSelectedEquipmentInfo,
-    selectedAlertToApprove, setSelectedAlertToApprove,
-    lastBackup, setLastBackup,
-    lastIntegrityCheck, setLastIntegrityCheck,
-    isBackupInProgress, setIsBackupInProgress,
-    isIntegrityCheckInProgress, setIsIntegrityCheckInProgress,
+    selectedItemToDelete,
+    selectedEquipmentInfo, 
+    lastBackup,
+    lastIntegrityCheck,
+    isBackupInProgress, 
+    isIntegrityCheckInProgress, 
     showPassword, setShowPassword,
     handleAddUser, filterHistory,
-	handleEditUser, handleDeleteUser,
-	handleUserSubmit, confirmDeleteUser,
-	handleAddObject, handleAddCategory,
-	handleCategorySubmit, handleDeleteCategory,
-	confirmDeleteCategory, confirmDeleteObject,
-	handleGlobalRulesChange, handleEditObject,
-	handleDeleteObject, handleApproveRequest, confirmApproveRequest,
-	handleObjectSubmit, handleExportReport,
-	handleAlertAction, handleShowEquipment,
-	handleBackup, handleIntegrityCheck,
-	handlePasswordUpdate,handleViewObject,
-	applyValidationMode, applyTheme
-    // ... destructure all other state variables and functions from useAdminState
+    handleEditUser, handleDeleteUser,
+    handleUserSubmit, confirmDeleteUser,
+    handleAddObject, handleAddCategory,
+    handleCategorySubmit, handleDeleteCategory,
+    confirmDeleteCategory, confirmDeleteObject,
+    handleEditObject,
+    handleDeleteObject, handleApproveRequest, confirmApproveRequest,
+    handleObjectSubmit, handleExportReport,
+    handleShowEquipment,
+    handleBackup, handleIntegrityCheck,
+    handlePasswordUpdate,handleViewObject,
   } = useAdminState(platformSettings, setPlatformSettings);
     // --------- Rendu de l'interface ---------
   return (

@@ -1,15 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { RiEyeLine, RiEyeOffLine, RiArrowUpSLine, RiArrowDownSLine, 
-         RiBookLine, RiBuildingLine, RiInformationLine, RiQuestionLine, 
-         RiDashboardLine, RiSettings4Line, RiAdminLine, RiUserLine, RiLogoutBoxLine,
-         RiSearchLine } from 'react-icons/ri';
-import { FaFilter } from 'react-icons/fa';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
+import { equipments, categories, dataObjects} from '../data/projectData';
 
-import { equipments, categories, dataObjects, objectTypes } from '../data/projectData';
-import Toast from '../components/Toast';
 
 export const useHeaderState = () => {
   const [isFormOpen, setIsFormOpen] = useState(null); 

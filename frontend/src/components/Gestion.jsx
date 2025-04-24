@@ -16,7 +16,7 @@
  */
 
 // Import des dépendances et composants nécessaires
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { dataObjects, categories } from '../data/projectData';
 import {
   ResponsiveContainer,
@@ -66,32 +66,31 @@ import {
   ExportButton
 } from '../styles/AdminStyles';
 import { FaTools, FaCalendar, FaExclamationTriangle, FaPlus, FaTrash, FaChartBar,FaDownload } from 'react-icons/fa';
-import { useGestionState, categoryToTypeMap } from '../const/constGestion';
+import { useGestionState, categoryToTypeMap } from '../hooks/useGestion';
 
 
 function GestionPage() {
+
+  // Externalisation de nos const et de nos states dans un fichier constGestion.js
   const {
     generateReports, handleExportReport,
-    convertToCSV, downloadCSV,
     handleEditObject, handleObjectSubmit,
     handleCategoryChange, handleAddObject,
     handleAddReservation, handleEditReservation,
     handleDeleteReservation, handleRequestDeletion,
-    handleCreateAlert, handleAlertAction,
+    handleCreateAlert,
     handleToggleStatus, handleOpenSettings,
     handleReservationSubmit,
     isInefficient,
     objects, setObjects,
-    selectedCategory, setSelectedCategory,
     showObjectModal, setShowObjectModal,
-    inactiveCount, setInactiveCount,
-    objectHistories, setObjectHistories,
-    allObjects, setAllObjects,
+    inactiveCount,
+    objectHistories,
     showAlert, setShowAlert,
-    alertMessage, setAlertMessage,
+    alertMessage,
     showConfirmation, setShowConfirmation,
-    confirmationMessage, setConfirmationMessage,
-    confirmationAction, setConfirmationAction,
+    confirmationMessage,
+    confirmationAction, 
     selectedForChart, setSelectedForChart,
     editingObject, setEditingObject,
     objectFormData, setObjectFormData,
@@ -99,11 +98,10 @@ function GestionPage() {
     editingSettingsFor, setEditingSettingsFor,
     reservationFormData, setReservationFormData,
     showReservationModal, setShowReservationModal,
-    reservations, setReservations,
+    reservations, 
     showAlertModal, setShowAlertModal,
-    selectedAlert, setSelectedAlert,
-    alerts, setAlerts,
-    reports, setReports
+    selectedAlert, 
+    alerts, reports
   } = useGestionState();
 
 

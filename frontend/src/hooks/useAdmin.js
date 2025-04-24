@@ -1,15 +1,15 @@
-import React, { useContext, useState, useEffect, useCallback  } from 'react';
+import { useState, useEffect, useCallback  } from 'react';
 
 // Importer les données depuis fakeData.js
-import { dataObjects, categories, equipments } from '../data/projectData';
-import { toast, ToastContainer } from 'react-toastify';
+import { dataObjects, equipments } from '../data/projectData';
+import { toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
 
 export const useAdminState = (platformSettings, setPlatformSettings) => {
 	const navigate = useNavigate();
 
- 	 // États pour la gestion des utilisateurs
+ 	// États pour la gestion des utilisateurs
 	const [users, setUsers] = useState([]);
 	const [loadingUsers, setLoadingUsers] = useState(true);
 	const [showUserModal, setShowUserModal] = useState(false);

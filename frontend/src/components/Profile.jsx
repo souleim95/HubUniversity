@@ -22,9 +22,8 @@
  * - Masquage sécurisé des mots de passe
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Navigate } from 'react-router-dom'; 
-import styled from 'styled-components';
 import Toast from './Toast';
 import {
   ProfileContainer,
@@ -63,8 +62,8 @@ const Profile = () => {
   const [photoUrl, setPhotoUrl] = useState(localStorage.getItem('photoUrl') || null);
   const [toasts, setToasts] = useState([]);
 
-  // Données initiales du formulaire
-  const initialFormData = {
+  // Données initiales du formulaire mémorisées
+  const initialFormData = useMemo(() => ({
     // Configuration initiale des champs
     pseudonyme: localStorage.getItem('user') || '',
     genre: localStorage.getItem('genre') || '',
@@ -76,7 +75,7 @@ const Profile = () => {
     oldPassword: '',
     newPassword: '',
     confirmNewPassword: '',
-  };
+  }), []); // Empty dependency array since these values only need to be initialized once
 
   const [formData, setFormData] = useState(initialFormData);
   const [isModified, setIsModified] = useState(false);
@@ -111,7 +110,7 @@ const Profile = () => {
 
   useEffect(() => {
     setIsModified(JSON.stringify(formData) !== JSON.stringify(initialFormData));
-  }, [formData]);
+  }, [formData, initialFormData]);
 
   const toggleView = () => setIsPublic(!isPublic);
 

@@ -5,8 +5,7 @@ import {
   InfoContainer,
   InfoTitle,
   InfoContent,
-  TrainBox,
-  WeatherBox
+  TrainBox
 } from '../styles/InfoBoxStyles';
 
 /*

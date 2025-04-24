@@ -1,5 +1,4 @@
 import styled from 'styled-components';
-import { FaUser } from 'react-icons/fa';
 
 export const MenuContainer = styled.div`
   position: relative;

@@ -1,5 +1,5 @@
 // Import des dépendances et composants nécessaires
-import React, { useState, useEffect} from 'react';
+import { useState, useEffect} from 'react';
 import { dataObjects, categories } from '../data/projectData';
 
 // Configuration des types d'objets autorisés par catégorie
@@ -209,10 +209,6 @@ export const useGestionState = () => {
         // 🔁 Mise à jour de la catégorie active si nécessaire
         const updatedCategory = objectFormData.category;
         setSelectedCategory(updatedCategory); // <- forcer le passage à cette catégorie
-        
-        const newCategoryObjects = updatedAllObjects.filter(object =>
-            categories[updatedCategory]?.items.includes(object.id)
-        );
         
         setSelectedCategory(updatedCategory); // C’est le useEffect qui fera le reste
 
