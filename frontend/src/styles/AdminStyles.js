@@ -6,13 +6,16 @@ export const AdminContainer = styled.div`
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem;
+  padding-top: 120px; /* 🔥 Ajout clé ici */
   background-color: rgba(212, 213, 247, 0.9);
   min-height: 130vh;
 
   @media (max-width: 768px) {
     padding: 1rem;
+    padding-top: 130px; /* Adapté sur mobile */
   }
 `;
+
 
 
 export const AdminHeader = styled.div`
@@ -20,9 +23,15 @@ export const AdminHeader = styled.div`
   color: white;
   padding: 2rem;
   border-radius: 1rem;
-  margin-bottom: 2rem;
+  margin: 2rem 0; /* Ajouté */
+  margin-top: 80px; /* 🔥 Important pour éviter le débordement */
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+  @media (max-width: 768px) {
+    margin-top: 100px;
+  }
 `;
+
 
 export const AdminTitle = styled.h1`
   font-size: 2.5rem;
@@ -428,11 +437,13 @@ export const ExportButton = styled.button`
 `;
 
 export const bodyAdmin = styled.div`
-  position: fixed;
+  position: relative;
   top: 20px;
+  padding-top: 120px;
   left: 0;
   width: 100vw;
   height: 100vh;
+  min-height: 100vh;
   z-index: -1;
   overflow: hidden;
   background-color: rgb(36, 106, 187);

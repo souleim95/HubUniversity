@@ -137,22 +137,25 @@ const Header = () => {
 
       {/* Barre latérale avec icônes */}
       <div 
-        style={{
-          position: 'fixed',
-          left: isSidebarVisible ? '20px' : '-70px',
-          top: window.innerWidth <= 480 ? '70%' : '55%',
-          transform: 'translateY(-50%)',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '15px',
-          backgroundColor: 'white',
-          padding: '15px 10px',
-          borderRadius: '30px',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-          zIndex: 1000,
-          transition: 'left 0.3s ease-in-out',
-        }}
-      >
+  style={{
+    position: 'fixed',
+    left: isSidebarVisible ? '20px' : '-70px',
+    bottom: '100px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '15px',
+    backgroundColor: 'white',
+    padding: '15px 10px',
+    borderRadius: '30px',
+    boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+    zIndex: 1000,
+    transition: 'left 0.3s ease-in-out',
+    maxHeight: 'calc(100vh - 140px)',
+    overflowY: 'auto',
+  }}
+>
+
+
         {/* Zone de détection pour faire apparaître la barre */}
         <div 
           style={{
@@ -317,6 +320,57 @@ const Header = () => {
                     required 
                   />
                 )}
+
+                {/* Champ prénom */}
+                <input 
+                  type="text" 
+                  name="prenom" 
+                  placeholder="Prénom" 
+                  value={formData.prenom} 
+                  onChange={handleChange} 
+                  required 
+                />
+
+                {/* Champ nom */}
+                <input 
+                  type="text" 
+                  name="nom" 
+                  placeholder="Nom" 
+                  value={formData.nom} 
+                  onChange={handleChange} 
+                  required 
+                />
+
+                {/* Champ date de naissance */}
+                <input 
+                  type="date" 
+                  name="dateNaissance" 
+                  placeholder="Date de naissance" 
+                  value={formData.dateNaissance} 
+                  onChange={handleChange} 
+                  required 
+                />
+
+                  <input 
+                    type="text" 
+                    name="pseudonyme" 
+                    placeholder="Pseudonyme" 
+                    value={formData.pseudonyme} 
+                    onChange={handleChange} 
+                    required 
+                  />
+                  <select 
+                    name="genre" 
+                    value={formData.genre} 
+                    onChange={handleChange} 
+                    required
+                  >
+                    <option value="">Sélectionnez votre genre</option>
+                    <option value="Homme">Homme</option>
+                    <option value="Femme">Femme</option>
+                  </select>
+
+
                 
                 {/* Champ Email */}
                 <input 

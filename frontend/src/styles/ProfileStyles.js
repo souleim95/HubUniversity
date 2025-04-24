@@ -24,27 +24,27 @@ export const BackgroundContainer = styled.div`
 export const ProfileContainer = styled.div`
   font-family: 'Arial', sans-serif;
   max-width: 800px;
-  margin: 20px auto;
+  margin: 0 auto;
   padding: 20px;
+  padding-top: 120px; /* Décalage pour éviter que le header ne masque le contenu */
   background-color: rgba(29, 18, 78, 0.94);
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   position: relative;
   z-index: 1;
   backdrop-filter: blur(5px);
-  top: 20px;
 
   @media (max-width: 768px) {
-    margin: 10px;
-    padding: 15px;
+    padding-top: 130px; /* Un peu plus d’espace sur tablette/mobile */
   }
 
   @media (max-width: 480px) {
-  padding: 10px;
-  top: 10px;
-}
-
+    padding: 10px;
+    padding-top: 130px; /* On garde aussi le décalage ici */
+    top: 10px; /* Optionnel : à supprimer si tu n’en as pas besoin */
+  }
 `;
+
 
 export const Header = styled.div`
   display: flex;

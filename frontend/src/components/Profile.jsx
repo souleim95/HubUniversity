@@ -249,6 +249,7 @@ const Profile = () => {
       <BackgroundContainer>
         <img src={profileBackground} alt="Profile background" />
       </BackgroundContainer>
+      <div style={{ paddingTop: '130px' }}></div>
       <ProfileContainer>
         <Header>
           <h2>{isPublic ? 'Profil Public 🌐' : 'Profil Privé 🔒'}</h2>

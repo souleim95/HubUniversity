@@ -290,7 +290,7 @@ function AdminPage() {
             {/* Liste des objets et catégories */}
             <Grid style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
               {/* Liste des types d'objets */}
-              <Card style={{ gridColumn: '1 / span 1', width: 1230 }}>
+              <Card style={{ gridColumn: '1 / span 1' }}>
                 <CardTitle>Types d'Objets</CardTitle>
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0}}>
                   {categoryList.map((category, index) => (
