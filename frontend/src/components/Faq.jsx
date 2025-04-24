@@ -36,6 +36,8 @@ const Faq = () => {
     <FaqContainer id="faq-section">
       <FaqTitle>Foire aux questions</FaqTitle>
       <FaqContent>
+
+        {/* Colonne gauche */}
         <FaqColumn>
           {firstColumn.map((item, index) => (
             <FaqItem key={index}>
@@ -49,7 +51,8 @@ const Faq = () => {
             </FaqItem>
           ))}
         </FaqColumn>
-        
+
+        {/* Colonne droite */}
         <FaqColumn>
           {secondColumn.map((item, index) => (
             <FaqItem key={index + midpoint}>
@@ -63,6 +66,7 @@ const Faq = () => {
             </FaqItem>
           ))}
         </FaqColumn>
+        
       </FaqContent>
     </FaqContainer>
   );

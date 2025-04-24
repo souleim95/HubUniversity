@@ -54,7 +54,6 @@ const Formation = () => {
     <FormationContainer>
       {/* En-tête avec navigation par onglets */}
       <FormationHeader>
-        {/* Titre de la section */}
         <h1>Nos Formations</h1>
         
         {/* Système de navigation par onglets */}
@@ -81,7 +80,7 @@ const Formation = () => {
         </TabContainer>
       </FormationHeader>
 
-      {/* Grille responsive des formations */}
+      {/* Grille des formations */}
       <FormationGrid>
         {/* Génération des cartes de formation avec les détails */}
         {currentFormations && Object.entries(currentFormations).map(([name, details]) => (

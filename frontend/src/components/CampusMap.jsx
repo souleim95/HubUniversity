@@ -126,6 +126,7 @@ const CampusMap = () => {
     });
   };
 
+  
   return (
     <MapSection id="campus-section">
       {/* Interface utilisateur avec :
@@ -196,6 +197,7 @@ const CampusMap = () => {
       </MapContainer>
     </MapSection>
   );
+  
 };
 
 export default CampusMap;
