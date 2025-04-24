@@ -5,23 +5,27 @@ export const HeaderContainer = styled.header`
   background-color: whitesmoke;
   width: 100%;
   position: fixed;
+  top: 0;
   left: 0;
   z-index: 1000;
   border-bottom: solid rgb(15, 110, 173) 3px;
   display: flex;
   align-items: center;
-  padding: 10px 20px;
+  padding: 8px 20px;
   flex-wrap: wrap;
   justify-content: space-between;
-  height: 115px;
+  min-height: 72px; /* Réduit en desktop */
+  margin-bottom: 10px;
 
   @media (max-width: 768px) {
     flex-direction: column;
-    height: auto;
-    padding: 10px;
-    gap: 10px;
+    padding: 6px 10px;
+    gap: 6px;
   }
 `;
+
+
+
 
 export const WelcomeChoices = styled.div`
   display: flex;
@@ -49,13 +53,14 @@ export const WelcomeChoices = styled.div`
     }
   }
 
-  @media (max-width: 768px) {
-    flex: 1 1 100%;
-    justify-content: center;
-    border: none;
-    padding: 5px 0;
-    height: auto;
+@media (max-width: 768px) {
+  padding: 4px 0;
+  margin-bottom: 4px;
+  img {
+    height: 36px;
   }
+}
+
 
   @media (max-width: 480px) {
     flex-direction: column;
@@ -148,10 +153,13 @@ export const SearchContainer = styled.div`
     height: auto;
   }
 
-  @media (max-width: 480px) {
-    flex-direction: column;
-    gap: 10px;
-  }
+@media (max-width: 480px) {
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
 `;
 
 export const SearchBar = styled.input`

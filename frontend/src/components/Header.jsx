@@ -140,7 +140,7 @@ const Header = () => {
         style={{
           position: 'fixed',
           left: isSidebarVisible ? '20px' : '-70px',
-          top: '55%',
+          top: window.innerWidth <= 480 ? '70%' : '55%',
           transform: 'translateY(-50%)',
           display: 'flex',
           flexDirection: 'column',
@@ -189,10 +189,8 @@ const Header = () => {
         )}
       </div>
 
-      <HeaderContainer style={{
-        top: isHeaderVisible ? '0' : '-115px',
-        transition: 'top 0.3s ease-in-out',
-      }}>
+      <HeaderContainer>
+
         <Toast messages={toasts} removeToast={removeToast} />
         <WelcomeChoices>
           <a href="/">
@@ -209,7 +207,14 @@ const Header = () => {
             gap: '1rem'
           }}>
             {/* Boutons de navigation toujours visibles */}
-            <div style={{ display: 'flex', gap: '1rem' }}>
+            <div style={{ 
+  display: 'flex', 
+  flexWrap: 'wrap', 
+  justifyContent: 'center',
+  gap: '0.7rem',
+  rowGap: '0.7rem'
+}}>
+
               <ConnectButton onClick={() => navigate('/formation')}>
                 Nos formations
               </ConnectButton>
@@ -270,6 +275,7 @@ const Header = () => {
         </NavLinks>
 
         <SearchContainer>
+          {/*
           <SearchBox 
             selectedCategory={selectedCategory}
             setSelectedCategory={setSelectedCategory}
@@ -284,7 +290,7 @@ const Header = () => {
                 setIsSearchWindowOpen(false);
               }
             }}
-          />
+          />*/}
           {userName && (
             <UserMenu 
               user={{ login: userName }}
@@ -414,7 +420,8 @@ const Header = () => {
               position: 'fixed',
               bottom: '80px',
               right: '10px',
-              width: '400px',
+              width: window.innerWidth <= 480 ? '90vw' : '400px',
+              maxWidth: '100%',
               height: '500px',
               backgroundColor: 'white',
               borderRadius: '15px',
@@ -577,26 +584,37 @@ const Header = () => {
               )}
             </div>
 
-            {/* Barre de recherche fixée en bas */}
-            <div style={{
-              padding: '10px',
-              borderTop: '1px solid #eee',
-              backgroundColor: 'white'
-            }}>
-              <input
-                type="text"
-                value={searchText}
-                onChange={handleSearch}
-                placeholder="Rechercher par nom ou identifiant..."
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  borderRadius: '20px',
-                  border: '1px solid #ddd',
-                  outline: 'none'
-                }}
-              />
-            </div>
+{/* Barre de recherche fixée en bas */}
+<div
+  style={{
+    padding: '8px',
+    borderTop: '1px solid #eee',
+    backgroundColor: 'white',
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    zIndex: 2,
+    boxSizing: 'border-box',
+  }}
+>
+
+  <input
+    type="text"
+    value={searchText}
+    onChange={handleSearch}
+    placeholder="Rechercher par nom ou identifiant..."
+    style={{
+      width: '100%',
+      padding: window.innerWidth <= 480 ? '8px 10px' : '10px 15px',
+      fontSize: window.innerWidth <= 480 ? '0.9rem' : '1rem',
+      borderRadius: '20px',
+      border: '1px solid #ddd',
+      outline: 'none',
+      boxSizing: 'border-box'
+    }}
+  />
+</div>
+
           </div>
         )}
 
@@ -628,32 +646,7 @@ const Header = () => {
           <RiSearchLine size={24} color="white" />
         </div>
 
-        {/* Bouton de contrôle du header */}
-        <div
-          onClick={toggleHeader}
-          style={{
-            width: '45px',
-            height: '45px',
-            backgroundColor: '#0f6ead',
-            borderRadius: '50%',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'all 0.3s ease-in-out',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'scale(1.1)';
-            e.currentTarget.style.backgroundColor = '#0d5c91';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'scale(1)';
-            e.currentTarget.style.backgroundColor = '#0f6ead';
-          }}
-        >
-          {isHeaderVisible ? <RiArrowUpSLine size={24} color="white" /> : <RiArrowDownSLine size={24} color="white" />}
-        </div>
+
       </div>
 
       {/* Animation pour la fenêtre flottante */}

@@ -73,23 +73,29 @@ const SearchBox = ({ onSelectObject, isOpen: externalIsOpen, onClose, onOpen }) 
           )}
         </SearchButton>
         <form onSubmit={handleSubmit} style={{ width: '100%' }}>
-          <SearchBar 
-            ref={searchInputRef}
-            type="text"
-            isOpen={isOpen}
-            value={searchText || ''}
-            onChange={(e) => setSearchText(e.target.value)}
-            placeholder="Rechercher par nom ou identifiant..."
-            style={{ 
-              transition: 'width 0.3s ease, opacity 0.3s ease, top 0.3s ease',
-              opacity: isOpen ? '1' : '0',
-              width: isOpen ? 'calc(100% - 50px)' : '0',
-              boxShadow: isOpen ? '0 2px 6px rgba(0,0,0,0.1)' : 'none',
-              top: isOpen ? '2px' : '-50px', 
-              position: 'relative', 
-              right: '0'
-            }}
-          />
+<SearchBar 
+  ref={searchInputRef}
+  type="text"
+  isOpen={isOpen}
+  value={searchText || ''}
+  onChange={(e) => setSearchText(e.target.value)}
+  placeholder="Rechercher par nom ou identifiant..."
+  style={{ 
+    position: 'fixed', // ← crucial
+    top: isOpen ? '70px' : '-50px',
+    right: '10px',
+    width: isOpen ? '90%' : '0',
+    opacity: isOpen ? '1' : '0',
+    visibility: isOpen ? 'visible' : 'hidden',
+    border: '2px solid rgb(15, 110, 173)',
+    borderRadius: '4px',
+    padding: '10px',
+    transition: 'all 0.3s ease',
+    backgroundColor: 'white',
+    zIndex: 1009
+  }}
+/>
+
           {isOpen && (
             <FiltersContainer>
               <FilterSelect 
