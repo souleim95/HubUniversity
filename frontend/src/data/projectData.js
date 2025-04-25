@@ -611,8 +611,6 @@ export const equipments = {
         home: 0,
         away: 0
       },
-      timer: 0,
-      period: 1,
       description: "Le tableau qui oublie toujours le score de ton équipe. Mémoire sélective ! 🏆🤔"
     },
     {

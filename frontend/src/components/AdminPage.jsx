@@ -808,38 +808,112 @@ function AdminPage() {
                     <option value="light">Clair</option>
                     <option value="dark">Sombre</option>
                   </Select>
-                  <p style={{ fontSize: '0.875rem', color: '#666', marginTop: '0.5rem' }}>
-                    Le thème {platformSettings.theme === 'light' ? 'clair' : 'sombre'} est actuellement actif
-                  </p>
                 </FormGroup>
-              </Card>
-              <Card>
-                <CardTitle>Validation des Inscriptions</CardTitle>
                 <FormGroup>
-                  <Label>Mode de validation</Label>
-                  <Select
-                    value={platformSettings.validationRules.validationMode}
+                  <Label>Couleur Principale</Label>
+                  <Input
+                    type="color"
+                    value={platformSettings.colors.primary}
                     onChange={(e) => {
                       setPlatformSettings(prev => ({
                         ...prev,
-                        validationRules: {
-                          ...prev.validationRules,
-                          validationMode: e.target.value
+                        colors: {
+                          ...prev.colors,
+                          primary: e.target.value
                         }
                       }));
-                      toast.success(`Mode de validation ${e.target.value} appliqué`);
+                      document.documentElement.style.setProperty('--primary-color', e.target.value);
                     }}
-                  >
-                    <option value="automatique">Automatique</option>
-                    <option value="manuel">Manuel</option>
-                    <option value="hybride">Hybride</option>
-                  </Select>
-                  <p style={{ fontSize: '0.875rem', color: '#666', marginTop: '0.5rem' }}>
-                    Mode actuel : {platformSettings.validationRules.validationMode}
-                  </p>
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Label>Couleur Secondaire</Label>
+                  <Input
+                    type="color"
+                    value={platformSettings.colors.secondary}
+                    onChange={(e) => {
+                      setPlatformSettings(prev => ({
+                        ...prev,
+                        colors: {
+                          ...prev.colors,
+                          secondary: e.target.value
+                        }
+                      }));
+                      document.documentElement.style.setProperty('--secondary-color', e.target.value);
+                    }}
+                  />
                 </FormGroup>
               </Card>
 
+              <Card>
+                <CardTitle>Notifications</CardTitle>
+                <FormGroup>
+                  <Label>Position des notifications</Label>
+                  <Select
+                    value={platformSettings.notifications.position}
+                    onChange={(e) => {
+                      setPlatformSettings(prev => ({
+                        ...prev,
+                        notifications: {
+                          ...prev.notifications,
+                          position: e.target.value
+                        }
+                      }));
+                    }}
+                  >
+                    <option value="top-right">Haut droite (24px, 24px)</option>
+                    <option value="top-left">Haut gauche (24px, 24px)</option>
+                    <option value="bottom-right">Bas droite (24px, 24px)</option>
+                    <option value="bottom-left">Bas gauche (24px, 24px)</option>
+                  </Select>
+                </FormGroup>
+                <FormGroup>
+                  <Label>Notifications</Label>
+                  <Select
+                    value={platformSettings.notifications.enabled.toString()}
+                    onChange={(e) => {
+                      setPlatformSettings(prev => ({
+                        ...prev,
+                        notifications: {
+                          ...prev.notifications,
+                          enabled: e.target.value === 'true'
+                        }
+                      }));
+                    }}
+                  >
+                    <option value="true">Activées</option>
+                    <option value="false">Désactivées</option>
+                  </Select>
+                </FormGroup>
+              </Card>
+
+              <Card>
+                <CardTitle>Validation des Inscriptions</CardTitle>
+                <FormGroup>
+                  <Label>Vérification par email @cy-tech.fr</Label>
+                  <Select
+                    value={platformSettings.validation.requireEmail.toString()}
+                    onChange={(e) => {
+                      setPlatformSettings(prev => ({
+                        ...prev,
+                        validation: {
+                          ...prev.validation,
+                          requireEmail: e.target.value === 'true'
+                        }
+                      }));
+                    }}
+                  >
+                    <option value="true">Obligatoire</option>
+                    <option value="false">Optionnelle</option>
+                  </Select>
+                  <p style={{ fontSize: '0.875rem', color: '#666', marginTop: '0.5rem' }}>
+                    {platformSettings.validation.requireEmail ? 
+                      'Les utilisateurs doivent s\'inscrire avec une adresse @cy-tech.fr' :
+                      'Les utilisateurs peuvent utiliser n\'importe quelle adresse email'
+                    }
+                  </p>
+                </FormGroup>
+              </Card>
             </Grid>
           </Section>
         )}

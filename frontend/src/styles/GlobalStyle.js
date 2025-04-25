@@ -5,11 +5,19 @@ const GlobalStyle = createGlobalStyle`
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&display=swap');
 
   :root {
+    --primary-color: ${props => props.theme.colors?.primary || '#0f6ead'};
+    --secondary-color: ${props => props.theme.colors?.secondary || '#2b6cb0'};
+    --font-family: ${props => props.theme.customization?.fontFamily || 'Arial, sans-serif'};
+    --border-radius: ${props => props.theme.customization?.borderRadius || '8px'};
+    --header-height: ${props => props.theme.layout?.headerStyle === 'fixed' ? '80px' : 'auto'};
+    --container-width: ${props => props.theme.layout?.containerWidth === 'wide' ? '1400px' : '1200px'};
+    --toast-position: ${props => props.theme.notifications?.position || 'top-right'};
     --font-primary: 'Poppins', sans-serif;
     --font-secondary: 'Playfair Display', serif;
-    --primary-color: #4f46e5;
-    --secondary-color: #6b7280;
-    --background-color: #f3f4f6;
+    --background-color: ${props => props.theme.theme === 'dark' ? '#1a1a1a' : '#f8f9fa'};
+    --text-color: '#f8f9fa';
+    --border-color: ${props => props.theme.theme === 'dark' ? '#404040' : '#e0e0e0'};
+    --card-bg: ${props => props.theme.theme === 'dark' ? '#2d2d2d' : '#ffffff'};
   }
 
   html {
@@ -34,6 +42,14 @@ const GlobalStyle = createGlobalStyle`
     padding: 0;
     box-sizing: border-box;
     font-family: var(--font-primary);
+    transition: ${props => props.theme.customization?.animations ? 'all 0.3s ease-in-out' : 'none'};
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   body {
@@ -43,10 +59,12 @@ const GlobalStyle = createGlobalStyle`
     display: flex;
     flex-direction: column;
     background-color: var(--background-color);
+    color: var(--text-color);
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     line-height: 1.6;
+    font-family: var(--font-family);
   }
 
   main {
@@ -79,16 +97,65 @@ const GlobalStyle = createGlobalStyle`
     border: none;
     background: none;
     cursor: pointer;
+    font-family: var(--font-family);
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+    
+    &:hover {
+      background-color: var(--secondary-color);
+    }
+
+    &.secondary {
+      background-color: transparent;
+      border: 1px solid var(--primary-color);
+      color: var(--primary-color);
+
+      &:hover {
+        background-color: var(--primary-color);
+        color: white;
+      }
+    }
   }
 
   input, select, textarea {
     font-family: inherit;
     font-size: inherit;
+    font-family: var(--font-family);
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    border-radius: 4px;
+    padding: 8px;
+
+    &:focus {
+      border-color: var(--primary-color);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(var(--primary-color), 0.2);
+    }
   }
 
   ul {
     list-style: none;
     padding-left: 0;
+  }
+
+  .toast-container {
+    --toastify-font-family: var(--font-family);
+  }
+
+  .toast {
+    border-radius: var(--border-radius);
+  }
+
+  // Styles de base des cartes
+  .card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
   }
 `;
 

@@ -858,61 +858,93 @@ export const renderControls = (obj, isEquipment, handlers) => {
         }
         if (obj.id === 'score_board') {
             return (
-              <ObjectControls>
-                <ToggleButton
-                  active={obj.status === 'Allumé'}
-                  onClick={() => handler(obj.id, 'scoreboard_toggle', !obj.status === 'Allumé')}
-                >
-                  {obj.status === 'Allumé' ? 'Éteindre' : 'Allumer'}
-                </ToggleButton>
-
-                {obj.status === 'Allumé' && (
-                  <>
-                    <div style={{ marginTop: '10px', textAlign: 'center' }}>
-                      <ValueDisplay>
-                        Score: {obj.score.home} - {obj.score.away}
-                      </ValueDisplay>
-                      
-                      <div style={{ marginTop: '10px', display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                        <div>
-                          <ControlButton onClick={() => handler(obj.id, 'score_increment', 'home:1')}>
-                            +1 Local
-                          </ControlButton>
-                          <ControlButton onClick={() => handler(obj.id, 'score_increment', 'home:2')}>
-                            +2 Local
-                          </ControlButton>
+                <ObjectControls>
+                    <div style={{ 
+                        padding: '20px',
+                        backgroundColor: '#1a1a1a',
+                        borderRadius: '10px',
+                        color: '#fff',
+                        boxShadow: '0 0 15px rgba(0,0,0,0.3)'
+                    }}>
+                        {/* Score Display */}
+                        <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            marginBottom: '20px',
+                            fontSize: '2em',
+                            fontWeight: 'bold'
+                        }}>
+                            <div>DOMICILE: {obj.score.home}</div>
+                            <div>VISITEUR: {obj.score.away}</div>
                         </div>
-                        <div>
-                          <ControlButton onClick={() => handler(obj.id, 'score_increment', 'away:1')}>
-                            +1 Visiteur
-                          </ControlButton>
-                          <ControlButton onClick={() => handler(obj.id, 'score_increment', 'away:2')}>
-                            +2 Visiteur
-                          </ControlButton>
+
+                        {/* Score Controls */}
+                        <div style={{ display: 'flex', gap: '20px', marginBottom: '20px' }}>
+                            <div style={{ flex: 1 }}>
+                                <div style={{ textAlign: 'center', marginBottom: '10px', fontWeight: 'bold' }}>DOMICILE</div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                    <ControlButton
+                                        onClick={() => handler(obj.id, 'score_increment', 'home:1')}
+                                        disabled={obj.status === 'Éteint'}>
+                                        +1
+                                    </ControlButton>
+                                    <ControlButton
+                                        onClick={() => handler(obj.id, 'score_increment', 'home:2')}
+                                        disabled={obj.status === 'Éteint'}>
+                                        +2
+                                    </ControlButton>
+                                    <ControlButton
+                                        onClick={() => handler(obj.id, 'score_increment', 'home:3')}
+                                        disabled={obj.status === 'Éteint'}>
+                                        +3
+                                    </ControlButton>
+                                </div>
+                            </div>
+                            <div style={{ flex: 1 }}>
+                                <div style={{ textAlign: 'center', marginBottom: '10px', fontWeight: 'bold' }}>VISITEUR</div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                    <ControlButton
+                                        onClick={() => handler(obj.id, 'score_increment', 'away:1')}
+                                        disabled={obj.status === 'Éteint'}>
+                                        +1
+                                    </ControlButton>
+                                    <ControlButton
+                                        onClick={() => handler(obj.id, 'score_increment', 'away:2')}
+                                        disabled={obj.status === 'Éteint'}>
+                                        +2
+                                    </ControlButton>
+                                    <ControlButton
+                                        onClick={() => handler(obj.id, 'score_increment', 'away:3')}
+                                        disabled={obj.status === 'Éteint'}>
+                                        +3
+                                    </ControlButton>
+                                </div>
+                            </div>
                         </div>
-                      </div>
 
-                      <ToggleButton
-                        active={obj.autoMode}
-                        onClick={() => handler(obj.id, 'scoreboard_auto', !obj.autoMode)}
-                        style={{ marginTop: '10px' }}
-                      >
-                        {obj.autoMode ? 'Désactiver Auto' : 'Activer Auto'}
-                      </ToggleButton>
-
-                      <ControlButton 
-                        onClick={() => handler(obj.id, 'score_reset')}
-                        style={{ marginTop: '10px', backgroundColor: '#ff4444', color: 'white' }}
-                      >
-                        Réinitialiser Score
-                      </ControlButton>
+                        {/* Control Buttons */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            <ToggleButton
+                                active={obj.status === 'Allumé'}
+                                onClick={() => handler(obj.id, 'scoreboard_toggle', obj.status !== 'Allumé')}
+                                style={{ padding: '10px' }}>
+                                {obj.status === 'Allumé' ? 'ÉTEINDRE' : 'ALLUMER'}
+                            </ToggleButton>
+                            
+                            <ControlButton
+                                onClick={() => handler(obj.id, 'score_reset')}
+                                disabled={obj.status === 'Éteint'}
+                                style={{ backgroundColor: '#ff4444' }}>
+                                RÉINITIALISER TOUT
+                            </ControlButton>
+                        </div>
                     </div>
-                  </>
-                )}
-              </ObjectControls>
+                </ObjectControls>
             );
-          }
-          return null;
+        }
+        return <ObjectControls><ValueDisplay>État: {obj.status}</ValueDisplay></ObjectControls>;
+
         const currentInputValue = tempInputValues[obj.id] !== undefined ? tempInputValues[obj.id] : (obj.message || '');
 
         return (

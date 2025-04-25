@@ -432,11 +432,12 @@ export const useHeaderState = () => {
       const stored = sessionStorage.getItem('points');
       const parsed = parseInt(stored, 10);
       setUserPoints(isNaN(parsed) ? 0 : parsed);
+      setUserName(sessionStorage.getItem('user'));
       setRole(sessionStorage.getItem('role'));
     };
   
     window.addEventListener('storage', updatePointsFromStorage);
-    const intervalId = setInterval(updatePointsFromStorage, 200);
+    const intervalId = setInterval(updatePointsFromStorage, 1000); // Changed from 200ms to 1000ms
   
     return () => {
       window.removeEventListener('storage', updatePointsFromStorage);

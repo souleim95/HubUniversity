@@ -169,14 +169,14 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		// Générer des rapports basés sur les données réelles
 		
 		// Consommation énergétique: simuler basé sur le nombre d'objets actifs
-		const activeObjects = dataObjects.filter(obj => obj.status === 'Actif' || obj.status === 'Allumé');
+		const activeObjects = objects.filter(obj => obj.status === 'Actif' || obj.status === 'Allumé');
 		const energyData = [
 			{ date: new Date().toISOString().split('T')[0], value: activeObjects.length * 50 },
 			{ date: new Date(Date.now() - 86400000).toISOString().split('T')[0], value: activeObjects.length * 45 }
 		];
 		
 		// Activité utilisateurs: simuler basée sur le nombre d'objets et de salles
-		const rooms = dataObjects.filter(obj => obj.type === 'Salle');
+		const rooms = objects.filter(obj => obj.type === 'Salle');
 		const userActivityData = [
 			{ date: new Date().toISOString().split('T')[0], activeUsers: Math.min(users.length * 10, rooms.reduce((sum, room) => sum + (room.capacity || 20), 0)) },
 			{ date: new Date(Date.now() - 86400000).toISOString().split('T')[0], activeUsers: Math.min(users.length * 8, rooms.reduce((sum, room) => sum + (room.capacity || 20), 0)) }
@@ -184,7 +184,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 				
 		// Usage des services: basé sur le nombre d'équipements par salle
 		const equipmentCountByRoom = Object.keys(equipments).map(roomId => {
-			const room = dataObjects.find(obj => obj.id === roomId);
+			const room = objects.find(obj => obj.id === roomId);
 			return {
 				service: room ? room.name : roomId,
 				usage: equipments[roomId].length
@@ -196,7 +196,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 			userActivity: userActivityData,
 			serviceUsage: equipmentCountByRoom
 		});
-	}, [users]); 
+	}, [users, objects]); // Add objects to dependencies
 
 	// Ajout de la fonction pour récupérer l'historique
 	const fetchUserHistory = async () => {
@@ -612,11 +612,16 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 
 	// Charge les données au démarrage du composant
 	useEffect(() => {
-		fetchUsers();
-		fetchObjects();
-		fetchReports();
-		fetchUserHistory();
-	}, [fetchReports]);
+		const initializeData = async () => {
+			await Promise.all([
+				fetchUsers(),
+				fetchObjects(),
+				fetchUserHistory()
+			]);
+			fetchReports();
+		};
+		initializeData();
+	}, []); // Remove fetchReports from dependencies
 
 	// Appliquer les règles globales périodiquement
 	useEffect(() => {

@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ThemeProvider } from 'styled-components';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
 import CampusMap from './components/CampusMap';
@@ -13,7 +14,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import GlobalStyle from './styles/GlobalStyle'; 
 import { PageContainer, Content } from './styles/styles'; 
 import InfoBox from './components/InfoBox';
-import { PlatformProvider } from './context/PlatformContext';
+import { PlatformContext, PlatformProvider } from './context/PlatformContext';
 import Formation from './components/Formation';
 
 /*
@@ -21,27 +22,27 @@ import Formation from './components/Formation';
 * Définit le système de routing avec protection des routes sensibles
 * Fournit un contexte global avec PlatformProvider et applique des styles globaux
 */
-export default function App() {
+const ThemedApp = () => {
+  const { platformSettings } = useContext(PlatformContext);
+  
   return (
-    <PlatformProvider> {/* Contexte global pour la configuration de la plateforme */}
+    <ThemeProvider theme={platformSettings}>
       <Router>
-        <GlobalStyle /> {/* Applique les styles globaux */}
-        <PageContainer> {/* Conteneur principal pour la structure de la page */}
-          <Header /> {/* En-tête visible sur toutes les pages */}
+        <GlobalStyle />
+        <PageContainer>
+          <Header />
           <Content>
             <Routes>
               <Route path="/" element={
                 <main>
-                  <HeroSection /> {/* Section d'accueil avec vidéo */}
-                  <CampusMap /> {/* Carte interactive du campus */}
-                  <InfoBox /> {/* Boîte contenant horaires et météo */}
-                  <Faq /> {/* Foire aux questions */}
+                  <HeroSection />
+                  <CampusMap />
+                  <InfoBox />
+                  <Faq />
                 </main>
               } />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/formation" element={<Formation />} />
-
-              {/* Routes protégées selon le rôle */}
               <Route path="/gestion" element={
                 <ProtectedRoute allowedRoles={['gestionnaire', 'admin']}>
                   <Gestion />
@@ -52,13 +53,20 @@ export default function App() {
                   <AdminPage />
                 </ProtectedRoute>
               } />
-
               <Route path="/profil" element={<Profile />} />
             </Routes>
           </Content>
-          <Footer /> {/* Pied de page commun */}
+          <Footer />
         </PageContainer>
       </Router>
+    </ThemeProvider>
+  );
+};
+
+export default function App() {
+  return (
+    <PlatformProvider>
+      <ThemedApp />
     </PlatformProvider>
   );
 }
