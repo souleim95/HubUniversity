@@ -5,18 +5,16 @@ const GlobalStyle = createGlobalStyle`
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&display=swap');
 
   :root {
-    --primary-color: ${props => props.theme.colors?.primary || '#0f6ead'};
-    --secondary-color: ${props => props.theme.colors?.secondary || '#2b6cb0'};
+    --secondary-color: ${props => props.theme.colors?.secondary || '#1f2937'};
     --font-family: ${props => props.theme.customization?.fontFamily || 'Arial, sans-serif'};
     --border-radius: ${props => props.theme.customization?.borderRadius || '8px'};
     --header-height: ${props => props.theme.layout?.headerStyle === 'fixed' ? '80px' : 'auto'};
     --container-width: ${props => props.theme.layout?.containerWidth === 'wide' ? '1400px' : '1200px'};
-    --toast-position: ${props => props.theme.notifications?.position || 'top-right'};
     --font-primary: 'Poppins', sans-serif;
     --font-secondary: 'Playfair Display', serif;
     --background-color: ${props => props.theme.theme === 'dark' ? '#1a1a1a' : '#f8f9fa'};
-    --text-color: '#f8f9fa';
-    --border-color: ${props => props.theme.theme === 'dark' ? '#404040' : '#e0e0e0'};
+    --text-color: ${props => props.theme.colors?.secondary || '#1f2937'};
+    --border-color: #ffffff';
     --card-bg: ${props => props.theme.theme === 'dark' ? '#2d2d2d' : '#ffffff'};
   }
 
@@ -72,8 +70,9 @@ const GlobalStyle = createGlobalStyle`
     width: 100%;
   }
 
-  h1, h2, h3 {
+  h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-secondary);
+    color: var(--secondary-color);
   }
 
   .App {
@@ -87,8 +86,13 @@ const GlobalStyle = createGlobalStyle`
   }
 
   a {
-    color: inherit;
+    color: var(--primary-color);
     text-decoration: none;
+    transition: color 0.3s ease;
+    
+    &:hover {
+      color: var(--secondary-color);
+    }
   }
 
   button {
@@ -109,14 +113,21 @@ const GlobalStyle = createGlobalStyle`
       background-color: var(--secondary-color);
     }
 
-    &.secondary {
-      background-color: transparent;
-      border: 1px solid var(--primary-color);
-      color: var(--primary-color);
-
+    &.primary {
+      background-color: var(--primary-color);
+      color: white;
+      
       &:hover {
-        background-color: var(--primary-color);
-        color: white;
+        background-color: var(--secondary-color);
+      }
+    }
+    
+    &.secondary {
+      background-color: var(--secondary-color);
+      color: white;
+      
+      &:hover {
+        opacity: 0.9;
       }
     }
   }
@@ -138,6 +149,10 @@ const GlobalStyle = createGlobalStyle`
     }
   }
 
+  p, span, label, input, select, textarea {
+    color: var(--secondary-color);
+  }
+
   ul {
     list-style: none;
     padding-left: 0;
@@ -156,6 +171,32 @@ const GlobalStyle = createGlobalStyle`
     background-color: var(--card-bg);
     border: 1px solid var(--border-color);
     border-radius: 8px;
+  }
+
+  // Style pour les éléments de navigation
+  nav {
+    a, button {
+      color: var(--primary-color);
+      
+      &:hover, &.active {
+        color: var(--secondary-color);
+      }
+    }
+  }
+
+  // Style pour les liens et boutons d'action
+  .action-link, .action-button {
+    color: var(--primary-color);
+    
+    &:hover {
+      color: var(--secondary-color);
+    }
+  }
+
+  // Style pour les titres de section
+  .section-title {
+    color: var(--secondary-color);
+    border-bottom: 2px solid var(--primary-color);
   }
 `;
 

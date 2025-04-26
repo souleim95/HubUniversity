@@ -20,7 +20,6 @@ import UserMenu from './UserMenu';
 import { objectTypes } from '../data/projectData';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Toast from './Toast';
 import { useHeaderState } from '../hooks/useHeader';
 
 /*
@@ -183,8 +182,6 @@ const Header = () => {
       </div>
 
       <HeaderContainer>
-
-        <Toast messages={toasts} removeToast={removeToast} />
         <WelcomeChoices>
           <a href="/">
             <img src={hubCyLogo} alt="HubCY" />

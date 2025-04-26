@@ -4,6 +4,7 @@
   "proxy": "http://backend:5001",
   "private": true,
   "dependencies": {
+    "pdfmake": "^0.2.19",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.5.2",

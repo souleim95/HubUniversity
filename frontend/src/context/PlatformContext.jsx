@@ -3,52 +3,59 @@ import React, { createContext, useState, useEffect } from 'react';
 export const PlatformContext = createContext();
 
 export const PlatformProvider = ({ children }) => {
-    const [platformSettings, setPlatformSettings] = useState({
-        theme: 'light',
-        colors: {
-            primary: '#0f6ead',
-            secondary: '#2b6cb0'
-        },
-        notifications: {
-            position: 'top-right',
-            enabled: true
-        },
-        validation: {
-            requireEmail: true,
-            emailDomain: '@cy-tech.fr'
-        }
-    });
+  const [platformSettings, setPlatformSettings] = useState(() => {
+    const savedSettings = localStorage.getItem('platformSettings');
+    return savedSettings ? JSON.parse(savedSettings) : {
+      theme: 'light',
+      colors: {
+        secondary: '#1f2937'
+      },
+      validation: {
+        requireEmail: true
+      }
+    };
+  });
 
-    // Sauvegarder dans localStorage
-    useEffect(() => {
-        localStorage.setItem('platformSettings', JSON.stringify(platformSettings));
-        applySettings();
-    }, [platformSettings]);
-
-    // Appliquer les paramètres
-    const applySettings = () => {
-        // Appliquer le thème
-        document.documentElement.setAttribute('data-theme', platformSettings.theme);
-        
-        // Appliquer les couleurs
-        document.documentElement.style.setProperty('--primary-color', platformSettings.colors.primary);
-        document.documentElement.style.setProperty('--secondary-color', platformSettings.colors.secondary);
-        
-        // Appliquer la position des notifications
-        document.documentElement.style.setProperty('--toast-position', platformSettings.notifications.position);
+  useEffect(() => {
+    // Appliquer le thème et les couleurs
+    document.documentElement.setAttribute('data-theme', platformSettings.theme);
+    
+    // Application des couleurs avec conversion en RGB pour la transparence
+    const applyColor = (color) => {
+      const hex = color.replace('#', '');
+      const r = parseInt(hex.substring(0, 2), 16);
+      const g = parseInt(hex.substring(2, 4), 16);
+      const b = parseInt(hex.substring(4, 6), 16);
+      return `${r}, ${g}, ${b}`;
     };
 
-    // Charger depuis localStorage au démarrage
-    useEffect(() => {
-        const saved = localStorage.getItem('platformSettings');
-        if (saved) {
-            setPlatformSettings(JSON.parse(saved));
-        }
-    }, []);
+    // Appliquer les couleurs principales
+    document.documentElement.style.setProperty('--secondary-color', platformSettings.colors.secondary);
+    document.documentElement.style.setProperty('--secondary-rgb', applyColor(platformSettings.colors.secondary));
 
-    return (
-        <PlatformContext.Provider value={{ platformSettings, setPlatformSettings }}>
-            {children}
-        </PlatformContext.Provider>
-    );
+    // Sauvegarder dans le localStorage
+    localStorage.setItem('platformSettings', JSON.stringify(platformSettings));
+  }, [platformSettings]);
+
+  const updateColors = (secondary) => {
+    setPlatformSettings(prev => ({
+      ...prev,
+      colors: {
+        ...prev.colors,
+        secondary
+      }
+    }));
+    // Forcer un rafraîchissement des styles
+    document.documentElement.style.setProperty('--secondary-color', secondary);
+  };
+
+  return (
+    <PlatformContext.Provider value={{ 
+      platformSettings, 
+      setPlatformSettings,
+      updateColors
+    }}>
+      {children}
+    </PlatformContext.Provider>
+  );
 };

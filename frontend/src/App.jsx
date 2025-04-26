@@ -16,6 +16,7 @@ import { PageContainer, Content } from './styles/styles';
 import InfoBox from './components/InfoBox';
 import { PlatformContext, PlatformProvider } from './context/PlatformContext';
 import Formation from './components/Formation';
+import Toast from './components/Toast';
 
 /*
 * Point d'entrée principal de l'application React
@@ -30,6 +31,7 @@ const ThemedApp = () => {
       <Router>
         <GlobalStyle />
         <PageContainer>
+          <Toast />
           <Header />
           <Content>
             <Routes>

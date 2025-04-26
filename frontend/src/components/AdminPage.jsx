@@ -31,11 +31,11 @@ import {
   StatsGrid, StatCard, StatValue, StatLabel,
   AlertBanner,
   TabsContainer, TabsList, Tab,
-  ExportButton
+  ExportButton, DateBadge
 } from '../styles/AdminStyles';
 import { FaUsers, FaTools, FaShieldAlt, FaPalette, FaChartBar, FaPlus, FaEdit, FaTrash, FaDownload, FaExclamationTriangle, FaCheck, FaHistory, FaCog, FaUser, FaEye, FaEyeSlash } from 'react-icons/fa';
 // Importer les données depuis fakeData.js
-import { dataObjects, equipments } from '../data/projectData';
+import { dataObjects, equipments, categories, objectTypes } from '../data/projectData';
 import { PlatformContext } from '../context/PlatformContext';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -90,17 +90,18 @@ function AdminPage() {
     handleObjectSubmit, handleExportReport,
     handleShowEquipment,
     handleBackup, handleIntegrityCheck,
-    handlePasswordUpdate,handleViewObject,
+    handlePasswordUpdate,handleViewObject, resetColors,
+    OBJECT_STATUS, ROOM_STATUS,
+    getObjectStatus, countObjectsByStatus, handleRoomEquipment
   } = useAdminState(platformSettings, setPlatformSettings);
     // --------- Rendu de l'interface ---------
   return (
     <bodyAdmin>
-      <ToastContainer />
       <AdminContainer>
         {/* En-tête de la page d'administration */}
         <AdminHeader>
-          <AdminTitle>Administration HubUniversity</AdminTitle>
-          <AdminSubtitle>
+          <AdminTitle style={{ color: '#f8f9fa' }}>Administration HubUniversity</AdminTitle>
+          <AdminSubtitle style={{ color: '#f8f9fa' }}>
             Gestion complète de la plateforme, des utilisateurs et des objets connectés
           </AdminSubtitle>
         </AdminHeader>
@@ -283,288 +284,164 @@ function AdminPage() {
               </ButtonGroup>
             </SectionHeader>
 
-            {/* Liste des objets et catégories */}
-            <Grid style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
-              {/* Liste des types d'objets */}
-              <Card style={{ gridColumn: '1 / span 1' }}>
-                <CardTitle>Types d'Objets</CardTitle>
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0}}>
-                  {categoryList.map((category, index) => (
-                    <li key={index} style={{ 
-                      padding: '10px 15px', 
-                      borderBottom: '1px solid #eee',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      cursor: 'pointer',
-                      backgroundColor: index % 2 === 0 ? '#f9f9f9' : 'transparent',
-                      borderRadius: '4px',
-                      margin: '2px 0'
-                    }}>
-                      <span style={{ fontWeight: 'bold' }}>{category}</span>
-                      <span style={{ 
-                        backgroundColor: '#e0e0e0', 
-                        padding: '2px 8px', 
-                        borderRadius: '12px', 
-                        fontSize: '0.8rem',
-                        minWidth: '30px',
-                        textAlign: 'center'
-                      }}>
-                        {objects.filter(obj => obj.type === category).length}
-                      </span>
-                      <PrimaryButton onClick={() => handleDeleteCategory(category)} style={{ marginLeft: '10px', padding: '5px 10px', fontSize: '0.8rem' }}>
-                        <FaTrash style={{ marginRight: '5px' }} />
+            {/* Gestion des catégories */}
+            <Card style={{ marginBottom: '2rem' }}>
+              <CardTitle>Catégories d'objets</CardTitle>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
+                {categoryList.map((category, index) => (
+                  <div key={index} style={{ 
+                    padding: '1rem',
+                    backgroundColor: '#f8f9fa',
+                    borderRadius: '0.5rem',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                  }}>
+                    <div>
+                      <div style={{ fontWeight: 'bold' }}>{category}</div>
+                      <div style={{ fontSize: '0.875rem', color: '#666' }}>
+                        {objects.filter(obj => obj.type === category).length} objets
+                      </div>
+                    </div>
+                    {category !== 'Salle' && (
+                      <PrimaryButton onClick={() => handleDeleteCategory(category)} style={{ padding: '0.5rem' }}>
+                        <FaTrash />
                       </PrimaryButton>
-                    </li>
-                  ))}
-                </ul>
-              </Card>
-              
-              {/* Liste des objets avec statut */}
-              <Card style={{ gridColumn: 'span 3' }}>
-                <CardTitle>Objets par Statut</CardTitle>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px', flexWrap: 'wrap', gap: '10px' }}>
-                  <div style={{ 
-                    padding: '8px 15px', 
-                    backgroundColor: '#4CAF50', 
-                    color: 'white', 
-                    borderRadius: '4px', 
-                    fontSize: '0.9em',
-                    flex: '1',
-                    minWidth: '120px',
-                    textAlign: 'center'
-                  }}>
-                    Actifs: {objects.filter(obj => 
-                      obj.status === 'Actif' || 
-                      obj.status === 'Allumé' || 
-                      obj.status === 'Disponible' || 
-                      obj.status === 'En marche'
-                    ).length}
+                    )}
                   </div>
-                  <div style={{ 
-                    padding: '8px 15px', 
-                    backgroundColor: '#F44336', 
-                    color: 'white', 
-                    borderRadius: '4px', 
-                    fontSize: '0.9em',
-                    flex: '1',
-                    minWidth: '120px',
-                    textAlign: 'center'
-                  }}>
-                    Inactifs: {objects.filter(obj => 
-                      obj.status === 'Inactif' || 
-                      obj.status === 'Éteint' || 
-                      obj.status === 'Hors service' || 
-                      obj.status === 'Arrêté'
-                    ).length}
-                  </div>
-                  <div style={{ 
-                    padding: '8px 15px', 
-                    backgroundColor: '#FFC107', 
-                    color: 'white', 
-                    borderRadius: '4px', 
-                    fontSize: '0.9em',
-                    flex: '1',
-                    minWidth: '120px',
-                    textAlign: 'center'
-                  }}>
-                    Maintenance: {objects.filter(obj => 
-                      obj.status === 'Maintenance' || 
-                      obj.status === 'En réparation' || 
-                      obj.status === 'En cours de maintenance'
-                    ).length}
-                  </div>
-                </div>
-                
-                <div style={{ maxHeight: '460px', overflowY: 'auto', borderRadius: '4px', border: '1px solid #eee' }}>
-                  <Table style={{ borderCollapse: 'collapse', width: '100%' }}>
-                    <TableHeader>
-                      <tr>
-                        <TableHeaderCell>Nom</TableHeaderCell>
-                        <TableHeaderCell>Type</TableHeaderCell>
-                        <TableHeaderCell>Statut</TableHeaderCell>
-                        <TableHeaderCell>Actions</TableHeaderCell>
-                      </tr>
-                    </TableHeader>
-                    <tbody>
-                      {objects.map((object) => (
-                        <TableRow key={object.id}>
-                          <TableCell>{object.name}</TableCell>
-                          <TableCell>{object.type}</TableCell>
-                          <TableCell>
-                            <StatusBadge status={
-                              object.status === 'Actif' || 
-                              object.status === 'Allumé' || 
-                              object.status === 'Disponible' || 
-                              object.status === 'En marche' ? 'active' :
-                              object.status === 'Maintenance' || 
-                              object.status === 'En réparation' || 
-                              object.status === 'En cours de maintenance' ? 'maintenance' : 'inactive'
-                            }>
-                              {object.status}
-                            </StatusBadge>
-                          </TableCell>
-                          <TableCell>
-                            <ButtonGroup>
-                              <SecondaryButton onClick={() => handleEditObject(object)}>
-                                <FaEdit style={{ marginRight: '5px' }} /> Modifier
-                              </SecondaryButton>
-                              <PrimaryButton onClick={() => handleDeleteObject(object.id)}>
-                                <FaTrash style={{ marginRight: '5px' }} /> Supprimer
-                              </PrimaryButton>
-                            </ButtonGroup>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </tbody>
-                  </Table>
-                </div>
-              </Card>
-            </Grid>
+                ))}
+              </div>
+            </Card>
 
-            {/* Tableau des équipements par salle */}
-            <SectionTitle style={{ marginTop: '30px', marginBottom: '15px' }}>
-              Équipements par Salle
-            </SectionTitle>
-            <div style={{ maxHeight: '500px', overflowY: 'auto', border: '1px solid #eee', borderRadius: '4px' }}>
-              <Table>
-                <TableHeader>
-                  <tr>
-                    <TableHeaderCell>Salle</TableHeaderCell>
-                    <TableHeaderCell>Nombre d'équipements</TableHeaderCell>
-                    <TableHeaderCell>Statut Salle</TableHeaderCell>
-                    <TableHeaderCell>Actions</TableHeaderCell>
-                  </tr>
-                </TableHeader>
-                <tbody>
-                  {Object.keys(equipments).map(roomId => {
-                    const room = dataObjects.find(obj => obj.id === roomId);
-                    if (!room) return null;
-                    
-                    return (
-                      <TableRow key={roomId} style={{ cursor: 'pointer' }} onClick={() => {
-                        handleShowEquipment(room);
-                      }}>
-                        <TableCell style={{ fontWeight: 'bold' }}>{room.name}</TableCell>
-                        <TableCell>{equipments[roomId].length}</TableCell>
+            {/* Liste des objets */}
+            <Card style={{ marginBottom: '2rem' }}>
+              <CardTitle>Objets et Services</CardTitle>
+              <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
+                <Table>
+                  <TableHeader>
+                    <tr>
+                      <TableHeaderCell>Nom</TableHeaderCell>
+                      <TableHeaderCell>Type</TableHeaderCell>
+                      <TableHeaderCell>Statut</TableHeaderCell>
+                      <TableHeaderCell>Actions</TableHeaderCell>
+                    </tr>
+                  </TableHeader>
+                  <tbody>
+                    {objects.map((object) => (
+                      <TableRow key={object.id}>
+                        <TableCell>{object.name}</TableCell>
+                        <TableCell>{object.type}</TableCell>
                         <TableCell>
-                          <StatusBadge status={
-                            room.status === 'Disponible' ? 'active' :
-                            room.status === 'Occupée' ? 'inactive' : 'maintenance'
-                          }>
-                            {room.status}
+                          <StatusBadge status={getObjectStatus(object.status, object.type)}>
+                            {object.status}
                           </StatusBadge>
                         </TableCell>
                         <TableCell>
                           <ButtonGroup>
-                            <SecondaryButton onClick={(e) => {
-                              e.stopPropagation();
-                              handleEditObject(room);
-                            }}>
-                              <FaEdit style={{ marginRight: '5px' }} /> Gérer
+                            <SecondaryButton onClick={() => handleEditObject(object)}>
+                              <FaEdit style={{ marginRight: '5px' }} /> Modifier
                             </SecondaryButton>
+                            {object.type !== 'Salle' && (
+                              <PrimaryButton onClick={() => handleDeleteObject(object.id)}>
+                                <FaTrash style={{ marginRight: '5px' }} /> Supprimer
+                              </PrimaryButton>
+                            )}
                           </ButtonGroup>
                         </TableCell>
                       </TableRow>
-                    );
-                  })}
-                </tbody>
-              </Table>
-            </div>
+                    ))}
+                  </tbody>
+                </Table>
+              </div>
+            </Card>
 
             {/* Règles globales */}
-            <SectionHeader style={{ marginTop: '20px' }}>
-              <SectionTitle><FaCog /> Règles Globales</SectionTitle>
-            </SectionHeader>
-            <Grid>
-              <Card>
-                <CardTitle>Priorités Énergétiques</CardTitle>
-                <FormGroup>
-                  <Label>Mode de fonctionnement</Label>
-                  <Select
-                    name="energyPriority"
-                    value={globalRules.energyPriority}
-                    onChange={(e) => {
-                      setGlobalRules({...globalRules, energyPriority: e.target.value});
-                      applyGlobalRules();
-                    }}
-                  >
-                    <option value="performance">Performance Maximale</option>
-                    <option value="balanced">Équilibré</option>
-                    <option value="economy">Économie d'Énergie</option>
-                  </Select>
-                  <p style={{ fontSize: '0.875rem', color: '#666', marginTop: '0.5rem' }}>
-                    {globalRules.energyPriority === 'performance' ? 'Tous les objets sont maintenus actifs' :
-                     globalRules.energyPriority === 'economy' ? 'Les objets à faible priorité sont éteints' :
-                     'Équilibre entre performance et économie d\'énergie'}
-                  </p>
-                </FormGroup>
-              </Card>
-              <Card>
-                <CardTitle>Gestion des Alertes</CardTitle>
-                <FormGroup>
-                  <Label>Seuil d'Alerte (%)</Label>
-                  <Input
-                    type="number"
-                    name="alertThreshold"
-                    value={globalRules.alertThreshold}
-                    onChange={(e) => {
-                      setGlobalRules({...globalRules, alertThreshold: parseInt(e.target.value)});
-                      applyGlobalRules();
-                    }}
-                    min="0"
-                    max="100"
-                  />
-                  <p style={{ fontSize: '0.875rem', color: '#666', marginTop: '0.5rem' }}>
-                    Une alerte sera déclenchée si plus de {globalRules.alertThreshold}% des objets sont actifs
-                  </p>
-                </FormGroup>
-              </Card>
-              <Card>
-                <CardTitle>Programmation Automatique</CardTitle>
-                <FormGroup>
-                  <Label>Arrêt automatique</Label>
-                  <Select
-                    name="autoShutdown"
-                    value={globalRules.autoShutdown}
-                    onChange={(e) => {
-                      setGlobalRules({...globalRules, autoShutdown: e.target.value === 'true'});
-                      applyGlobalRules();
-                    }}
-                  >
-                    <option value="true">Activé</option>
-                    <option value="false">Désactivé</option>
-                  </Select>
-                </FormGroup>
-                <FormGroup>
-                  <Label>Heure d'arrêt</Label>
-                  <Input
-                    type="time"
-                    name="shutdownTime"
-                    value={globalRules.shutdownTime}
-                    onChange={(e) => {
-                      setGlobalRules({...globalRules, shutdownTime: e.target.value});
-                      applyGlobalRules();
-                    }}
-                  />
-                </FormGroup>
-                <FormGroup>
-                  <Label>Heure de démarrage</Label>
-                  <Input
-                    type="time"
-                    name="startupTime"
-                    value={globalRules.startupTime}
-                    onChange={(e) => {
-                      setGlobalRules({...globalRules, startupTime: e.target.value});
-                      applyGlobalRules();
-                    }}
-                  />
-                </FormGroup>
-              </Card>
-            </Grid>
+            <Card>
+              <CardTitle>Règles de fonctionnement globales</CardTitle>
+              <Grid>
+                <Card>
+                  <CardTitle>Priorités Énergétiques</CardTitle>
+                  <FormGroup>
+                    <Label>Mode de fonctionnement</Label>
+                    <Select
+                      name="energyPriority"
+                      value={globalRules.energyPriority}
+                      onChange={(e) => {
+                        setGlobalRules({...globalRules, energyPriority: e.target.value});
+                        applyGlobalRules();
+                      }}
+                    >
+                      <option value="performance">Performance Maximale</option>
+                      <option value="balanced">Équilibré</option>
+                      <option value="economy">Économie d'Énergie</option>
+                    </Select>
+                  </FormGroup>
+                </Card>
+
+                <Card>
+                  <CardTitle>Gestion des Alertes</CardTitle>
+                  <FormGroup>
+                    <Label>Seuil d'Alerte (%)</Label>
+                    <Input
+                      type="number"
+                      name="alertThreshold"
+                      value={globalRules.alertThreshold}
+                      onChange={(e) => {
+                        setGlobalRules({...globalRules, alertThreshold: parseInt(e.target.value)});
+                        applyGlobalRules();
+                      }}
+                      min="0"
+                      max="100"
+                    />
+                  </FormGroup>
+                </Card>
+
+                <Card>
+                  <CardTitle>Programmation Automatique</CardTitle>
+                  <FormGroup>
+                    <Label>Arrêt automatique</Label>
+                    <Select
+                      name="autoShutdown"
+                      value={globalRules.autoShutdown}
+                      onChange={(e) => {
+                        setGlobalRules({...globalRules, autoShutdown: e.target.value === 'true'});
+                        applyGlobalRules();
+                      }}
+                    >
+                      <option value="true">Activé</option>
+                      <option value="false">Désactivé</option>
+                    </Select>
+                  </FormGroup>
+                  <FormGroup>
+                    <Label>Heure d'arrêt</Label>
+                    <Input
+                      type="time"
+                      name="shutdownTime"
+                      value={globalRules.shutdownTime}
+                      onChange={(e) => {
+                        setGlobalRules({...globalRules, shutdownTime: e.target.value});
+                        applyGlobalRules();
+                      }}
+                    />
+                  </FormGroup>
+                  <FormGroup>
+                    <Label>Heure de démarrage</Label>
+                    <Input
+                      type="time"
+                      name="startupTime"
+                      value={globalRules.startupTime}
+                      onChange={(e) => {
+                        setGlobalRules({...globalRules, startupTime: e.target.value});
+                        applyGlobalRules();
+                      }}
+                    />
+                  </FormGroup>
+                </Card>
+              </Grid>
+            </Card>
 
             {/* Alertes et Demandes */}
-            <SectionHeader style={{ marginTop: '20px' }}>
+            <SectionHeader style={{ marginTop: '2rem' }}>
               <SectionTitle><FaExclamationTriangle /> Alertes et Demandes</SectionTitle>
             </SectionHeader>
 
@@ -647,68 +524,6 @@ function AdminPage() {
                 )}
               </Card>
             </Grid>
-
-            {/* Historique des alertes et demandes */}
-            <SectionHeader style={{ marginTop: '20px' }}>
-              <SectionTitle><FaHistory /> Historique des Alertes et Demandes</SectionTitle>
-            </SectionHeader>
-            
-            {alerts.filter(alert => alert.status !== 'pending').length === 0 ? (
-              <div style={{ 
-                textAlign: 'center', 
-                padding: '2rem',
-                backgroundColor: '#f8f9fa',
-                borderRadius: '8px',
-                border: '1px dashed #dee2e6',
-                margin: '20px 0'
-              }}>
-                <FaHistory style={{ fontSize: '2rem', color: '#6c757d', marginBottom: '1rem' }} />
-                <p style={{ color: '#6c757d', margin: 0 }}>Historique vide</p>
-                <p style={{ color: '#6c757d', fontSize: '0.9rem', marginTop: '0.5rem' }}>
-                  Les alertes et demandes traitées apparaîtront ici
-                </p>
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <tr>
-                    <TableHeaderCell>Type</TableHeaderCell>
-                    <TableHeaderCell>Titre</TableHeaderCell>
-                    <TableHeaderCell>Date</TableHeaderCell>
-                    <TableHeaderCell>Statut</TableHeaderCell>
-                    <TableHeaderCell>Actions</TableHeaderCell>
-                  </tr>
-                </TableHeader>
-                <tbody>
-                  {alerts.filter(alert => alert.status !== 'pending').map(alert => (
-                    <TableRow key={alert.id}>
-                      <TableCell>
-                        <StatusBadge status={alert.type === 'alert' ? 'warning' : 'info'}>
-                          {alert.type === 'alert' ? 'Alerte' : 'Demande'}
-                        </StatusBadge>
-                      </TableCell>
-                      <TableCell>{alert.title}</TableCell>
-                      <TableCell>{new Date(alert.timestamp).toLocaleString()}</TableCell>
-                      <TableCell>
-                        <StatusBadge status={
-                          alert.status === 'resolved' || alert.status === 'approved' ? 'success' : 'error'
-                        }>
-                          {alert.status === 'resolved' ? 'Résolu' : 
-                           alert.status === 'approved' ? 'Approuvé' : 'Rejeté'}
-                        </StatusBadge>
-                      </TableCell>
-                      <TableCell>
-                        <ButtonGroup>
-                          <SecondaryButton onClick={() => handleViewObject(alert.objectId)}>
-                            Voir l'objet
-                          </SecondaryButton>
-                        </ButtonGroup>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </tbody>
-              </Table>
-            )}
           </Section>
         )}
 
@@ -802,7 +617,6 @@ function AdminPage() {
                         theme: e.target.value
                       }));
                       document.documentElement.setAttribute('data-theme', e.target.value);
-                      toast.success(`Thème ${e.target.value === 'light' ? 'clair' : 'sombre'} appliqué`);
                     }}
                   >
                     <option value="light">Clair</option>
@@ -810,24 +624,7 @@ function AdminPage() {
                   </Select>
                 </FormGroup>
                 <FormGroup>
-                  <Label>Couleur Principale</Label>
-                  <Input
-                    type="color"
-                    value={platformSettings.colors.primary}
-                    onChange={(e) => {
-                      setPlatformSettings(prev => ({
-                        ...prev,
-                        colors: {
-                          ...prev.colors,
-                          primary: e.target.value
-                        }
-                      }));
-                      document.documentElement.style.setProperty('--primary-color', e.target.value);
-                    }}
-                  />
-                </FormGroup>
-                <FormGroup>
-                  <Label>Couleur Secondaire</Label>
+                  <Label>Couleur Texte</Label>
                   <Input
                     type="color"
                     value={platformSettings.colors.secondary}
@@ -843,48 +640,9 @@ function AdminPage() {
                     }}
                   />
                 </FormGroup>
-              </Card>
-
-              <Card>
-                <CardTitle>Notifications</CardTitle>
-                <FormGroup>
-                  <Label>Position des notifications</Label>
-                  <Select
-                    value={platformSettings.notifications.position}
-                    onChange={(e) => {
-                      setPlatformSettings(prev => ({
-                        ...prev,
-                        notifications: {
-                          ...prev.notifications,
-                          position: e.target.value
-                        }
-                      }));
-                    }}
-                  >
-                    <option value="top-right">Haut droite (24px, 24px)</option>
-                    <option value="top-left">Haut gauche (24px, 24px)</option>
-                    <option value="bottom-right">Bas droite (24px, 24px)</option>
-                    <option value="bottom-left">Bas gauche (24px, 24px)</option>
-                  </Select>
-                </FormGroup>
-                <FormGroup>
-                  <Label>Notifications</Label>
-                  <Select
-                    value={platformSettings.notifications.enabled.toString()}
-                    onChange={(e) => {
-                      setPlatformSettings(prev => ({
-                        ...prev,
-                        notifications: {
-                          ...prev.notifications,
-                          enabled: e.target.value === 'true'
-                        }
-                      }));
-                    }}
-                  >
-                    <option value="true">Activées</option>
-                    <option value="false">Désactivées</option>
-                  </Select>
-                </FormGroup>
+                <ActionButton onClick={resetColors} style={{ marginTop: '1rem' }}>
+                  Réinitialiser les couleurs
+                </ActionButton>
               </Card>
 
               <Card>
@@ -938,182 +696,227 @@ function AdminPage() {
 
             {/* Statistiques */}
             <Grid>
-              <Card>
+              <Card style={{ padding: '20px', textAlign: 'center', backgroundColor: '#ffffff', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
                 <CardTitle>Consommation Énergétique</CardTitle>
-                <StatValue>{reports.energyConsumption.reduce((total, item) => total + item.value, 0)}</StatValue>
-                <StatLabel>Total kWh sur 30 jours</StatLabel>
+                <StatValue style={{ color: '#4CAF50', fontSize: '2.5rem', margin: '10px 0' }}>
+                  {reports.energyConsumption.reduce((total, item) => total + item.value, 0)} kWh
+                </StatValue>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '10px' }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <small style={{ color: '#666' }}>Appareils actifs</small>
+                    <div style={{ fontWeight: 'bold', color: '#4CAF50' }}>
+                      {objects.filter(obj => obj.status === 'Actif' || obj.status === 'Allumé').length}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'center', borderLeft: '1px solid #eee', paddingLeft: '10px' }}>
+                    <small style={{ color: '#666' }}>Total appareils</small>
+                    <div style={{ fontWeight: 'bold', color: '#4CAF50' }}>
+                      {objects.length}
+                    </div>
+                  </div>
+                </div>
+                <div style={{ 
+                  marginTop: '20px',
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(60px, 1fr))',
+                  gap: '10px',
+                  padding: '10px',
+                  backgroundColor: '#f8faf8',
+                  borderRadius: '8px'
+                }}>
+                  {Object.entries(categories).map(([key, category], index) => (
+                    <div key={key} style={{ textAlign: 'center' }}>
+                      <div style={{
+                        height: '60px',
+                        backgroundColor: ['#4CAF50', '#2196F3', '#FF9800'][index],
+                        borderRadius: '6px',
+                        position: 'relative',
+                        display: 'flex',
+                        alignItems: 'flex-end'
+                      }}>
+                        <div style={{
+                          width: '100%',
+                          height: `${(category.items.filter(id => {
+                            const obj = objects.find(o => o.id === id);
+                            return obj && (obj.status === 'Actif' || obj.status === 'Allumé');
+                          }).length / category.items.length) * 100}%`,
+                          backgroundColor: ['#388E3C', '#1976D2', '#F57C00'][index],
+                          borderRadius: '6px',
+                          transition: 'height 0.3s ease'
+                        }}/>
+                      </div>
+                      <small style={{ display: 'block', color: '#666', marginTop: '4px', fontSize: '0.7rem' }}>
+                        {category.name}
+                      </small>
+                    </div>
+                  ))}
+                </div>
               </Card>
-              <Card>
-                <CardTitle>Taux de Connexion</CardTitle>
-                <StatValue>{Math.round((users.filter(u => u.lastLogin).length / users.length) * 100)}%</StatValue>
-                <StatLabel>Utilisateurs actifs</StatLabel>
-              </Card>
-              <Card>
-                <CardTitle>Services Populaires</CardTitle>
-                <StatValue>{reports.serviceUsage.sort((a, b) => b.usage - a.usage)[0]?.service || 'Aucun'}</StatValue>
-                <StatLabel>Service le plus utilisé</StatLabel>
-              </Card>
-            </Grid>
 
-            {/* Graphiques détaillés */}
-            <Grid style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px', marginBottom: '30px' }}>
-              <Card style={{ padding: '20px', textAlign: 'center' }}>
-                <CardTitle>Consommation Énergétique</CardTitle>
-                <StatValue style={{ color: '#4CAF50', fontSize: '2.5rem' }}>
-                  {reports.energyConsumption.reduce((total, item) => total + item.value, 0)}
+              <Card style={{ padding: '20px', textAlign: 'center', backgroundColor: '#ffffff', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+                <CardTitle>Activité des Équipements</CardTitle>
+                <StatValue style={{ color: '#2196F3', fontSize: '2.5rem', margin: '10px 0' }}>
+                  {Math.round((Object.values(equipments).flat().filter(eq => eq.status === 'Actif' || eq.status === 'Allumé').length / Object.values(equipments).flat().length) * 100)}%
                 </StatValue>
-                <StatLabel>Total kWh sur 30 jours</StatLabel>
-                <div style={{ marginTop: '15px', height: '80px', backgroundColor: '#f5f5f5', borderRadius: '4px', padding: '10px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around' }}>
-                  {reports.energyConsumption.map((item, index) => (
-                    <div key={index} style={{ height: `${(item.value / 2000) * 100}%`, width: '30px', backgroundColor: '#4CAF50', borderRadius: '4px', position: 'relative' }}>
-                      <span style={{ position: 'absolute', top: '-20px', left: '50%', transform: 'translateX(-50%)', fontSize: '0.7rem' }}>{item.date}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '20px' }}>
+                  {objectTypes.slice(0, 4).map((type, index) => (
+                    <div key={type} style={{ textAlign: 'center' }}>
+                      <div style={{
+                        width: '60px',
+                        height: '60px',
+                        backgroundColor: `${['#4CAF50', '#2196F3', '#FF9800', '#9C27B0'][index]}22`,
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        margin: '0 auto 8px'
+                      }}>
+                        <span style={{ 
+                          fontSize: '1.2rem', 
+                          color: ['#4CAF50', '#2196F3', '#FF9800', '#9C27B0'][index]
+                        }}>
+                          {Object.values(equipments).flat().filter(eq => eq.type === type).length}
+                        </span>
+                      </div>
+                      <small style={{ color: '#666', fontSize: '0.8rem' }}>{type}</small>
+                    </div>
+                  ))}
+                </div>
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px',
+                  padding: '10px',
+                  backgroundColor: '#f8fafe',
+                  borderRadius: '8px'
+                }}>
+                  {['Actif', 'Maintenance', 'Inactif'].map((status, index) => (
+                    <div key={status} style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '8px'
+                    }}>
+                      <span style={{ fontSize: '0.9rem', color: '#666' }}>{status}</span>
+                      <div style={{
+                        flex: 1,
+                        margin: '0 10px',
+                        height: '8px',
+                        backgroundColor: '#eee',
+                        borderRadius: '4px',
+                        overflow: 'hidden'
+                      }}>
+                        <div style={{
+                          width: `${(Object.values(equipments).flat().filter(eq => 
+                            status === 'Actif' ? eq.status === 'Actif' || eq.status === 'Allumé' :
+                            status === 'Maintenance' ? eq.status === 'Maintenance' :
+                            eq.status === 'Inactif' || eq.status === 'Éteint'
+                          ).length / Object.values(equipments).flat().length) * 100}%`,
+                          height: '100%',
+                          backgroundColor: ['#4CAF50', '#FF9800', '#F44336'][index],
+                          borderRadius: '4px',
+                          transition: 'width 0.3s ease'
+                        }}/>
+                      </div>
+                      <span style={{ fontSize: '0.9rem', fontWeight: 'bold', minWidth: '40px', textAlign: 'right' }}>
+                        {Object.values(equipments).flat().filter(eq => 
+                          status === 'Actif' ? eq.status === 'Actif' || eq.status === 'Allumé' :
+                          status === 'Maintenance' ? eq.status === 'Maintenance' :
+                          eq.status === 'Inactif' || eq.status === 'Éteint'
+                        ).length}
+                      </span>
                     </div>
                   ))}
                 </div>
               </Card>
-              
-              <Card style={{ padding: '20px', textAlign: 'center' }}>
-                <CardTitle>Activité Utilisateurs</CardTitle>
-                <StatValue style={{ color: '#2196F3', fontSize: '2.5rem' }}>
-                  {reports.userActivity.length > 0 
-                    ? Math.round(reports.userActivity.reduce((total, item) => total + item.activeUsers, 0) / reports.userActivity.length)
-                    : 0}
+
+              <Card style={{ padding: '20px', textAlign: 'center', backgroundColor: '#ffffff', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+                <CardTitle>Occupation des Salles</CardTitle>
+                <StatValue style={{ color: '#FF9800', fontSize: '2.5rem', margin: '10px 0' }}>
+                  {objects.filter(obj => obj.type === 'Salle' && obj.status === 'Occupée').length} / {objects.filter(obj => obj.type === 'Salle').length}
                 </StatValue>
-                <StatLabel>Moyenne utilisateurs quotidiens</StatLabel>
-                <div style={{ marginTop: '15px', height: '80px', backgroundColor: '#f5f5f5', borderRadius: '4px', padding: '10px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around' }}>
-                  {reports.userActivity.map((item, index) => (
-                    <div key={index} style={{ height: `${(item.activeUsers / 200) * 100}%`, width: '30px', backgroundColor: '#2196F3', borderRadius: '4px', position: 'relative' }}>
-                      <span style={{ position: 'absolute', top: '-20px', left: '50%', transform: 'translateX(-50%)', fontSize: '0.7rem' }}>{item.date}</span>
+                <div style={{ 
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+                  gap: '15px',
+                  margin: '20px 0'
+                }}>
+                  {objects.filter(obj => obj.type === 'Salle').map((salle, index) => (
+                    <div key={salle.id} style={{
+                      backgroundColor: '#f8f8f8',
+                      padding: '10px',
+                      borderRadius: '8px',
+                      position: 'relative'
+                    }}>
+                      <div style={{
+                        width: '12px',
+                        height: '12px',
+                        borderRadius: '50%',
+                        backgroundColor: salle.status === 'Disponible' ? '#4CAF50' : '#F44336',
+                        position: 'absolute',
+                        top: '10px',
+                        right: '10px'
+                      }}/>
+                      <h4 style={{ margin: '0 0 5px 0', fontSize: '0.9rem', color: '#333' }}>
+                        {salle.name}
+                      </h4>
+                      <small style={{ color: '#666' }}>
+                        Capacité: {salle.capacity}
+                      </small>
                     </div>
                   ))}
                 </div>
               </Card>
-              
-              <Card style={{ padding: '20px', textAlign: 'center' }}>
-                <CardTitle>Taux d'Occupation</CardTitle>
-                <StatValue style={{ color: '#FF9800', fontSize: '2.5rem' }}>
-                  {dataObjects.filter(obj => obj.type === 'Salle' && obj.status === 'Occupée').length} / {dataObjects.filter(obj => obj.type === 'Salle').length}
-                </StatValue>
-                <StatLabel>Salles occupées</StatLabel>
+
+              <Card style={{ padding: '20px', textAlign: 'center', backgroundColor: '#ffffff', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+                <CardTitle>Services les Plus Utilisés</CardTitle>
                 <div style={{ 
-                  marginTop: '15px', 
-                  height: '80px', 
-                  backgroundColor: '#f5f5f5', 
-                  borderRadius: '4px', 
-                  padding: '10px', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center' 
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px',
+                  marginTop: '20px'
                 }}>
-                  <div style={{ 
-                    width: '100%', 
-                    height: '30px', 
-                    backgroundColor: '#eee', 
-                    borderRadius: '15px', 
-                    overflow: 'hidden',
-                    position: 'relative'
-                  }}>
-                    <div style={{ 
-                      width: `${(dataObjects.filter(obj => obj.type === 'Salle' && obj.status === 'Occupée').length / dataObjects.filter(obj => obj.type === 'Salle').length) * 100}%`, 
-                      height: '100%', 
-                      backgroundColor: '#FF9800', 
-                      borderRadius: '15px 0 0 15px'
-                    }}></div>
-                    <span style={{ 
-                      position: 'absolute', 
-                      top: '50%', 
-                      left: '50%', 
-                      transform: 'translate(-50%, -50%)', 
-                      fontSize: '0.8rem',
-                      fontWeight: 'bold',
-                      color: '#333'
+                  {Object.entries(categories).map(([key, category], index) => (
+                    <div key={key} style={{
+                      backgroundColor: '#f8f8f8',
+                      padding: '15px',
+                      borderRadius: '8px'
                     }}>
-                      {Math.round((dataObjects.filter(obj => obj.type === 'Salle' && obj.status === 'Occupée').length / dataObjects.filter(obj => obj.type === 'Salle').length) * 100)}%
-                    </span>
-                  </div>
-                </div>
-              </Card>
-              
-              <Card style={{ padding: '20px', textAlign: 'center' }}>
-                <CardTitle>Équipements Actifs</CardTitle>
-                <StatValue style={{ color: '#9C27B0', fontSize: '2.5rem' }}>
-                  {Object.values(equipments).flat().filter(eq => eq.status === 'Actif' || eq.status === 'Allumé').length} / {Object.values(equipments).flat().length}
-                </StatValue>
-                <StatLabel>Taux d'activité</StatLabel>
-                <div style={{ 
-                  marginTop: '15px', 
-                  height: '80px', 
-                  backgroundColor: '#f5f5f5', 
-                  borderRadius: '4px', 
-                  padding: '10px', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center' 
-                }}>
-                  <div style={{ 
-                    width: '100%', 
-                    height: '30px', 
-                    backgroundColor: '#eee', 
-                    borderRadius: '15px', 
-                    overflow: 'hidden',
-                    position: 'relative'
-                  }}>
-                    <div style={{ 
-                      width: `${(Object.values(equipments).flat().filter(eq => eq.status === 'Actif' || eq.status === 'Allumé').length / Object.values(equipments).flat().length) * 100}%`, 
-                      height: '100%', 
-                      backgroundColor: '#9C27B0', 
-                      borderRadius: '15px 0 0 15px'
-                    }}></div>
-                    <span style={{ 
-                      position: 'absolute', 
-                      top: '50%', 
-                      left: '50%', 
-                      transform: 'translate(-50%, -50%)', 
-                      fontSize: '0.8rem',
-                      fontWeight: 'bold', 
-                      color: '#333'
-                    }}>
-                      {Math.round((Object.values(equipments).flat().filter(eq => eq.status === 'Actif' || eq.status === 'Allumé').length / Object.values(equipments).flat().length) * 100)}%
-                    </span>
-                  </div>
+                      <div style={{ 
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '8px'
+                      }}>
+                        <span style={{ fontWeight: 'bold', color: '#333' }}>{category.name}</span>
+                        <span style={{ color: '#666' }}>
+                          {category.items.filter(id => {
+                            const obj = objects.find(o => o.id === id);
+                            return obj && (obj.status === 'Actif' || obj.status === 'Allumé');
+                          }).length} actifs
+                        </span>
+                      </div>
+                      <div style={{
+                        height: '8px',
+                        backgroundColor: '#eee',
+                        borderRadius: '4px',
+                        overflow: 'hidden'
+                      }}>
+                        <div style={{
+                          width: `${(category.items.filter(id => {
+                            const obj = objects.find(o => o.id === id);
+                            return obj && (obj.status === 'Actif' || obj.status === 'Allumé');
+                          }).length / category.items.length) * 100}%`,
+                          height: '100%',
+                          backgroundColor: ['#4CAF50', '#2196F3', '#FF9800'][index],
+                          borderRadius: '4px'
+                        }}/>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </Card>
             </Grid>
-            
-            {/* Tableau des services les plus utilisés */}
-            <SectionTitle style={{ marginBottom: '15px' }}>Services les Plus Utilisés</SectionTitle>
-            <div style={{ maxHeight: '300px', overflowY: 'auto', border: '1px solid #eee', borderRadius: '4px', marginBottom: '30px' }}>
-              <Table>
-                <TableHeader>
-                  <tr>
-                    <TableHeaderCell>Service</TableHeaderCell>
-                    <TableHeaderCell>Utilisation</TableHeaderCell>
-                    <TableHeaderCell>Pourcentage</TableHeaderCell>
-                  </tr>
-                </TableHeader>
-                <tbody>
-                  {reports.serviceUsage.sort((a, b) => b.usage - a.usage).map((service, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{service.service}</TableCell>
-                      <TableCell>{service.usage}</TableCell>
-                      <TableCell>
-                        <div style={{ width: '100%', height: '20px', backgroundColor: '#f5f5f5', borderRadius: '10px', overflow: 'hidden', position: 'relative' }}>
-                          <div style={{ 
-                            width: `${(service.usage / reports.serviceUsage.reduce((max, s) => Math.max(max, s.usage), 0)) * 100}%`, 
-                            height: '100%', 
-                            backgroundColor: index === 0 ? '#4CAF50' : (index === 1 ? '#2196F3' : '#FF9800'), 
-                            borderRadius: '10px'
-                          }}></div>
-                          <span style={{ position: 'absolute', top: '50%', left: '5px', transform: 'translateY(-50%)', fontSize: '0.8rem', color: '#333' }}>
-                            {Math.round((service.usage / reports.serviceUsage.reduce((sum, s) => sum + s.usage, 0)) * 100)}%
-                          </span>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </tbody>
-              </Table>
-            </div>
           </Section>
         )}
 
@@ -1213,7 +1016,31 @@ function AdminPage() {
                   <Label>Type</Label>
                   <Select
                     value={objectFormData.type}
-                    onChange={(e) => setObjectFormData({...objectFormData, type: e.target.value})}
+                    onChange={(e) => {
+                      const newType = e.target.value;
+                      let defaultStatus;
+                      switch (newType) {
+                        case 'Salle':
+                          defaultStatus = OBJECT_STATUS.ROOM.AVAILABLE;
+                          break;
+                        case 'Équipement':
+                          defaultStatus = OBJECT_STATUS.EQUIPMENT.ACTIVE;
+                          break;
+                        case 'Service':
+                          defaultStatus = OBJECT_STATUS.SERVICE.RUNNING;
+                          break;
+                        case 'Outil':
+                          defaultStatus = OBJECT_STATUS.TOOL.AVAILABLE;
+                          break;
+                        default:
+                          defaultStatus = OBJECT_STATUS.ROOM.AVAILABLE;
+                      }
+                      setObjectFormData({
+                        ...objectFormData,
+                        type: newType,
+                        status: defaultStatus
+                      });
+                    }}
                   >
                     {categoryList.map((category, index) => (
                       <option key={index} value={category}>{category}</option>
@@ -1226,30 +1053,48 @@ function AdminPage() {
                     value={objectFormData.status}
                     onChange={(e) => setObjectFormData({...objectFormData, status: e.target.value})}
                   >
-                    <option value="Actif">Actif</option>
-                    <option value="Allumé">Allumé</option>
-                    <option value="En marche">En marche</option>
-                    <option value="Disponible">Disponible</option>
-                    <option value="Inactif">Inactif</option>
-                    <option value="Éteint">Éteint</option>
-                    <option value="Hors service">Hors service</option>
-                    <option value="Arrêté">Arrêté</option>
-                    <option value="Maintenance">Maintenance</option>
-                    <option value="En réparation">En réparation</option>
-                    <option value="En cours de maintenance">En cours de maintenance</option>
+                    {objectFormData.type === 'Salle' && (
+                      <>
+                        <option value={OBJECT_STATUS.ROOM.AVAILABLE}>Disponible</option>
+                        <option value={OBJECT_STATUS.ROOM.OCCUPIED}>Occupée</option>
+                      </>
+                    )}
+                    {objectFormData.type === 'Équipement' && (
+                      <>
+                        <option value={OBJECT_STATUS.EQUIPMENT.ACTIVE}>Actif</option>
+                        <option value={OBJECT_STATUS.EQUIPMENT.INACTIVE}>Inactif</option>
+                        <option value={OBJECT_STATUS.EQUIPMENT.MAINTENANCE}>Maintenance</option>
+                      </>
+                    )}
+                    {objectFormData.type === 'Service' && (
+                      <>
+                        <option value={OBJECT_STATUS.SERVICE.RUNNING}>En cours</option>
+                        <option value={OBJECT_STATUS.SERVICE.STOPPED}>Arrêté</option>
+                        <option value={OBJECT_STATUS.SERVICE.MAINTENANCE}>En maintenance</option>
+                      </>
+                    )}
+                    {objectFormData.type === 'Outil' && (
+                      <>
+                        <option value={OBJECT_STATUS.TOOL.AVAILABLE}>Disponible</option>
+                        <option value={OBJECT_STATUS.TOOL.IN_USE}>En utilisation</option>
+                        <option value={OBJECT_STATUS.TOOL.MAINTENANCE}>En maintenance</option>
+                      </>
+                    )}
                   </Select>
                 </FormGroup>
-                <FormGroup>
-                  <Label>Priorité</Label>
-                  <Select
-                    value={objectFormData.priority}
-                    onChange={(e) => setObjectFormData({...objectFormData, priority: e.target.value})}
-                  >
-                    <option value="low">Basse</option>
-                    <option value="normal">Normale</option>
-                    <option value="high">Haute</option>
-                  </Select>
-                </FormGroup>
+                {objectFormData.type !== 'Salle' && (
+                  <FormGroup>
+                    <Label>Priorité</Label>
+                    <Select
+                      value={objectFormData.priority}
+                      onChange={(e) => setObjectFormData({...objectFormData, priority: e.target.value})}
+                    >
+                      <option value="low">Basse</option>
+                      <option value="normal">Normale</option>
+                      <option value="high">Haute</option>
+                    </Select>
+                  </FormGroup>
+                )}
                 <ButtonGroup>
                   <SecondaryButton type="button" onClick={() => setShowObjectModal(false)}>
                     Annuler
@@ -1398,6 +1243,23 @@ function AdminPage() {
               <p style={{ marginBottom: '1.5rem', color: '#666' }}>
                 {selectedEquipmentInfo.roomName} contient {selectedEquipmentInfo.equipmentCount} équipements
               </p>
+              <div style={{ marginBottom: '1rem' }}>
+                <h4 style={{ marginBottom: '0.5rem' }}>Statut des équipements :</h4>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  <div>
+                    <span style={{ color: '#4CAF50' }}>Actifs : </span>
+                    {selectedEquipmentInfo.equipmentStatus.active}
+                  </div>
+                  <div>
+                    <span style={{ color: '#F44336' }}>Inactifs : </span>
+                    {selectedEquipmentInfo.equipmentStatus.inactive}
+                  </div>
+                  <div>
+                    <span style={{ color: '#FFC107' }}>En maintenance : </span>
+                    {selectedEquipmentInfo.equipmentStatus.maintenance}
+                  </div>
+                </div>
+              </div>
               <ButtonGroup>
                 <PrimaryButton onClick={() => setShowEquipmentModal(false)}>
                   Fermer

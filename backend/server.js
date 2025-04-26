@@ -227,9 +227,9 @@ app.get("/api/rer-schedule", async (req, res) => {
 
 // Route pour augmenter le score d'un utilisateur
 app.patch("/api/users/:id/score", async (req, res) => {
-  // Récupération de l'id de l'utilisateur depuis l'URL
+// Récupération de l'id de l'utilisateur depuis l'URL
   const { id } = req.params;
-  
+
   // Dans le corps de la requête, on attend une propriété "increment"
   // qui indique combien le score doit être augmenté.
   // Par exemple, { "increment": 1 } pour ajouter 1 point.
@@ -243,23 +243,43 @@ app.patch("/api/users/:id/score", async (req, res) => {
     // La requête SQL met à jour le score en s'assurant que
     // s'il est NULL (non défini), on le considère comme 0 avec COALESCE.
     const updateQuery = `
-      UPDATE users
-      SET score = COALESCE(score, 0) + $1
-      WHERE id = $2
+      UPDATE users 
+      SET score = COALESCE(score, 0) + $1 
+      WHERE id = $2 
       RETURNING score
     `;
     
     const { rows } = await pool.query(updateQuery, [increment, id]);
     
-    // Si aucun utilisateur n'est trouvé, retourner une erreur 404.
+// Si aucun utilisateur n'est trouvé, retourner une erreur 404.
     if (rows.length === 0) {
       return res.status(404).json({ error: "Utilisateur non trouvé." });
     }
     
-    // Retourner le nouveau score en réponse.
+    // Mettre à jour le rôle si nécessaire
+    const score = rows[0].score;
+    let newRole = null;
+    
+    // Définir le nouveau rôle en fonction du score
+    if (score >= 1000) {
+      newRole = 'directeur';
+    } else if (score >= 500) {
+      newRole = 'professeur';
+    }
+    
+    if (newRole) {
+      // Mettre à jour le rôle dans la base de données
+      await pool.query(`
+        UPDATE users 
+        SET idrole = (SELECT idrole FROM role WHERE nomrole = $1) 
+        WHERE id = $2
+      `, [newRole, id]);
+    }
+    
     res.json({
       message: "Score mis à jour avec succès.",
-      score: rows[0].score
+      score: rows[0].score,
+      role: newRole // Inclure le nouveau rôle dans la réponse si changé
     });
     
   } catch (err) {

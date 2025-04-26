@@ -5,63 +5,79 @@ import { PlatformContext } from '../context/PlatformContext';
 import styled from 'styled-components';
 
 const StyledToastContainer = styled(ToastContainer)`
-  &.Toastify__toast-container {
-    width: 320px !important;
-    padding: 0;
-    ${props => {
-      const position = props.$position || 'top-right';
-      return `
-        ${position.includes('top') ? 'top: 24px;' : 'bottom: 24px;'}
-        ${position.includes('left') ? 'left: 24px;' : 'right: 24px;'}
-      `;
-    }}
+  &&&.Toastify__toast-container {
+    z-index: 9999;
+    position: fixed;
+    padding: 4px;
+    width: 320px;
+    box-sizing: border-box;
+    color: #fff;
   }
-
+  
   .Toastify__toast {
-    width: 100%;
+    position: relative;
     min-height: 64px;
-    padding: 1rem;
+    box-sizing: border-box;
     margin-bottom: 1rem;
+    padding: 8px;
     border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    display: ${props => props.$enabled ? 'flex' : 'none'} !important;
-    font-family: inherit;
+    box-shadow: 0 1px 10px 0 rgba(0, 0, 0, 0.1), 0 2px 15px 0 rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-between;
+    max-height: 800px;
+    overflow: hidden;
+    font-family: var(--font-primary);
+    cursor: pointer;
+    direction: ltr;
   }
 
   .Toastify__toast--success {
-    background-color: ${props => props.$theme === 'dark' ? '#1b4332' : '#dcfce7'};
+    background: ${props => props.$theme === 'dark' ? '#1b4332' : '#dcfce7'};
     color: ${props => props.$theme === 'dark' ? '#ffffff' : '#166534'};
   }
 
   .Toastify__toast--error {
-    background-color: ${props => props.$theme === 'dark' ? '#7f1d1d' : '#fee2e2'};
+    background: ${props => props.$theme === 'dark' ? '#7f1d1d' : '#fee2e2'};
     color: ${props => props.$theme === 'dark' ? '#ffffff' : '#991b1b'};
   }
 
   .Toastify__toast--warning {
-    background-color: ${props => props.$theme === 'dark' ? '#854d0e' : '#fef3c7'};
+    background: ${props => props.$theme === 'dark' ? '#854d0e' : '#fef3c7'};
     color: ${props => props.$theme === 'dark' ? '#ffffff' : '#92400e'};
   }
 
-  .Toastify__progress-bar {
-    background-color: ${props => props.$theme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'};
+  .Toastify__toast--info {
+    background: ${props => props.$theme === 'dark' ? '#1e3a8a' : '#eff6ff'};
+    color: ${props => props.$theme === 'dark' ? '#ffffff' : '#1e40af'};
+  }
+
+  .Toastify__toast-body {
+    margin: auto 0;
+    flex: 1;
+    padding: 6px;
   }
 
   .Toastify__close-button {
-    color: inherit;
+    align-self: flex-start;
+    border-radius: 4px;
+    padding: 4px;
     opacity: 0.7;
-    &:hover {
+    transition: 0.3s ease;
+    color: currentColor;
+
+    &:hover, &:focus {
       opacity: 1;
+      background-color: rgba(0, 0, 0, 0.1);
     }
   }
 `;
 
 const Toast = () => {
   const { platformSettings } = useContext(PlatformContext);
-
-  return platformSettings.notifications?.enabled ? (
+  
+  return (
     <StyledToastContainer
-      position={platformSettings.notifications?.position || "top-right"}
+      position={platformSettings?.notifications?.position || "top-right"}
       autoClose={5000}
       hideProgressBar={false}
       newestOnTop
@@ -70,12 +86,13 @@ const Toast = () => {
       pauseOnFocusLoss
       draggable
       pauseOnHover
+      theme={platformSettings?.theme === 'dark' ? 'dark' : 'light'}
+      $theme={platformSettings?.theme}
       limit={3}
-      $theme={platformSettings.theme}
-      $position={platformSettings.notifications?.position}
-      $enabled={platformSettings.notifications?.enabled}
     />
-  ) : null;
+  );
 };
 
+// Exporter aussi la fonction toast pour une utilisation facile
+export { toast };
 export default Toast;

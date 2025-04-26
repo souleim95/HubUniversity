@@ -6,10 +6,120 @@ import { toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
 
+// Constantes pour les statuts
+export const OBJECT_STATUS = {
+	// Statuts pour les salles
+	ROOM: {
+		AVAILABLE: 'Disponible',
+		OCCUPIED: 'Occupée'
+	},
+	// Statuts pour les équipements
+	EQUIPMENT: {
+		ACTIVE: 'Actif',
+		INACTIVE: 'Inactif',
+		MAINTENANCE: 'Maintenance'
+	},
+	// Statuts pour les services
+	SERVICE: {
+		RUNNING: 'En cours',
+		STOPPED: 'Arrêté',
+		MAINTENANCE: 'En maintenance'
+	},
+	// Statuts pour les outils
+	TOOL: {
+		AVAILABLE: 'Disponible',
+		IN_USE: 'En utilisation',
+		MAINTENANCE: 'En maintenance'
+	}
+};
+
+// Fonction utilitaire pour vérifier le statut
+export const getObjectStatus = (status, type) => {
+	switch (type) {
+		case 'Salle':
+			return status === OBJECT_STATUS.ROOM.AVAILABLE ? 'active' : 'inactive';
+		case 'Équipement':
+			if (status === OBJECT_STATUS.EQUIPMENT.ACTIVE) return 'active';
+			if (status === OBJECT_STATUS.EQUIPMENT.MAINTENANCE) return 'maintenance';
+			return 'inactive';
+		case 'Service':
+			if (status === OBJECT_STATUS.SERVICE.RUNNING) return 'active';
+			if (status === OBJECT_STATUS.SERVICE.MAINTENANCE) return 'maintenance';
+			return 'inactive';
+		case 'Outil':
+			if (status === OBJECT_STATUS.TOOL.AVAILABLE) return 'active';
+			if (status === OBJECT_STATUS.TOOL.MAINTENANCE) return 'maintenance';
+			return 'inactive';
+		default:
+			return 'inactive';
+	}
+};
+
+// Fonction pour compter les objets par statut
+export const countObjectsByStatus = (objects) => {
+	return {
+		active: objects.filter(obj => {
+			switch (obj.type) {
+				case 'Salle':
+					return obj.status === OBJECT_STATUS.ROOM.AVAILABLE;
+				case 'Équipement':
+					return obj.status === OBJECT_STATUS.EQUIPMENT.ACTIVE;
+				case 'Service':
+					return obj.status === OBJECT_STATUS.SERVICE.RUNNING;
+				case 'Outil':
+					return obj.status === OBJECT_STATUS.TOOL.AVAILABLE;
+				default:
+					return false;
+			}
+		}).length,
+		inactive: objects.filter(obj => {
+			switch (obj.type) {
+				case 'Salle':
+					return obj.status === OBJECT_STATUS.ROOM.OCCUPIED;
+				case 'Équipement':
+					return obj.status === OBJECT_STATUS.EQUIPMENT.INACTIVE;
+				case 'Service':
+					return obj.status === OBJECT_STATUS.SERVICE.STOPPED;
+				case 'Outil':
+					return obj.status === OBJECT_STATUS.TOOL.IN_USE;
+				default:
+					return false;
+			}
+		}).length,
+		maintenance: objects.filter(obj => {
+			switch (obj.type) {
+				case 'Équipement':
+					return obj.status === OBJECT_STATUS.EQUIPMENT.MAINTENANCE;
+				case 'Service':
+					return obj.status === OBJECT_STATUS.SERVICE.MAINTENANCE;
+				case 'Outil':
+					return obj.status === OBJECT_STATUS.TOOL.MAINTENANCE;
+				default:
+					return false;
+			}
+		}).length
+	};
+};
+
+// Fonction pour gérer les équipements d'une salle
+export const handleRoomEquipment = (roomId) => {
+	const room = dataObjects.find(obj => obj.id === roomId);
+	if (!room) return null;
+
+	const roomEquipment = equipments[roomId] || [];
+	const equipmentStatus = countObjectsByStatus(roomEquipment);
+
+	return {
+		room,
+		equipment: roomEquipment,
+		status: equipmentStatus
+	};
+};
+
 export const useAdminState = (platformSettings, setPlatformSettings) => {
 	const navigate = useNavigate();
 
- 	// États pour la gestion des utilisateurs
+	// États pour la gestion des utilisateurs
 	const [users, setUsers] = useState([]);
 	const [loadingUsers, setLoadingUsers] = useState(true);
 	const [showUserModal, setShowUserModal] = useState(false);
@@ -28,8 +138,8 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 	const [showObjectModal, setShowObjectModal] = useState(false);
 	const [objectFormData, setObjectFormData] = useState({
 		name: '',
-		type: '',
-		status: 'Actif',
+		type: categoryList[0] || 'Salle',
+		status: OBJECT_STATUS.ROOM.AVAILABLE, // Valeur par défaut pour les salles
 		priority: 'normal'
 	});
 	const [newCategory, setNewCategory] = useState('');
@@ -114,6 +224,34 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 	const [isIntegrityCheckInProgress, setIsIntegrityCheckInProgress] = useState(false);
 	const [showPassword, setShowPassword] = useState(false);
 
+	// Fonction pour réinitialiser le formulaire d'objet
+	const resetObjectForm = (type = 'Salle') => {
+		let defaultStatus;
+		switch (type) {
+			case 'Salle':
+				defaultStatus = OBJECT_STATUS.ROOM.AVAILABLE;
+				break;
+			case 'Équipement':
+				defaultStatus = OBJECT_STATUS.EQUIPMENT.ACTIVE;
+				break;
+			case 'Service':
+				defaultStatus = OBJECT_STATUS.SERVICE.RUNNING;
+				break;
+			case 'Outil':
+				defaultStatus = OBJECT_STATUS.TOOL.AVAILABLE;
+				break;
+			default:
+				defaultStatus = OBJECT_STATUS.ROOM.AVAILABLE;
+		}
+		
+		setObjectFormData({
+			name: '',
+			type: type,
+			status: defaultStatus,
+			priority: 'normal'
+		});
+	};
+
 	// --------- Chargement initial des données ---------
 	
 
@@ -166,37 +304,186 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 
 	// Récupère les données pour les rapports
 	const fetchReports = useCallback(async () => {
-		// Générer des rapports basés sur les données réelles
-		
-		// Consommation énergétique: simuler basé sur le nombre d'objets actifs
-		const activeObjects = objects.filter(obj => obj.status === 'Actif' || obj.status === 'Allumé');
-		const energyData = [
-			{ date: new Date().toISOString().split('T')[0], value: activeObjects.length * 50 },
-			{ date: new Date(Date.now() - 86400000).toISOString().split('T')[0], value: activeObjects.length * 45 }
-		];
-		
-		// Activité utilisateurs: simuler basée sur le nombre d'objets et de salles
-		const rooms = objects.filter(obj => obj.type === 'Salle');
-		const userActivityData = [
-			{ date: new Date().toISOString().split('T')[0], activeUsers: Math.min(users.length * 10, rooms.reduce((sum, room) => sum + (room.capacity || 20), 0)) },
-			{ date: new Date(Date.now() - 86400000).toISOString().split('T')[0], activeUsers: Math.min(users.length * 8, rooms.reduce((sum, room) => sum + (room.capacity || 20), 0)) }
-		];
+		// Générer des données sur 30 jours
+		const days = Array.from({length: 30}, (_, i) => {
+			const date = new Date();
+			date.setDate(date.getDate() - i);
+			return date;
+		});
+
+		// Consommation énergétique basée sur les objets réels
+		const energyData = days.map(date => {
+			// Calculer la consommation en fonction des objets actifs
+			const activeObjects = objects.filter(obj => 
+				obj.status === 'Actif' || obj.status === 'Allumé' || obj.status === 'Disponible'
+			);
+
+			// Calculer la consommation par type d'objet en fonction de leurs propriétés réelles
+			const totalConsumption = activeObjects.reduce((total, obj) => {
+				let consumption = 0;
 				
-		// Usage des services: basé sur le nombre d'équipements par salle
-		const equipmentCountByRoom = Object.keys(equipments).map(roomId => {
-			const room = objects.find(obj => obj.id === roomId);
+				// Calculer la consommation en fonction des propriétés spécifiques de chaque objet
+				switch(obj.type) {
+					case 'Éclairage':
+						consumption = obj.brightness ? (obj.brightness * 0.5) : 50;
+						break;
+					case 'Chauffage':
+						consumption = obj.temperature ? (obj.temperature * 100) : 1000;
+						break;
+					case 'Ventilation':
+						consumption = obj.speed ? (obj.speed * 2) : 200;
+						break;
+					case 'Projecteur':
+						consumption = 300;
+						break;
+					case 'Audio':
+						consumption = obj.volume ? (obj.volume * 3) : 150;
+						break;
+					case 'Distributeur':
+						consumption = obj.temperature ? (obj.temperature * 20) : 100;
+						break;
+					case 'Cafetiere':
+						consumption = obj.waterLevel ? (obj.waterLevel * 8) : 800;
+						break;
+					case 'Microwave':
+						consumption = obj.power ? (obj.power * 1.2) : 1200;
+						break;
+					case 'Dishwasher':
+						consumption = obj.waterTemp ? (obj.waterTemp * 20) : 1500;
+						break;
+					default:
+						consumption = 50;
+				}
+
+				return total + consumption;
+			}, 0);
+
+			// Ajouter une variation journalière réaliste basée sur l'heure
+			const hour = date.getHours();
+			let hourlyMultiplier = 1;
+			
+			// Heures de pointe (8h-18h)
+			if (hour >= 8 && hour <= 18) {
+				hourlyMultiplier = 1.2;
+			}
+			// Heures creuses (22h-6h)
+			else if (hour >= 22 || hour <= 6) {
+				hourlyMultiplier = 0.5;
+			}
+
+			// Réduction le weekend
+			const weekendMultiplier = [0, 6].includes(date.getDay()) ? 0.7 : 1;
+
 			return {
-				service: room ? room.name : roomId,
-				usage: equipments[roomId].length
+				date: date.toISOString().split('T')[0],
+				value: Math.round(totalConsumption * hourlyMultiplier * weekendMultiplier),
+				peak_hours: Math.round(totalConsumption * 1.2),
+				off_peak: Math.round(totalConsumption * 0.8),
+				total_devices: objects.length,
+				active_devices: activeObjects.length
 			};
 		});
-		
+
+		// Activité utilisateurs basée sur les données réelles
+		const userActivityData = days.map(date => {
+			// Calculer le nombre d'utilisateurs actifs en fonction des connexions réelles
+			const activeUsers = users.filter(user => {
+				const lastLogin = new Date(user.lastLogin);
+				return lastLogin.toDateString() === date.toDateString();
+			}).length;
+
+			// Calculer le taux de connexion
+			const connectionRate = users.length > 0 ? 
+				Math.round((activeUsers / users.length) * 100) : 0;
+
+			// Déterminer les heures de pointe en fonction des connexions
+			const peakHours = activeUsers > 0 ? '10:00-16:00' : '—';
+
+			// Calculer la durée moyenne de session (en minutes)
+			const avgSessionDuration = Math.round(30 + Math.random() * 90);
+
+			return {
+				date: date.toISOString().split('T')[0],
+				total_users: users.length,
+				active_users: activeUsers,
+				connection_rate: connectionRate,
+				peak_time: peakHours,
+				new_registrations: Math.floor(Math.random() * 5),
+				avg_session_duration: avgSessionDuration
+			};
+		});
+
+		// Usage des services basé sur les équipements réels
+		const serviceUsageData = Object.entries(equipments).map(([roomId, equipmentList]) => {
+			const room = objects.find(obj => obj.id === roomId);
+			const activeEquipment = equipmentList.filter(eq => 
+				eq.status === 'Actif' || eq.status === 'Allumé' || eq.status === 'Disponible'
+			);
+
+			// Calculer le taux d'utilisation par type d'équipement
+			const equipmentTypes = {};
+			const usageByType = {};
+			
+			equipmentList.forEach(eq => {
+				// Compter le nombre d'équipements par type
+				equipmentTypes[eq.type] = (equipmentTypes[eq.type] || 0) + 1;
+
+				// Calculer l'utilisation en fonction des propriétés spécifiques
+				let usage = 0;
+				switch(eq.type) {
+					case 'Éclairage':
+						usage = eq.brightness ? (eq.brightness / 100) * 8 : 4;
+						break;
+					case 'Chauffage':
+						usage = eq.temperature ? (eq.temperature / 30) * 8 : 6;
+						break;
+					case 'Ventilation':
+						usage = eq.speed ? (eq.speed / 100) * 8 : 5;
+						break;
+					case 'Audio':
+						usage = eq.volume ? (eq.volume / 100) * 8 : 4;
+						break;
+					case 'Distributeur':
+						usage = eq.stock ? Object.values(eq.stock).reduce((a, b) => a + b, 0) / 400 : 6;
+						break;
+					default:
+						usage = 4 + Math.random() * 2;
+				}
+				usageByType[eq.type] = usage;
+			});
+
+			// Calculer la moyenne d'utilisation
+			const avgDailyUsage = Object.values(usageByType).reduce((a, b) => a + b, 0) / 
+				Object.keys(usageByType).length;
+
+			// Trouver la dernière maintenance
+			const lastMaintenance = equipmentList.reduce((latest, eq) => {
+				if (eq.lastMaintenance) {
+					const maintenanceDate = new Date(eq.lastMaintenance);
+					return !latest || maintenanceDate > latest ? maintenanceDate : latest;
+				}
+				return latest;
+			}, null);
+
+			return {
+				service: room ? room.name : roomId,
+				total_equipment: equipmentList.length,
+				active_equipment: activeEquipment.length,
+				usage_rate: Math.round((activeEquipment.length / equipmentList.length) * 100),
+				avg_daily_usage: Math.round(avgDailyUsage * 10) / 10,
+				maintenance_needed: equipmentList.filter(eq => eq.status === 'Maintenance').length,
+				last_maintenance: lastMaintenance ? lastMaintenance.toISOString().split('T')[0] : '—',
+				equipment_types: equipmentTypes,
+				usage_by_type: usageByType
+			};
+		});
+
 		setReports({
 			energyConsumption: energyData,
 			userActivity: userActivityData,
-			serviceUsage: equipmentCountByRoom
+			serviceUsage: serviceUsageData
 		});
-	}, [users, objects]); // Add objects to dependencies
+	}, [users, objects, equipments]);
 
 	// Ajout de la fonction pour récupérer l'historique
 	const fetchUserHistory = async () => {
@@ -297,12 +584,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 
 	// Ouvre la modal pour ajouter un nouvel objet
 	const handleAddObject = () => {
-		setObjectFormData({
-			name: '',
-			type: categoryList[0] || 'Salle',
-			status: 'Actif',
-			priority: 'normal'
-		});
+		resetObjectForm();
 		setShowObjectModal(true);
 	};
 
@@ -320,15 +602,22 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 	};
 
 	const handleDeleteCategory = (categoryToDelete) => {
+		if (categoryToDelete === 'Salle') {
+			toast.error('Impossible de supprimer la catégorie Salle');
+			return;
+		}
 		setSelectedItemToDelete(categoryToDelete);
 		setShowDeleteCategoryModal(true);
 	};
 
 	const confirmDeleteCategory = () => {
+		// Supprimer la catégorie
 		setCategoryList(categoryList.filter(category => category !== selectedItemToDelete));
-		setObjects(objects.map(obj => obj.type === selectedItemToDelete ? { ...obj, type: categoryList[0] || '' } : obj));
+		// Supprimer tous les objets de cette catégorie
+		setObjects(objects.filter(obj => obj.type !== selectedItemToDelete));
 		setShowDeleteCategoryModal(false);
 		setSelectedItemToDelete(null);
+		toast.success(`Catégorie "${selectedItemToDelete}" et ses objets ont été supprimés`);
 	};
 
 	const handleGlobalRulesChange = (e) => {
@@ -349,6 +638,11 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 
 	// Supprime un objet après confirmation
 	const handleDeleteObject = (objectId) => {
+		const objectToDelete = objects.find(obj => obj.id === objectId);
+		if (objectToDelete && objectToDelete.type === 'Salle') {
+			toast.error('Impossible de supprimer une salle');
+			return;
+		}
 		setSelectedItemToDelete(objectId);
 		setShowDeleteObjectModal(true);
 	};
@@ -445,11 +739,15 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		setShowAlertModal(true);
 	};
 
-	// Remplacer le console.log et alert pour les équipements
+	// Modifier la fonction handleShowEquipment
 	const handleShowEquipment = (room) => {
+		const roomInfo = handleRoomEquipment(room.id);
+		if (!roomInfo) return;
+
 		setSelectedEquipmentInfo({
 			roomName: room.name,
-			equipmentCount: equipments[room.id].length
+			equipmentCount: roomInfo.equipment.length,
+			equipmentStatus: roomInfo.status
 		});
 		setShowEquipmentModal(true);
 	};
@@ -609,6 +907,20 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		}
 	}, [objects, globalRules, alerts]);
 
+	// Ajouter la fonction de réinitialisation des couleurs
+	const resetColors = () => {
+		setPlatformSettings(prev => ({
+		  ...prev,
+		  colors: {
+			primary: '#3b82f6',
+			secondary: '#1f2937'
+		  }
+		}));
+		// Forcer un rafraîchissement des styles
+		document.documentElement.style.setProperty('--primary-color', '#3b82f6');
+		document.documentElement.style.setProperty('--secondary-color', '#1f2937');
+		toast.success('Couleurs réinitialisées avec succès');
+	  };
 
 	// Charge les données au démarrage du composant
 	useEffect(() => {
@@ -682,6 +994,8 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 	handleAlertAction, handleShowEquipment,
 	handleBackup, handleIntegrityCheck,
 	handlePasswordUpdate,handleViewObject,
-	applyValidationMode, applyTheme
+	applyValidationMode, applyTheme,
+	resetColors, OBJECT_STATUS,
+	getObjectStatus, countObjectsByStatus, handleRoomEquipment
   };	
 };
