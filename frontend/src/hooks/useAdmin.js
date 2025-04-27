@@ -813,9 +813,9 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 			  // Redirection vers la home adaptée (ex. '/dashboard' ou '/')
 			  navigate('/');
 			}
+		  } else {
 			sessionStorage.setItem('points', data.user.score);
 			navigate('/admin');
-		  } else {
 			// Création d’un nouvel utilisateur
 			const { data } = await axios.post(
 			  '/api/users',
