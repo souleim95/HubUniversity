@@ -1,6 +1,6 @@
 // Import des dépendances et composants nécessaires
 import { useState, useEffect} from 'react';
-import { dataObjects, categories } from '../data/projectData';
+import { dataObjects, categories, equipments } from '../data/projectData';
 
 // Configuration des types d'objets autorisés par catégorie
 export const categoryToTypeMap = {
@@ -17,6 +17,7 @@ export const useGestionState = () => {
     const [inactiveCount, setInactiveCount] = useState(0); // Nombre d'objets inactifs
     const [objectHistories, setObjectHistories] = useState({}); // Historique des consommations
     const [allObjects, setAllObjects] = useState([]); // Liste complète des objets
+    const [selectedReport, setSelectedReport] = useState('total');
 
     // États pour les alertes et confirmations
     const [showAlert, setShowAlert] = useState(false); // Affichage des messages d'alerte
@@ -64,44 +65,31 @@ export const useGestionState = () => {
     // Générateur de rapports et statistiques
     const generateReports = (objectsToAnalyze) => {
         const today = new Date().toISOString().split('T')[0];
-
-        // Création des données de consommation
-        const energyData = objectsToAnalyze.map(obj => ({
+      
+        const generateEnergyData = (objs) =>
+          objs.map(obj => ({
             id: obj.id,
             date: today,
-            value: obj.status === 'active' ? 50 : 20 // Simulation de consommation
-        }));
-
-        // Détection des objets inefficaces
-        const inefficients = objectsToAnalyze.filter(obj => {
-            if (obj.type === 'Chauffage') {
-            return parseInt(obj.settings?.temperature) > 24; // Température trop élevée
-            }
-            if (obj.type === 'Éclairage') {
-            const [start, end] = [obj.settings?.startTime, obj.settings?.endTime];
-            return start === '00:00' && end === '23:59'; // Éclairage 24/7
-            }
-            return false;
-        });
-
-        // Mise à jour des historiques individuels
-        setObjectHistories(prev => {
-            const updated = { ...prev };
-            energyData.forEach(({ id, date, value }) => {
-            if (!updated[id]) updated[id] = [];
-            updated[id].push({ date, value });
-            });
-            return updated;
-        });
-
+            value: obj.status === 'active' ? 50 : 20
+          }));
+      
+        const salles = objectsToAnalyze.filter(obj => categories.salles.items.includes(obj.id));
+        const ecole = objectsToAnalyze.filter(obj => categories.ecole.items.includes(obj.id));
+        const parking = objectsToAnalyze.filter(obj => categories.parking.items.includes(obj.id));
+      
+        const salleEnergyData = generateEnergyData(salles);
+        const ecoleEnergyData = generateEnergyData(ecole);
+        const parkingEnergyData = generateEnergyData(parking);
+        const totalEnergyData = generateEnergyData(objectsToAnalyze); // ici TOUS les objets
+      
         setReports({
-            energyConsumption: energyData,
-            objectUsage: inefficients
+          total: totalEnergyData,
+          salles: salleEnergyData,
+          ecole: ecoleEnergyData,
+          parking: parkingEnergyData,
         });
-
-        const inactifs = objectsToAnalyze.filter(obj => obj.status === 'inactive');
-        setInactiveCount(inactifs.length);
-    };
+      };
+      
 
     // Fonction d'export des rapports
     const handleExportReport = (type) => {
@@ -206,6 +194,10 @@ export const useGestionState = () => {
         
         setAllObjects(updatedAllObjects);
         
+        const categoryItems = categories[selectedCategory]?.items || [];
+        const updatedFilteredObjects = updatedAllObjects.filter(obj => categoryItems.includes(obj.id));
+        setObjects(updatedFilteredObjects);
+
         // 🔁 Mise à jour de la catégorie active si nécessaire
         const updatedCategory = objectFormData.category;
         setSelectedCategory(updatedCategory); // <- forcer le passage à cette catégorie
@@ -217,14 +209,27 @@ export const useGestionState = () => {
     };
     
     // Gestionnaire pour les actions sur les alertes
-    const handleCategoryChange = (category) => {
-        setSelectedCategory(category);
-        const categoryObjects = allObjects.filter(object =>
-            categories[category]?.items.includes(object.id)
+    const handleCategoryChange = (categoryKey) => {
+        const prefixMap = {
+          salles: 'salle',
+          ecole: 'ecole',
+          parking: 'parking'
+        };
+      
+        setSelectedCategory(categoryKey);
+      
+        const prefix = prefixMap[categoryKey] || '';
+        const categoryItems = categories[categoryKey]?.items || [];
+      
+        const filteredObjects = allObjects.filter(obj =>
+          categoryItems.includes(obj.id) || obj.id.startsWith(prefix)
         );
-        setObjects(categoryObjects);
-        generateReports(categoryObjects);
-    };
+      
+        setObjects(filteredObjects);
+      };
+      
+      
+      
     
     const handleAddObject = () => {
         setObjectFormData({ name: '', category: selectedCategory, status: 'active', priority: 'normal' });
@@ -360,32 +365,64 @@ export const useGestionState = () => {
         setShowReservationModal(false);
     };
 
+    useEffect(() => {
+        const count = allObjects.filter(obj => obj.status === 'inactive').length;
+        setInactiveCount(count);
+      }, [allObjects]);
+
+      
     // Effet pour charger les données initiales
     useEffect(() => {
-    // Ne charger dataObjects qu'une seule fois (au montage)
         if (allObjects.length === 0) {
-            const filteredObjects = dataObjects
-            .filter(obj => !['grille_ecole', 'cam_urgence', 'detecteur_fumee', 'acces_parking', 'eclairage_parking', 'borne_recharge', 'detecteur_parking','capteur789'].includes(obj.id))
-            .map(obj => ({
-                ...obj,
-                settings: obj.settings || {
-                temperature: obj.targetTemp || null,
-                startTime: obj.schedule?.split('-')[0] || '',
-                endTime: obj.schedule?.split('-')[1] || ''
+          // Fusionner dataObjects + équipements
+          const baseObjects = [...dataObjects];
+      
+          Object.entries(equipments).forEach(([roomId, roomEquipments]) => {
+            roomEquipments.forEach(equipment => {
+              baseObjects.push({
+                ...equipment,
+                roomId,
+                settings: {
+                  temperature: equipment.targetTemp || null,
+                  startTime: equipment.schedule?.split('-')[0] || '',
+                  endTime: equipment.schedule?.split('-')[1] || ''
                 }
-            })); 
-        
-            setAllObjects(filteredObjects);
+              });
+            });
+          });
+      
+          setAllObjects(baseObjects); // Stockage final
         }
-    }, [allObjects.length]); // 👈 ce useEffect ne tourne qu'une fois au montage
+      }, [allObjects.length]);
+       // 👈 ce useEffect ne tourne qu'une fois au montage
     
-    useEffect(() => {
-        const categoryObjects = allObjects.filter(object =>
-            categories[selectedCategory]?.items.includes(object.id)
+       useEffect(() => {
+        const prefixMap = {
+          salles: 'salle',
+          ecole: 'ecole',
+          parking: 'parking'
+        };
+      
+        const prefix = prefixMap[selectedCategory] || '';
+      
+        const categoryItems = categories[selectedCategory]?.items || [];
+      
+        const filteredObjects = allObjects.filter(object =>
+          categoryItems.includes(object.id) || object.id.startsWith(prefix)
         );
-        setObjects(categoryObjects);
-        generateReports(categoryObjects);
-    }, [selectedCategory, allObjects]); // 👈 nouvelle dépendance ici
+      
+        setObjects(filteredObjects);
+      }, [selectedCategory, allObjects]);
+      
+     // 👈 nouvelle dépendance ici
+
+    // 🔥 Nouveau useEffect pour générer la conso globale de tous les objets
+useEffect(() => {
+    if (allObjects.length > 0) {
+      generateReports(allObjects);
+    }
+  }, [allObjects]);
+  
 
   return {
     generateReports, handleExportReport,
@@ -420,6 +457,7 @@ export const useGestionState = () => {
     showAlertModal, setShowAlertModal,
     selectedAlert, setSelectedAlert,
     alerts, setAlerts,
-    reports, setReports
+    reports, setReports,
+    selectedReport, setSelectedReport,
   };
 };

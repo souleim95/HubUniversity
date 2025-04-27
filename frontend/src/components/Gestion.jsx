@@ -63,7 +63,7 @@ import {
   TableHeaderCell,
   TableHeader,
   TableRow,
-  ExportButton
+  ExportButton,
 } from '../styles/AdminStyles';
 import { FaTools, FaCalendar, FaExclamationTriangle, FaPlus, FaTrash, FaChartBar,FaDownload } from 'react-icons/fa';
 import { useGestionState, categoryToTypeMap } from '../hooks/useGestion';
@@ -101,7 +101,9 @@ function GestionPage() {
     reservations, 
     showAlertModal, setShowAlertModal,
     selectedAlert, 
-    alerts, reports
+    alerts, reports,
+    selectedReport, setSelectedReport,
+    selectedCategory
   } = useGestionState();
 
 
@@ -123,7 +125,10 @@ function GestionPage() {
           <StatLabel>Réservations de Salles</StatLabel>
         </StatCard>
         <StatCard>
-          <StatValue>{reports.energyConsumption.reduce((total, item) => total + item.value, 0)}</StatValue>
+        <StatValue>
+        {(reports[selectedCategory] || []).reduce((total, item) => total + item.value, 0)} kWh
+        </StatValue>
+
           <StatLabel>Consommation Énergétique</StatLabel>
         </StatCard>
       </StatsGrid>
@@ -263,11 +268,23 @@ function GestionPage() {
             </ButtonGroup>
           </div>
         </SectionHeader>
+        <FormGroup style={{ width: '200px', marginBottom: '1rem' }}>
+  <Label>Type de Consommation</Label>
+  <Select
+    value={selectedReport}
+    onChange={(e) => setSelectedReport(e.target.value)}
+  >
+    <option value="total">Conso Totale</option>
+    <option value="salles">Conso Salles</option>
+    <option value="ecole">Conso École</option>
+    <option value="parking">Conso Parking</option>
+  </Select>
+</FormGroup>
 
         <StatsGrid>
           <StatCard>
             <StatValue>
-              {reports.energyConsumption.reduce((sum, e) => sum + e.value, 0)} kWh
+            {(reports[selectedReport] || []).reduce((sum, e) => sum + e.value, 0)} kWh
             </StatValue>
             <StatLabel>Consommation Totale</StatLabel>
           </StatCard>
@@ -279,8 +296,8 @@ function GestionPage() {
 
         <SectionTitle style={{ marginTop: '2rem' }}>Graphique de consommation</SectionTitle>
         <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={reports.energyConsumption}>
-            <CartesianGrid strokeDasharray="3 3" />
+        <LineChart data={reports[selectedReport]}>
+        <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="date" />
             <YAxis />
             <Tooltip />
