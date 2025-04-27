@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback  } from 'react';
-
+import { useHeaderState } from '../hooks/useHeader';
+import axios from 'axios';
 // Importer les données depuis fakeData.js
 import { dataObjects, equipments } from '../data/projectData';
 import { toast} from 'react-toastify';
@@ -355,6 +356,8 @@ export const handleRoomEquipment = (roomId) => {
 
 export const useAdminState = (platformSettings, setPlatformSettings) => {
 	const navigate = useNavigate();
+	const raw = localStorage.getItem('currentUser');
+  	const currentUser = raw ? JSON.parse(raw) : null;
 
 	// États pour la gestion des utilisateurs
 	const [users, setUsers] = useState([]);
@@ -368,6 +371,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		points: 0,
 		password: ''
 	});
+	const { handleLogout } = useHeaderState();
 
 	// États pour la gestion des objets connectés
 	const [objects, setObjects] = useState([]); // Sera rempli avec dataObjects
@@ -781,28 +785,82 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 	}, [users]);
 
 	// Fonction pour gérer la soumission du formulaire utilisateur
-	const handleUserSubmit = useCallback((e) => {
+	const handleUserSubmit = useCallback(async (e) => {
 		e.preventDefault();
-		// Simuler la mise à jour/création d'utilisateur
-		if (selectedUser) {
-			setUsers(users.map(user => 
-				user.id === selectedUser.id ? { ...user, ...userFormData } : user
+		try {
+		  if (selectedUser) {
+			// 1) Envoi de la MAJ au serveur
+			const { data } = await axios.patch(
+			  `/api/users/${selectedUser.id}`,
+			  { 
+				role: userFormData.role,
+				score: userFormData.points 
+			  }
+			);
+	  
+			// 2) Mise à jour locale
+			setUsers(users.map(u =>
+			  u.id === selectedUser.id
+				? { ...u, role: data.user.role, points: data.user.score }
+				: u
 			));
 			toast.success('Utilisateur modifié avec succès');
-		} else {
-			setUsers([...users, { id: Date.now(), ...userFormData }]);
+	  
+			// 3) Si on s’est démoti-cé soi-même, on redirige
+			if (currentUser?.id === selectedUser.id && data.user.role !== 'directeur') {
+			  // Mettre à jour le rôle en session pour header
+			  sessionStorage.setItem('role', data.user.role);
+			  // Redirection vers la home adaptée (ex. '/dashboard' ou '/')
+			  navigate('/');
+			}
+		  } else {
+			sessionStorage.setItem('points', data.user.score);
+			navigate('/admin');
+			// Création d’un nouvel utilisateur
+			const { data } = await axios.post(
+			  '/api/users',
+			  { 
+				name: userFormData.login,
+				email: userFormData.email,
+				role: userFormData.role,
+				password: userFormData.password
+			  }
+			);
+			setUsers([...users, {
+			  id: data.id,
+			  login: data.name,
+			  email: data.email,
+			  role: data.role,
+			  points: 0
+			}]);
 			toast.success('Utilisateur créé avec succès');
+		  }
+		  setShowUserModal(false);
+		} catch (err) {
+		  toast.error(`Erreur : ${err.response?.data?.error || err.message}`);
 		}
-		setShowUserModal(false);
-	}, [selectedUser, userFormData, users]);
+	  }, [selectedUser, userFormData, users, currentUser, navigate]);
+	  
 
-	// Fonction pour confirmer la suppression d'un utilisateur
-	const confirmDeleteUser = useCallback(() => {
-		setUsers(users.filter(user => user.id !== selectedUser.id));
-		toast.success('Utilisateur supprimé avec succès');
-		setShowDeleteUserModal(false);
-		setSelectedUser(null);
-	}, [selectedUser, users]);
+	const confirmDeleteUser = useCallback(async () => {
+		try {
+		  // envoie la requête DELETE au back
+		  await axios.delete(`/api/users/${selectedUser.id}`);
+	  
+		  // retire de l'état local
+		  setUsers(prev => prev.filter(u => u.id !== selectedUser.id));
+		  toast.success('Utilisateur supprimé avec succès');
+		  setShowDeleteUserModal(false);
+		  setSelectedUser(null);
+	  
+		  // si c'était l'utilisateur courant, redirige vers l'accueil visiteur
+		  if (currentUser && selectedUser.id === currentUser.id) {
+			handleLogout();
+		  }
+		} catch (err) {
+		  toast.error('Échec de la suppression de l\'utilisateur');
+		}
+	}, [selectedUser, currentUser, navigate]);
 
 	// --------- Gestion des objets connectés ---------
 

@@ -46,7 +46,8 @@ services:
       - /app/node_modules
     ports:
       - "3000:3000"
-    command: sh -c "npm install --production && npm start"
+    command: sh -c "npm install && npm install axios --save && npm start"
+
 
 # 2) On déclare le volume nommé (db-data) en bas du fichier
 volumes:
