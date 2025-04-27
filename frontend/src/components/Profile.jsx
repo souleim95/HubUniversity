@@ -234,10 +234,10 @@ const Profile = () => {
     setShowConfirmNewPassword(!showConfirmNewPassword);
   };
 
-  if (!isLoggedIn) {
+  //if (!isLoggedIn) {
     //renvoie vers la page d'acceuil
-    return <Navigate to="/" replace />;
-  }
+    //return <Navigate to="/" replace />;
+  //}
 
   return (
     <>
