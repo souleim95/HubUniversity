@@ -244,6 +244,271 @@ const Header = () => {
         @keyframes pulse { 0% {opacity:0.4;} 50% {opacity:0.7;} 100% {opacity:0.4;} }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
       `}</style>
+
+      
+      {/* Boutons flottants en bas à droite */}
+      <div style={{
+        position: 'fixed',
+        bottom: '20px',
+        right: '10px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px',
+        zIndex: 1001,
+      }}>
+        {/* Fenêtre de recherche flottante */}
+        {isSearchWindowOpen && (
+          <div 
+            id="search-window"
+            onClick={(e) => e.stopPropagation()} // Empêche la propagation du clic
+            style={{
+              position: 'fixed',
+              bottom: '80px',
+              right: '10px',
+              width: window.innerWidth <= 480 ? '90vw' : '400px',
+              maxWidth: '100%',
+              height: '500px',
+              backgroundColor: 'white',
+              borderRadius: '15px',
+              boxShadow: '0 5px 20px rgba(0,0,0,0.2)',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+              animation: 'slideUp 0.3s ease-out'
+            }}
+          >
+            {/* Header avec titre et bouton filtre uniquement */}
+            <div style={{
+              padding: '15px 20px',
+              borderBottom: '1px solid #eee',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              backgroundColor: '#0f6ead',
+              color: 'white'
+            }}>
+              <h3 style={{ margin: 0 }}>Recherche HubCY</h3>
+              <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                <FaFilter 
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => setShowFilters(!showFilters)}
+                />
+              </div>
+            </div>
+
+            {/* Zone des filtres (conditionnelle) */}
+            {showFilters && (
+              <div style={{
+                padding: '10px',
+                backgroundColor: '#f8f8f8',
+                borderBottom: '1px solid #eee',
+                display: 'flex',
+                gap: '8px',
+                flexWrap: 'wrap'
+              }}>
+                <Filter 
+                  value={selectedType}
+                  onChange={(e) => setSelectedType(e.target.value)}
+                  size="5"
+                >
+                  <option value="all">Types</option>
+                  {objectTypes.map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </Filter>
+                  
+                <Filter 
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  size="5"
+                >
+                  <option value="all">Statuts</option>
+                  {statusTypes.map(status => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </Filter>
+
+                <Filter 
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  size="5"
+                >
+                  <option value="all" backgroundColor="white">Catégories</option>
+                  {sortedCategories.map(category => (
+                    <option key={category.key} value={category.key}>
+                      {category.name}
+                    </option>
+                  ))}
+                </Filter>
+              </div>
+            )}
+
+            {/* Zone des résultats (scrollable) - Mise à jour */}
+            <div style={{ 
+              flex: 1, 
+              overflowY: 'auto',
+              padding: '10px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px'
+            }}>
+              {searchResults.length > 0 ? (
+                searchResults.map((item) => (
+                  <div 
+                    key={item.id} 
+                    onClick={() => handleSelectObject(item)}
+                    style={{
+                      padding: '12px',
+                      borderRadius: '8px',
+                      backgroundColor: '#f8f9fa',
+                      cursor: 'pointer',
+                      border: '1px solid #eee',
+                      transition: 'all 0.2s ease',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '4px'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#e3f2fd';
+                      e.currentTarget.style.borderColor = '#0f6ead';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#f8f9fa';
+                      e.currentTarget.style.borderColor = '#eee';
+                    }}
+                  >
+                    <div style={{ 
+                      fontWeight: 'bold',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}>
+                      <span>{item.name}</span>
+                      <span style={{
+                        fontSize: '0.8em',
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        backgroundColor: item.type === 'Salle' ? '#0f6ead' : '#4caf50',
+                        color: 'white'
+                      }}>
+                        {item.type}
+                      </span>
+                    </div>
+                    <div style={{ 
+                      fontSize: '0.9em', 
+                      color: '#666',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}>
+                      <span>{item.id}</span>
+                      <span style={{
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        backgroundColor: item.status === 'Disponible' ? '#4caf50' : '#f44336',
+                        color: 'white',
+                        fontSize: '0.8em'
+                      }}>
+                        {item.status}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div style={{ 
+                  flex: 1, 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  color: '#666',
+                  textAlign: 'center',
+                  padding: '20px'
+                }}>
+                  {searchText ? 'Aucun résultat trouvé pour votre recherche' : 'Commencez à taper pour rechercher'}
+                </div>
+              )}
+            </div>
+
+{/* Barre de recherche fixée en bas */}
+<div
+  style={{
+    padding: '8px',
+    borderTop: '1px solid #eee',
+    backgroundColor: 'white',
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    zIndex: 2,
+    boxSizing: 'border-box',
+  }}
+>
+
+  <input
+    type="text"
+    value={searchText}
+    onChange={handleSearch}
+    placeholder="Rechercher par nom ou identifiant..."
+    style={{
+      width: '100%',
+      padding: window.innerWidth <= 480 ? '8px 10px' : '10px 15px',
+      fontSize: window.innerWidth <= 480 ? '0.9rem' : '1rem',
+      borderRadius: '20px',
+      border: '1px solid #ddd',
+      outline: 'none',
+      boxSizing: 'border-box'
+    }}
+  />
+</div>
+
+          </div>
+        )}
+
+        {/* Bouton de recherche */}
+        <div
+          id="search-button"
+          onClick={handleSearchButtonClick}
+          style={{
+            width: '45px',
+            height: '45px',
+            backgroundColor: '#0f6ead',
+            borderRadius: '50%',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.3s ease-in-out',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.1)';
+            e.currentTarget.style.backgroundColor = '#0d5c91';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)';
+            e.currentTarget.style.backgroundColor = '#0f6ead';
+          }}
+        >
+          <RiSearchLine size={24} color="white" />
+        </div>
+
+
+      </div>
+
+      {/* Animation pour la fenêtre flottante */}
+      <style>
+        {`
+          @keyframes slideUp {
+            from {
+              transform: translateY(20px);
+              opacity: 0;
+            }
+            to {
+              transform: translateY(0);
+              opacity: 1;
+            }
+          }
+        `}
+      </style>
     </>
   );
 };
