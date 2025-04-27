@@ -17,6 +17,8 @@ const bcrypt = require('bcrypt');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
+// Helper to handle async errors
+const asyncHandler = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
 app.use(cors({
   origin: 'http://localhost:3000', // ou l'URL de votre frontend
@@ -288,13 +290,26 @@ app.patch("/api/users/:id/score", async (req, res) => {
   }
 });
 
+// Supprimer un utilisateur
+app.delete('/api/users/:id', asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const result = await pool.query(
+    'DELETE FROM users WHERE id = $1 RETURNING *',
+    [id]
+  );
+  if (result.rows.length === 0) {
+    return res.status(404).json({ error: 'Utilisateur non trouvé.' });
+  }
+  res.json({ message: 'Utilisateur supprimé.', user: result.rows[0] });
+}));
+
+
 
 
 // CRUD routes for all entities
 // Assumes you have `app` (Express) and `pool` (pg Pool) already configured
 
-// Helper to handle async errors
-const asyncHandler = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+
 
 app.get("/api/salles", asyncHandler(async (req, res) => {
   const query = `

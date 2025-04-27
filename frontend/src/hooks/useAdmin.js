@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback  } from 'react';
-
+import { useHeaderState } from '../hooks/useHeader';
+import axios from 'axios';
 // Importer les données depuis fakeData.js
 import { dataObjects, equipments } from '../data/projectData';
 import { toast} from 'react-toastify';
@@ -355,6 +356,8 @@ export const handleRoomEquipment = (roomId) => {
 
 export const useAdminState = (platformSettings, setPlatformSettings) => {
 	const navigate = useNavigate();
+	const raw = localStorage.getItem('currentUser');
+  	const currentUser = raw ? JSON.parse(raw) : null;
 
 	// États pour la gestion des utilisateurs
 	const [users, setUsers] = useState([]);
@@ -368,6 +371,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		points: 0,
 		password: ''
 	});
+	const { handleLogout } = useHeaderState();
 
 	// États pour la gestion des objets connectés
 	const [objects, setObjects] = useState([]); // Sera rempli avec dataObjects
@@ -796,13 +800,25 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		setShowUserModal(false);
 	}, [selectedUser, userFormData, users]);
 
-	// Fonction pour confirmer la suppression d'un utilisateur
-	const confirmDeleteUser = useCallback(() => {
-		setUsers(users.filter(user => user.id !== selectedUser.id));
-		toast.success('Utilisateur supprimé avec succès');
-		setShowDeleteUserModal(false);
-		setSelectedUser(null);
-	}, [selectedUser, users]);
+	const confirmDeleteUser = useCallback(async () => {
+		try {
+		  // envoie la requête DELETE au back
+		  await axios.delete(`/api/users/${selectedUser.id}`);
+	  
+		  // retire de l'état local
+		  setUsers(prev => prev.filter(u => u.id !== selectedUser.id));
+		  toast.success('Utilisateur supprimé avec succès');
+		  setShowDeleteUserModal(false);
+		  setSelectedUser(null);
+	  
+		  // si c'était l'utilisateur courant, redirige vers l'accueil visiteur
+		  if (currentUser && selectedUser.id === currentUser.id) {
+			handleLogout();
+		  }
+		} catch (err) {
+		  toast.error('Échec de la suppression de l\'utilisateur');
+		}
+	}, [selectedUser, currentUser, navigate]);
 
 	// --------- Gestion des objets connectés ---------
 

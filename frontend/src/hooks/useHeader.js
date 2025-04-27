@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { equipments, categories, dataObjects} from '../data/projectData';
 
@@ -132,6 +133,7 @@ export const useHeaderState = () => {
           sessionStorage.setItem('user', data.user.name);
           sessionStorage.setItem('role', data.user.role);
           sessionStorage.setItem('userId', data.user.id);
+          localStorage.setItem('currentUser', JSON.stringify(data.user));
           sessionStorage.setItem('points', data.user.score);
           setUserName(data.user.name);
           setRole(data.user.role);
