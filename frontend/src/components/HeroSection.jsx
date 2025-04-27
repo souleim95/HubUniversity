@@ -21,8 +21,8 @@ const HeroSection = () => {
 
       {/* Texte d'accroche centré sur la vidéo */}
       <HeroContent>
-        <h1 className="fade-in">Bienvenue sur HubCY</h1>
-        <p className="fade-in">Découvrez l'école connectée de demain</p>
+        <h1 className="fade-in" style={{ color: '#f8f9fa' }}>Bienvenue sur HubCY</h1>
+        <p className="fade-in" style={{ color: '#f8f9fa' }}>Découvrez l'école connectée de demain</p>
       </HeroContent>
     </HeroContainer>
   );

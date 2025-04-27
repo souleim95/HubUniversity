@@ -108,8 +108,8 @@ function GestionPage() {
   return (
     <AdminContainer>
       <AdminHeader>
-        <AdminTitle>Gestion des Objets Connectés</AdminTitle>
-        <AdminSubtitle>Gestion des objets, des réservations de salles et des alertes</AdminSubtitle>
+        <AdminTitle style={{ color: '#f8f9fa' }}>Gestion des Objets Connectés</AdminTitle>
+        <AdminSubtitle style={{ color: '#f8f9fa' }}>Gestion des objets, des réservations de salles et des alertes</AdminSubtitle>
       </AdminHeader>
 
       {/* Statistiques de la page */}
@@ -132,8 +132,8 @@ function GestionPage() {
       <TabsContainer>
         <TabsList>
           {Object.keys(categories).map(categoryKey => (
-            <Tab key={categoryKey} onClick={() => handleCategoryChange(categoryKey)}>
-              {categories[categoryKey].name}
+            <Tab key={categoryKey} style={{ color: 'black' }} onClick={() => handleCategoryChange(categoryKey)}>
+              {categories[categoryKey].name }
             </Tab>
           ))}
         </TabsList>
@@ -152,7 +152,7 @@ function GestionPage() {
 
         <Grid>
           {objects.map((object) => (
-            <Card key={object.id}>
+            <Card key={object.id} >
               <CardTitle>{object.name}</CardTitle>
               <p><strong>Zone :</strong> {object.id}</p>
               <br></br>
