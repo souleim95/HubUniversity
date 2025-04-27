@@ -303,6 +303,41 @@ app.delete('/api/users/:id', asyncHandler(async (req, res) => {
   res.json({ message: 'Utilisateur supprimé.', user: result.rows[0] });
 }));
 
+// server.js, après app.post("/api/users")…
+app.patch("/api/users/:id", asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { role, score } = req.body;
+  // 1) Vérifier le nouveau rôle
+  const roleRes = await pool.query(
+    "SELECT idRole FROM role WHERE nomRole = $1",
+    [role]
+  );
+  if (roleRes.rows.length === 0) {
+    return res.status(400).json({ error: `Rôle invalide : ${role}` });
+  }
+  const idRole = roleRes.rows[0].idrole || roleRes.rows[0].idRole;
+  // 2) Mettre à jour score et rôle
+  const updateRes = await pool.query(
+    `UPDATE users 
+     SET idRole = $1, score = $2
+     WHERE id = $3
+     RETURNING id, name, email, score`,
+    [idRole, score, id]
+  );
+  if (updateRes.rows.length === 0) {
+    return res.status(404).json({ error: "Utilisateur non trouvé." });
+  }
+  // 3) Retourner le user mis à jour
+  res.json({
+    user: {
+      id: updateRes.rows[0].id,
+      name: updateRes.rows[0].name,
+      email: updateRes.rows[0].email,
+      role,
+      score: updateRes.rows[0].score
+    }
+  });
+}));
 
 
 

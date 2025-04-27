@@ -785,20 +785,62 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 	}, [users]);
 
 	// Fonction pour gérer la soumission du formulaire utilisateur
-	const handleUserSubmit = useCallback((e) => {
+	const handleUserSubmit = useCallback(async (e) => {
 		e.preventDefault();
-		// Simuler la mise à jour/création d'utilisateur
-		if (selectedUser) {
-			setUsers(users.map(user => 
-				user.id === selectedUser.id ? { ...user, ...userFormData } : user
+		try {
+		  if (selectedUser) {
+			// 1) Envoi de la MAJ au serveur
+			const { data } = await axios.patch(
+			  `/api/users/${selectedUser.id}`,
+			  { 
+				role: userFormData.role,
+				score: userFormData.points 
+			  }
+			);
+	  
+			// 2) Mise à jour locale
+			setUsers(users.map(u =>
+			  u.id === selectedUser.id
+				? { ...u, role: data.user.role, points: data.user.score }
+				: u
 			));
 			toast.success('Utilisateur modifié avec succès');
-		} else {
-			setUsers([...users, { id: Date.now(), ...userFormData }]);
+	  
+			// 3) Si on s’est démoti-cé soi-même, on redirige
+			if (currentUser?.id === selectedUser.id && data.user.role !== 'directeur') {
+			  // Mettre à jour le rôle en session pour header
+			  sessionStorage.setItem('role', data.user.role);
+			  // Redirection vers la home adaptée (ex. '/dashboard' ou '/')
+			  navigate('/');
+			}
+			sessionStorage.setItem('points', data.user.score);
+			navigate('/admin');
+		  } else {
+			// Création d’un nouvel utilisateur
+			const { data } = await axios.post(
+			  '/api/users',
+			  { 
+				name: userFormData.login,
+				email: userFormData.email,
+				role: userFormData.role,
+				password: userFormData.password
+			  }
+			);
+			setUsers([...users, {
+			  id: data.id,
+			  login: data.name,
+			  email: data.email,
+			  role: data.role,
+			  points: 0
+			}]);
 			toast.success('Utilisateur créé avec succès');
+		  }
+		  setShowUserModal(false);
+		} catch (err) {
+		  toast.error(`Erreur : ${err.response?.data?.error || err.message}`);
 		}
-		setShowUserModal(false);
-	}, [selectedUser, userFormData, users]);
+	  }, [selectedUser, userFormData, users, currentUser, navigate]);
+	  
 
 	const confirmDeleteUser = useCallback(async () => {
 		try {
