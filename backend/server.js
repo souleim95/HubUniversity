@@ -261,9 +261,9 @@ app.patch("/api/users/:id/score", async (req, res) => {
     let newRole = null;
     
     // Définir le nouveau rôle en fonction du score
-    if (score >= 1000) {
+    if (score >= 500) {
       newRole = 'directeur';
-    } else if (score >= 500) {
+    } else if (score >= 200) {
       newRole = 'professeur';
     }
     

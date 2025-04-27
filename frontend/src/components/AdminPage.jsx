@@ -827,9 +827,9 @@ function AdminPage() {
                     value={userFormData.role}
                     onChange={(e) => setUserFormData({...userFormData, role: e.target.value})}
                   >
-                    <option value="student">Étudiant</option>
-                    <option value="gestionnaire">Gestionnaire</option>
-                    <option value="admin">Administrateur</option>
+                    <option value="eleve">Étudiant</option>
+                    <option value="professeur">Professeur</option>
+                    <option value="directeur">Directeur</option>
                   </Select>
                 </FormGroup>
                 <FormGroup>
