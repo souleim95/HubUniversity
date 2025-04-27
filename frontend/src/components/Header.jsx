@@ -294,149 +294,137 @@ const Header = () => {
           <>
             <Overlay onClick={() => setIsFormOpen(null)} />
             <LoginFormContainer>
-              <h2>{isFormOpen === 'signup' ? 'Inscription' : 'Connexion'}</h2>
-              <form onSubmit={handleSubmit}>
-                {/* Champ Nom complet */}
-                {isFormOpen === 'signup' && (
-                  <input 
-                    type="text" 
-                    name="name" 
-                    placeholder="Nom complet" 
-                    value={formData.name} 
-                    onChange={handleChange} 
-                    required 
-                  />
-                )}
+  <h2>{isFormOpen === 'signup' ? 'Inscription' : 'Connexion'}</h2>
+  <form onSubmit={handleSubmit}>
+    {/* Partie INSCRIPTION */}
+    {isFormOpen === 'signup' && (
+      <>
+        <input 
+          type="text" 
+          name="prenom" 
+          placeholder="Prénom" 
+          value={formData.prenom} 
+          onChange={handleChange} 
+          required 
+        />
+        <input 
+          type="text" 
+          name="nom" 
+          placeholder="Nom" 
+          value={formData.nom} 
+          onChange={handleChange} 
+          required 
+        />
+        <input 
+          type="date" 
+          name="dateNaissance" 
+          placeholder="Date de naissance" 
+          value={formData.dateNaissance} 
+          onChange={handleChange} 
+          required 
+        />
+        <input 
+          type="text" 
+          name="pseudonyme" 
+          placeholder="Pseudonyme" 
+          value={formData.pseudonyme} 
+          onChange={handleChange} 
+          required 
+        />
+        <select 
+          name="genre" 
+          value={formData.genre} 
+          onChange={handleChange} 
+          required
+        >
+          <option value="">Sélectionnez votre genre</option>
+          <option value="Homme">Homme</option>
+          <option value="Femme">Femme</option>
+        </select>
+      </>
+    )}
 
-                {/* Champ prénom */}
-                <input 
-                  type="text" 
-                  name="prenom" 
-                  placeholder="Prénom" 
-                  value={formData.prenom} 
-                  onChange={handleChange} 
-                  required 
-                />
+    {/* Partie COMMUNE (connexion ET inscription) */}
+    <input 
+      type="email" 
+      name="email" 
+      placeholder="Email" 
+      value={formData.email} 
+      onChange={handleChange} 
+      required 
+    />
 
-                {/* Champ nom */}
-                <input 
-                  type="text" 
-                  name="nom" 
-                  placeholder="Nom" 
-                  value={formData.nom} 
-                  onChange={handleChange} 
-                  required 
-                />
+    <div className="password-input">
+      <input 
+        type={showPassword ? "text" : "password"} 
+        name="password" 
+        placeholder="Mot de passe" 
+        value={formData.password} 
+        onChange={handleChange} 
+        required 
+      />
+      <button 
+        type="button" 
+        className="toggle-password"
+        onClick={() => setShowPassword(!showPassword)}
+      >
+        {showPassword ? <RiEyeOffLine /> : <RiEyeLine />}
+      </button>
+    </div>
 
-                {/* Champ date de naissance */}
-                <input 
-                  type="date" 
-                  name="dateNaissance" 
-                  placeholder="Date de naissance" 
-                  value={formData.dateNaissance} 
-                  onChange={handleChange} 
-                  required 
-                />
+    {/* Partie INSCRIPTION */}
+    {isFormOpen === 'signup' && (
+      <>
+        <select name="role" value={formData.role} onChange={handleChange} required>
+          <option value="">Sélectionnez votre rôle</option>
+          <option value="eleve">Étudiant</option>
+          <option value="professeur">Enseignant</option>
+        </select>
 
-                  <input 
-                    type="text" 
-                    name="pseudonyme" 
-                    placeholder="Pseudonyme" 
-                    value={formData.pseudonyme} 
-                    onChange={handleChange} 
-                    required 
-                  />
-                  <select 
-                    name="genre" 
-                    value={formData.genre} 
-                    onChange={handleChange} 
-                    required
-                  >
-                    <option value="">Sélectionnez votre genre</option>
-                    <option value="Homme">Homme</option>
-                    <option value="Femme">Femme</option>
-                  </select>
+        <select name="formation" value={formData.formation} onChange={handleChange} required>
+          <option value="">Sélectionnez votre formation</option>
+          <option value="INFORMATIQUE">INFORMATIQUE</option>
+          <option value="GÉNIE CIVIL">GÉNIE CIVIL</option>
+          <option value="BIOTECHNOLOGIES">BIOTECHNOLOGIES</option>
+          <option value="MÉCANIQUE">MÉCANIQUE</option>
+          <option value="MATHÉMATIQUES APPLIQUÉES">MATHÉMATIQUES APPLIQUÉES</option>
+          <option value="BIOTECHNOLOGIES & CHIMIE (Chimie voie Recherche)">BIOTECHNOLOGIES & CHIMIE (Chimie voie Recherche)</option>
+          <option value="BIOTECHNOLOGIES & CHIMIE (Biologie voie Recherche)">BIOTECHNOLOGIES & CHIMIE (Biologie voie Recherche)</option>
+          <option value="GÉNIE CIVIL - ARCHITECTE (ENSA-V)">GÉNIE CIVIL - ARCHITECTE (ENSA-V)</option>
+          <option value="DATA - HUMANITÉS DIGITALES (Sciences Po Saint-Germain-en-Laye)">DATA - HUMANITÉS DIGITALES (Sciences Po Saint-Germain-en-Laye)</option>
+          <option value="INFORMATIQUE - DESIGNER (CY École de Design)">INFORMATIQUE - DESIGNER (CY École de Design)</option>
+        </select>
+      </>
+    )}
 
+    {/* Bouton */}
+    <button type="submit">
+      {isFormOpen === 'signup' ? 'Créer un compte' : 'Se connecter'}
+    </button>
 
-                
-                {/* Champ Email */}
-                <input 
-                  type="email" 
-                  name="email" 
-                  placeholder="Email" 
-                  value={formData.email} 
-                  onChange={handleChange} 
-                  required 
-                />
+    {/* Lien changement formulaire */}
+    <p>
+      {isFormOpen === 'login' ? 'Pas encore inscrit ?' : 'Déjà un compte ?'}{' '}
+      <button 
+        type="button" 
+        onClick={() => toggleForm(isFormOpen === 'login' ? 'signup' : 'login')} 
+        className="switch-form"
+      >
+        {isFormOpen === 'login' ? 'Inscription' : 'Connexion'}
+      </button>
+    </p>
 
-                {/* Champ Mot de passe */}
-                <div className="password-input">
-                  <input 
-                    type={showPassword ? "text" : "password"} 
-                    name="password" 
-                    placeholder="Mot de passe" 
-                    value={formData.password} 
-                    onChange={handleChange} 
-                    required 
-                  />
-                  <button 
-                    type="button" 
-                    className="toggle-password"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <RiEyeOffLine /> : <RiEyeLine />}
-                  </button>
-                </div>
+    {/* Bouton Fermer */}
+    <button 
+      type="button" 
+      onClick={() => setIsFormOpen(null)} 
+      className="close-btn"
+    >
+      Fermer
+    </button>
+  </form>
+</LoginFormContainer>
 
-                {/* Champ rôle (sélection d'étudiant ou enseignant) */}
-                {isFormOpen === 'signup' && (
-                  <select name="role" value={formData.role} onChange={handleChange} required>
-                    <option value="">Sélectionnez votre rôle</option>
-                    <option value="eleve">Étudiant</option>
-                    <option value="professeur">Enseignant</option>
-                  </select>
-                )}
-
-                {/* Champ formation obligatoire */}
-                {isFormOpen === 'signup' && (
-                  <select name="formation" value={formData.formation} onChange={handleChange} required>
-                    <option value="">Sélectionnez votre formation</option>
-                    <option value="INFORMATIQUE">INFORMATIQUE</option>
-                    <option value="GÉNIE CIVIL">GÉNIE CIVIL</option>
-                    <option value="BIOTECHNOLOGIES">BIOTECHNOLOGIES</option>
-                    <option value="MÉCANIQUE">MÉCANIQUE</option>
-                    <option value="MATHÉMATIQUES APPLIQUÉES">MATHÉMATIQUES APPLIQUÉES</option>
-                    <option value="BIOTECHNOLOGIES & CHIMIE (Chimie voie Recherche)">BIOTECHNOLOGIES & CHIMIE (Chimie voie Recherche)</option>
-                    <option value="BIOTECHNOLOGIES & CHIMIE (Biologie voie Recherche)">BIOTECHNOLOGIES & CHIMIE (Biologie voie Recherche)</option>
-                    <option value="GÉNIE CIVIL - ARCHITECTE (ENSA-V)">GÉNIE CIVIL - ARCHITECTE (ENSA-V)</option>
-                    <option value="DATA - HUMANITÉS DIGITALES (Sciences Po Saint-Germain-en-Laye)">DATA - HUMANITÉS DIGITALES (Sciences Po Saint-Germain-en-Laye)</option>
-                    <option value="INFORMATIQUE - DESIGNER (CY École de Design)">INFORMATIQUE - DESIGNER (CY École de Design)</option>
-                  </select>
-                )}
-
-                {/* Bouton d'envoi */}
-                <button type="submit">
-                  {isFormOpen === 'signup' ? 'Créer un compte' : 'Se connecter'}
-                </button>
-
-                {/* Lien pour changer de formulaire */}
-                <p>
-                  {isFormOpen === 'login' ? 'Pas encore inscrit ?' : 'Déjà un compte ?'}{' '}
-                  <button 
-                    type="button" 
-                    onClick={() => toggleForm(isFormOpen === 'login' ? 'signup' : 'login')} 
-                    className="switch-form"
-                  >
-                    {isFormOpen === 'login' ? 'Inscription' : 'Connexion'}
-                  </button>
-                </p>
-
-                {/* Bouton de fermeture */}
-                <button type="button" onClick={() => setIsFormOpen(null)} className="close-btn">
-                  Fermer
-                </button>
-              </form>
-            </LoginFormContainer>
           </>
         )}
         <ToastContainer />
