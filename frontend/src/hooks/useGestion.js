@@ -88,6 +88,24 @@ export const useGestionState = () => {
           ecole: ecoleEnergyData,
           parking: parkingEnergyData,
         });
+
+        // 🔥 Mise à jour de l'historique des consommations par objet
+setObjectHistories(prevHistories => {
+    const updatedHistories = { ...prevHistories };
+    
+    objectsToAnalyze.forEach(obj => {
+      if (!updatedHistories[obj.id]) {
+        updatedHistories[obj.id] = [];
+      }
+      updatedHistories[obj.id].push({
+        date: today,
+        value: obj.status === 'active' ? 50 : 20
+      });
+    });
+  
+    return updatedHistories;
+  });
+  
       };
       
 
