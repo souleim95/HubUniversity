@@ -44,10 +44,9 @@ import { useAdminState } from '../hooks/useAdmin';
 function AdminPage() {
   const { platformSettings, setPlatformSettings } = useContext(PlatformContext);
 
-  // Externalisation de nos const et de nos states dans un fichier constAdmin.js
   const {
     applyGlobalRules, 
-	  users, alerts, setAlerts,
+    users, alerts, setAlerts,
     loadingUsers, 
     showUserModal, setShowUserModal,
     selectedUser, 
@@ -90,7 +89,7 @@ function AdminPage() {
     handleObjectSubmit, handleExportReport,
     handleShowEquipment,
     handleBackup, handleIntegrityCheck,
-    handlePasswordUpdate,handleViewObject, resetColors,
+    handlePasswordUpdate, handleViewObject, resetColors,
     OBJECT_STATUS, ROOM_STATUS,
     getObjectStatus, countObjectsByStatus, handleRoomEquipment
   } = useAdminState(platformSettings, setPlatformSettings);
@@ -129,19 +128,19 @@ function AdminPage() {
         {/* Navigation par onglets */}
         <TabsContainer>
           <TabsList>
-            <Tab active={activeTab === 'users'} onClick={() => setActiveTab('users')}>
+            <Tab active={activeTab === 'users'} style={{ color: 'black' }} onClick={() => setActiveTab('users')}>
               <FaUsers /> Utilisateurs
             </Tab>
-            <Tab active={activeTab === 'objects'} onClick={() => setActiveTab('objects')}>
+            <Tab active={activeTab === 'objects'}  style={{ color: 'black' }} onClick={() => setActiveTab('objects')}>
               <FaTools /> Objets & Services
             </Tab>
-            <Tab active={activeTab === 'security'} onClick={() => setActiveTab('security')}>
+            <Tab active={activeTab === 'security'}  style={{ color: 'black' }} onClick={() => setActiveTab('security')}>
               <FaShieldAlt /> Sécurité & Maintenance
             </Tab>
-            <Tab active={activeTab === 'customization'} onClick={() => setActiveTab('customization')}>
+            <Tab active={activeTab === 'customization'}  style={{ color: 'black' }} onClick={() => setActiveTab('customization')}>
               <FaPalette /> Personnalisation
             </Tab>
-            <Tab active={activeTab === 'reports'} onClick={() => setActiveTab('reports')}>
+            <Tab active={activeTab === 'reports'}  style={{ color: 'black' }} onClick={() => setActiveTab('reports')}>
               <FaChartBar /> Rapports
             </Tab>
           </TabsList>
@@ -618,6 +617,7 @@ function AdminPage() {
                       }));
                       document.documentElement.setAttribute('data-theme', e.target.value);
                     }}
+                    
                   >
                     <option value="light">Clair</option>
                     <option value="dark">Sombre</option>
@@ -699,131 +699,76 @@ function AdminPage() {
               <Card style={{ padding: '20px', textAlign: 'center', backgroundColor: '#ffffff', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
                 <CardTitle>Consommation Énergétique</CardTitle>
                 <StatValue style={{ color: '#4CAF50', fontSize: '2.5rem', margin: '10px 0' }}>
-                  {reports.energyConsumption.reduce((total, item) => total + item.value, 0)} kWh
+                  {Object.values(equipments).flat().reduce((total, equip) => {
+                    let consumption = 0;
+                    switch(equip.type) {
+                      case 'Éclairage':
+                        consumption = equip.brightness ? (equip.brightness * 0.5) : 50;
+                        break;
+                      case 'Chauffage':
+                        consumption = equip.temperature ? (equip.temperature * 100) : 1000;
+                        break;
+                      case 'Ventilation':
+                        consumption = equip.speed ? (equip.speed * 2) : 200;
+                        break;
+                      case 'Projecteur':
+                        consumption = 300;
+                        break;
+                      case 'Audio':
+                        consumption = equip.volume ? (equip.volume * 3) : 150;
+                        break;
+                      case 'Distributeur':
+                        consumption = equip.temperature ? (equip.temperature * 20) : 100;
+                        break;
+                      case 'Cafetiere':
+                        consumption = equip.waterLevel ? (equip.waterLevel * 8) : 800;
+                        break;
+                      case 'Microwave':
+                        consumption = equip.power ? (equip.power * 1.2) : 1200;
+                        break;
+                      case 'Dishwasher':
+                        consumption = equip.waterTemp ? (equip.waterTemp * 20) : 1500;
+                        break;
+                      default:
+                        consumption = 50;
+                    }
+                    return total + (equip.status === 'Actif' || equip.status === 'Allumé' ? consumption : 0);
+                  }, 0)} kWh
                 </StatValue>
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '15px' }}>
                   <div style={{ textAlign: 'center' }}>
-                    <small style={{ color: '#666' }}>Appareils actifs</small>
+                    <small style={{ color: '#666' }}>Équipements actifs</small>
                     <div style={{ fontWeight: 'bold', color: '#4CAF50' }}>
-                      {objects.filter(obj => obj.status === 'Actif' || obj.status === 'Allumé').length}
+                      {Object.values(equipments).flat().filter(eq => eq.status === 'Actif' || eq.status === 'Allumé').length}
                     </div>
                   </div>
-                  <div style={{ textAlign: 'center', borderLeft: '1px solid #eee', paddingLeft: '10px' }}>
-                    <small style={{ color: '#666' }}>Total appareils</small>
+                  <div style={{ textAlign: 'center' }}>
+                    <small style={{ color: '#666' }}>Total équipements</small>
                     <div style={{ fontWeight: 'bold', color: '#4CAF50' }}>
-                      {objects.length}
+                      {Object.values(equipments).flat().length}
                     </div>
                   </div>
-                </div>
-                <div style={{ 
-                  marginTop: '20px',
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(60px, 1fr))',
-                  gap: '10px',
-                  padding: '10px',
-                  backgroundColor: '#f8faf8',
-                  borderRadius: '8px'
-                }}>
-                  {Object.entries(categories).map(([key, category], index) => (
-                    <div key={key} style={{ textAlign: 'center' }}>
-                      <div style={{
-                        height: '60px',
-                        backgroundColor: ['#4CAF50', '#2196F3', '#FF9800'][index],
-                        borderRadius: '6px',
-                        position: 'relative',
-                        display: 'flex',
-                        alignItems: 'flex-end'
-                      }}>
-                        <div style={{
-                          width: '100%',
-                          height: `${(category.items.filter(id => {
-                            const obj = objects.find(o => o.id === id);
-                            return obj && (obj.status === 'Actif' || obj.status === 'Allumé');
-                          }).length / category.items.length) * 100}%`,
-                          backgroundColor: ['#388E3C', '#1976D2', '#F57C00'][index],
-                          borderRadius: '6px',
-                          transition: 'height 0.3s ease'
-                        }}/>
-                      </div>
-                      <small style={{ display: 'block', color: '#666', marginTop: '4px', fontSize: '0.7rem' }}>
-                        {category.name}
-                      </small>
-                    </div>
-                  ))}
                 </div>
               </Card>
 
               <Card style={{ padding: '20px', textAlign: 'center', backgroundColor: '#ffffff', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
-                <CardTitle>Activité des Équipements</CardTitle>
+                <CardTitle>Types d'Équipements</CardTitle>
                 <StatValue style={{ color: '#2196F3', fontSize: '2.5rem', margin: '10px 0' }}>
-                  {Math.round((Object.values(equipments).flat().filter(eq => eq.status === 'Actif' || eq.status === 'Allumé').length / Object.values(equipments).flat().length) * 100)}%
+                  {objectTypes.length}
                 </StatValue>
-                <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '20px' }}>
-                  {objectTypes.slice(0, 4).map((type, index) => (
-                    <div key={type} style={{ textAlign: 'center' }}>
-                      <div style={{
-                        width: '60px',
-                        height: '60px',
-                        backgroundColor: `${['#4CAF50', '#2196F3', '#FF9800', '#9C27B0'][index]}22`,
-                        borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        margin: '0 auto 8px'
-                      }}>
-                        <span style={{ 
-                          fontSize: '1.2rem', 
-                          color: ['#4CAF50', '#2196F3', '#FF9800', '#9C27B0'][index]
-                        }}>
-                          {Object.values(equipments).flat().filter(eq => eq.type === type).length}
-                        </span>
-                      </div>
-                      <small style={{ color: '#666', fontSize: '0.8rem' }}>{type}</small>
-                    </div>
-                  ))}
-                </div>
-                <div style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '8px',
-                  padding: '10px',
-                  backgroundColor: '#f8fafe',
-                  borderRadius: '8px'
-                }}>
-                  {['Actif', 'Maintenance', 'Inactif'].map((status, index) => (
-                    <div key={status} style={{
-                      display: 'flex',
+                <div style={{ marginTop: '15px' }}>
+                  {objectTypes.slice(0, 3).map((type, index) => (
+                    <div key={type} style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
                       alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '8px'
+                      padding: '10px',
+                      backgroundColor: index % 2 === 0 ? '#f8f9fa' : 'transparent',
+                      borderRadius: '4px'
                     }}>
-                      <span style={{ fontSize: '0.9rem', color: '#666' }}>{status}</span>
-                      <div style={{
-                        flex: 1,
-                        margin: '0 10px',
-                        height: '8px',
-                        backgroundColor: '#eee',
-                        borderRadius: '4px',
-                        overflow: 'hidden'
-                      }}>
-                        <div style={{
-                          width: `${(Object.values(equipments).flat().filter(eq => 
-                            status === 'Actif' ? eq.status === 'Actif' || eq.status === 'Allumé' :
-                            status === 'Maintenance' ? eq.status === 'Maintenance' :
-                            eq.status === 'Inactif' || eq.status === 'Éteint'
-                          ).length / Object.values(equipments).flat().length) * 100}%`,
-                          height: '100%',
-                          backgroundColor: ['#4CAF50', '#FF9800', '#F44336'][index],
-                          borderRadius: '4px',
-                          transition: 'width 0.3s ease'
-                        }}/>
-                      </div>
-                      <span style={{ fontSize: '0.9rem', fontWeight: 'bold', minWidth: '40px', textAlign: 'right' }}>
-                        {Object.values(equipments).flat().filter(eq => 
-                          status === 'Actif' ? eq.status === 'Actif' || eq.status === 'Allumé' :
-                          status === 'Maintenance' ? eq.status === 'Maintenance' :
-                          eq.status === 'Inactif' || eq.status === 'Éteint'
-                        ).length}
+                      <span style={{ fontWeight: 'bold' }}>{type}</span>
+                      <span style={{ color: '#2196F3' }}>
+                        {Object.values(equipments).flat().filter(eq => eq.type === type).length}
                       </span>
                     </div>
                   ))}
@@ -831,87 +776,28 @@ function AdminPage() {
               </Card>
 
               <Card style={{ padding: '20px', textAlign: 'center', backgroundColor: '#ffffff', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
-                <CardTitle>Occupation des Salles</CardTitle>
-                <StatValue style={{ color: '#FF9800', fontSize: '2.5rem', margin: '10px 0' }}>
-                  {objects.filter(obj => obj.type === 'Salle' && obj.status === 'Occupée').length} / {objects.filter(obj => obj.type === 'Salle').length}
-                </StatValue>
-                <div style={{ 
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-                  gap: '15px',
-                  margin: '20px 0'
-                }}>
-                  {objects.filter(obj => obj.type === 'Salle').map((salle, index) => (
-                    <div key={salle.id} style={{
-                      backgroundColor: '#f8f8f8',
-                      padding: '10px',
-                      borderRadius: '8px',
-                      position: 'relative'
-                    }}>
-                      <div style={{
-                        width: '12px',
-                        height: '12px',
-                        borderRadius: '50%',
-                        backgroundColor: salle.status === 'Disponible' ? '#4CAF50' : '#F44336',
-                        position: 'absolute',
-                        top: '10px',
-                        right: '10px'
-                      }}/>
-                      <h4 style={{ margin: '0 0 5px 0', fontSize: '0.9rem', color: '#333' }}>
-                        {salle.name}
-                      </h4>
-                      <small style={{ color: '#666' }}>
-                        Capacité: {salle.capacity}
-                      </small>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-
-              <Card style={{ padding: '20px', textAlign: 'center', backgroundColor: '#ffffff', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
                 <CardTitle>Services les Plus Utilisés</CardTitle>
-                <div style={{ 
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '10px',
-                  marginTop: '20px'
-                }}>
-                  {Object.entries(categories).map(([key, category], index) => (
-                    <div key={key} style={{
-                      backgroundColor: '#f8f8f8',
-                      padding: '15px',
-                      borderRadius: '8px'
+                <div style={{ marginTop: '15px' }}>
+                  {Object.entries(equipments).map(([roomId, equipmentList]) => {
+                    const activeEquipment = equipmentList.filter(eq => 
+                      eq.status === 'Actif' || eq.status === 'Allumé' || eq.status === 'Disponible'
+                    );
+                    const usageRate = Math.round((activeEquipment.length / equipmentList.length) * 100);
+                    return { roomId, usageRate, equipmentCount: equipmentList.length };
+                  })
+                  .sort((a, b) => b.usageRate - a.usageRate)
+                  .slice(0, 3)
+                  .map((service, index) => (
+                    <div key={service.roomId} style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center',
+                      padding: '10px',
+                      backgroundColor: index % 2 === 0 ? '#f8f9fa' : 'transparent',
+                      borderRadius: '4px'
                     }}>
-                      <div style={{ 
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        marginBottom: '8px'
-                      }}>
-                        <span style={{ fontWeight: 'bold', color: '#333' }}>{category.name}</span>
-                        <span style={{ color: '#666' }}>
-                          {category.items.filter(id => {
-                            const obj = objects.find(o => o.id === id);
-                            return obj && (obj.status === 'Actif' || obj.status === 'Allumé');
-                          }).length} actifs
-                        </span>
-                      </div>
-                      <div style={{
-                        height: '8px',
-                        backgroundColor: '#eee',
-                        borderRadius: '4px',
-                        overflow: 'hidden'
-                      }}>
-                        <div style={{
-                          width: `${(category.items.filter(id => {
-                            const obj = objects.find(o => o.id === id);
-                            return obj && (obj.status === 'Actif' || obj.status === 'Allumé');
-                          }).length / category.items.length) * 100}%`,
-                          height: '100%',
-                          backgroundColor: ['#4CAF50', '#2196F3', '#FF9800'][index],
-                          borderRadius: '4px'
-                        }}/>
-                      </div>
+                      <span style={{ fontWeight: 'bold' }}>{service.roomId}</span>
+                      <span style={{ color: '#FF9800' }}>{service.usageRate}%</span>
                     </div>
                   ))}
                 </div>
@@ -1032,6 +918,9 @@ function AdminPage() {
                         case 'Outil':
                           defaultStatus = OBJECT_STATUS.TOOL.AVAILABLE;
                           break;
+                        case 'Caméra':
+                          defaultStatus = OBJECT_STATUS.CAMERA.ACTIVE;
+                          break;
                         default:
                           defaultStatus = OBJECT_STATUS.ROOM.AVAILABLE;
                       }
@@ -1078,6 +967,164 @@ function AdminPage() {
                         <option value={OBJECT_STATUS.TOOL.AVAILABLE}>Disponible</option>
                         <option value={OBJECT_STATUS.TOOL.IN_USE}>En utilisation</option>
                         <option value={OBJECT_STATUS.TOOL.MAINTENANCE}>En maintenance</option>
+                      </>
+                    )}
+                    {objectFormData.type === 'Caméra' && (
+                      <>
+                        <option value={OBJECT_STATUS.CAMERA.ACTIVE}>Actif</option>
+                        <option value={OBJECT_STATUS.CAMERA.INACTIVE}>Inactif</option>
+                        <option value={OBJECT_STATUS.CAMERA.DISCONNECTED}>Déconnecté</option>
+                        <option value={OBJECT_STATUS.CAMERA.MAINTENANCE}>Maintenance</option>
+                      </>
+                    )}
+                    {objectFormData.type === 'Projecteur' && (
+                      <>
+                        <option value={OBJECT_STATUS.PROJECTOR.ON}>Allumé</option>
+                        <option value={OBJECT_STATUS.PROJECTOR.OFF}>Éteint</option>
+                        <option value={OBJECT_STATUS.PROJECTOR.MAINTENANCE}>Maintenance</option>
+                      </>
+                    )}
+                    {objectFormData.type === 'Chauffage' && (
+                      <>
+                        <option value={OBJECT_STATUS.HEATING.ACTIVE}>Actif</option>
+                        <option value={OBJECT_STATUS.HEATING.INACTIVE}>Inactif</option>
+                        <option value={OBJECT_STATUS.HEATING.AUTO}>Mode Auto</option>
+                        <option value={OBJECT_STATUS.HEATING.MAINTENANCE}>Maintenance</option>
+                      </>
+                    )}
+                    {objectFormData.type === 'Éclairage' && (
+                      <>
+                        <option value={OBJECT_STATUS.LIGHTING.ON}>Allumé</option>
+                        <option value={OBJECT_STATUS.LIGHTING.OFF}>Éteint</option>
+                        <option value={OBJECT_STATUS.LIGHTING.AUTO}>Mode Auto</option>
+                        <option value={OBJECT_STATUS.LIGHTING.MAINTENANCE}>Maintenance</option>
+                      </>
+                    )}
+                    {objectFormData.type === 'Store' && (
+                      <>
+                        <option value={OBJECT_STATUS.BLIND.OPEN}>Ouvert</option>
+                        <option value={OBJECT_STATUS.BLIND.CLOSED}>Fermé</option>
+                        <option value={OBJECT_STATUS.BLIND.PARTIAL}>Partiellement ouvert</option>
+                        <option value={OBJECT_STATUS.BLIND.MAINTENANCE}>Maintenance</option>
+                      </>
+                    )}
+                    {objectFormData.type === 'Audio' && (
+                      <>
+                        <option value={OBJECT_STATUS.AUDIO.ON}>Allumé</option>
+                        <option value={OBJECT_STATUS.AUDIO.OFF}>Éteint</option>
+                        <option value={OBJECT_STATUS.AUDIO.MUTE}>Mute</option>
+                        <option value={OBJECT_STATUS.AUDIO.MAINTENANCE}>Maintenance</option>
+                      </>
+                    )}
+                    {objectFormData.type === 'Ventilation' && (
+                      <>
+                        <option value={OBJECT_STATUS.VENTILATION.ACTIVE}>Actif</option>
+                        <option value={OBJECT_STATUS.VENTILATION.INACTIVE}>Inactif</option>
+                        <option value={OBJECT_STATUS.VENTILATION.AUTO}>Mode Auto</option>
+                        <option value={OBJECT_STATUS.VENTILATION.MAINTENANCE}>Maintenance</option>
+                      </>
+                    )}
+                    {objectFormData.type === 'Distributeur' && (
+                      <>
+                        <option value={OBJECT_STATUS.DISTRIBUTOR.AVAILABLE}>Disponible</option>
+                        <option value={OBJECT_STATUS.DISTRIBUTOR.OUT_OF_STOCK}>Rupture de stock</option>
+                        <option value={OBJECT_STATUS.DISTRIBUTOR.MAINTENANCE}>Maintenance</option>
+                      </>
+                    )}
+                    {objectFormData.type === 'Cafetiere' && (
+                      <>
+                        <option value={OBJECT_STATUS.COFFEE_MAKER.AVAILABLE}>Disponible</option>
+                        <option value={OBJECT_STATUS.COFFEE_MAKER.BREWING}>Préparation en cours</option>
+                        <option value={OBJECT_STATUS.COFFEE_MAKER.CLEANING}>Nettoyage en cours</option>
+                        <option value={OBJECT_STATUS.COFFEE_MAKER.MAINTENANCE}>Maintenance</option>
+                      </>
+                    )}
+                    {objectFormData.type === 'Microwave' && (
+                      <>
+                        <option value={OBJECT_STATUS.MICROWAVE.AVAILABLE}>Disponible</option>
+                        <option value={OBJECT_STATUS.MICROWAVE.IN_USE}>En cours</option>
+                        <option value={OBJECT_STATUS.MICROWAVE.FINISHED}>Terminé</option>
+                        <option value={OBJECT_STATUS.MICROWAVE.MAINTENANCE}>Maintenance</option>
+                      </>
+                    )}
+                    {objectFormData.type === 'AirSensor' && (
+                      <>
+                        <option value={OBJECT_STATUS.AIR_SENSOR.ACTIVE}>Actif</option>
+                        <option value={OBJECT_STATUS.AIR_SENSOR.INACTIVE}>Inactif</option>
+                        <option value={OBJECT_STATUS.AIR_SENSOR.ALERT}>Alerte</option>
+                        <option value={OBJECT_STATUS.AIR_SENSOR.MAINTENANCE}>Maintenance</option>
+                      </>
+                    )}
+                    {objectFormData.type === 'Dishwasher' && (
+                      <>
+                        <option value={OBJECT_STATUS.DISHWASHER.AVAILABLE}>Disponible</option>
+                        <option value={OBJECT_STATUS.DISHWASHER.RUNNING}>En cours</option>
+                        <option value={OBJECT_STATUS.DISHWASHER.FINISHED}>Terminé</option>
+                        <option value={OBJECT_STATUS.DISHWASHER.MAINTENANCE}>Maintenance</option>
+                      </>
+                    )}
+                    {objectFormData.type === 'Scanner' && (
+                      <>
+                        <option value={OBJECT_STATUS.SCANNER.AVAILABLE}>Disponible</option>
+                        <option value={OBJECT_STATUS.SCANNER.SCANNING}>Scan en cours</option>
+                        <option value={OBJECT_STATUS.SCANNER.ERROR}>Erreur</option>
+                        <option value={OBJECT_STATUS.SCANNER.MAINTENANCE}>Maintenance</option>
+                      </>
+                    )}
+                    {objectFormData.type === 'Borne' && (
+                      <>
+                        <option value={OBJECT_STATUS.TERMINAL.AVAILABLE}>Disponible</option>
+                        <option value={OBJECT_STATUS.TERMINAL.IN_USE}>En cours</option>
+                        <option value={OBJECT_STATUS.TERMINAL.OUT_OF_SERVICE}>Hors service</option>
+                        <option value={OBJECT_STATUS.TERMINAL.MAINTENANCE}>Maintenance</option>
+                      </>
+                    )}
+                    {objectFormData.type === 'Capteur' && (
+                      <>
+                        <option value={OBJECT_STATUS.SENSOR.ACTIVE}>Actif</option>
+                        <option value={OBJECT_STATUS.SENSOR.INACTIVE}>Inactif</option>
+                        <option value={OBJECT_STATUS.SENSOR.ALERT}>Alerte</option>
+                        <option value={OBJECT_STATUS.SENSOR.MAINTENANCE}>Maintenance</option>
+                      </>
+                    )}
+                    {objectFormData.type === 'Detecteur' && (
+                      <>
+                        <option value={OBJECT_STATUS.DETECTOR.ACTIVE}>Actif</option>
+                        <option value={OBJECT_STATUS.DETECTOR.INACTIVE}>Inactif</option>
+                        <option value={OBJECT_STATUS.DETECTOR.ALERT}>Alerte</option>
+                        <option value={OBJECT_STATUS.DETECTOR.MAINTENANCE}>Maintenance</option>
+                      </>
+                    )}
+                    {objectFormData.type === 'Panneau' && (
+                      <>
+                        <option value={OBJECT_STATUS.DISPLAY.ACTIVE}>Actif</option>
+                        <option value={OBJECT_STATUS.DISPLAY.INACTIVE}>Inactif</option>
+                        <option value={OBJECT_STATUS.DISPLAY.ERROR}>Erreur</option>
+                        <option value={OBJECT_STATUS.DISPLAY.MAINTENANCE}>Maintenance</option>
+                      </>
+                    )}
+                    {objectFormData.type === 'Barriere' && (
+                      <>
+                        <option value={OBJECT_STATUS.BARRIER.OPEN}>Ouverte</option>
+                        <option value={OBJECT_STATUS.BARRIER.CLOSED}>Fermée</option>
+                        <option value={OBJECT_STATUS.BARRIER.ERROR}>Erreur</option>
+                        <option value={OBJECT_STATUS.BARRIER.MAINTENANCE}>Maintenance</option>
+                      </>
+                    )}
+                    {objectFormData.type === 'Grille' && (
+                      <>
+                        <option value={OBJECT_STATUS.GATE.OPEN}>Ouverte</option>
+                        <option value={OBJECT_STATUS.GATE.CLOSED}>Fermée</option>
+                        <option value={OBJECT_STATUS.GATE.ERROR}>Erreur</option>
+                        <option value={OBJECT_STATUS.GATE.MAINTENANCE}>Maintenance</option>
+                      </>
+                    )}
+                    {objectFormData.type === 'Securite' && (
+                      <>
+                        <option value={OBJECT_STATUS.SECURITY.ACTIVE}>Actif</option>
+                        <option value={OBJECT_STATUS.SECURITY.INACTIVE}>Inactif</option>
+                        <option value={OBJECT_STATUS.SECURITY.ALERT}>Alerte</option>
+                        <option value={OBJECT_STATUS.SECURITY.MAINTENANCE}>Maintenance</option>
                       </>
                     )}
                   </Select>

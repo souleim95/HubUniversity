@@ -478,8 +478,8 @@ const Dashboard = () => {
       />
       <DashboardContainer>
         <Header>
-          <h2>Mon Tableau de Bord</h2>
-          <p>Suivez votre progression et gérez vos objets connectés</p>
+          <h2 style={{ color: '#f8f9fa' }}>Mon Tableau de Bord</h2>
+          <p style={{ color: '#f8f9fa' }}>Suivez votre progression et gérez vos objets connectés</p>
         </Header>
         <CategoryContainer>
           {Object.keys(categories).map(cat => (

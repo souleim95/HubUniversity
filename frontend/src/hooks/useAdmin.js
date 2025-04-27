@@ -8,51 +8,288 @@ import { useNavigate } from 'react-router-dom';
 
 // Constantes pour les statuts
 export const OBJECT_STATUS = {
-	// Statuts pour les salles
-	ROOM: {
-		AVAILABLE: 'Disponible',
-		OCCUPIED: 'Occupée'
-	},
-	// Statuts pour les équipements
-	EQUIPMENT: {
-		ACTIVE: 'Actif',
-		INACTIVE: 'Inactif',
-		MAINTENANCE: 'Maintenance'
-	},
-	// Statuts pour les services
-	SERVICE: {
-		RUNNING: 'En cours',
-		STOPPED: 'Arrêté',
-		MAINTENANCE: 'En maintenance'
-	},
-	// Statuts pour les outils
-	TOOL: {
-		AVAILABLE: 'Disponible',
-		IN_USE: 'En utilisation',
-		MAINTENANCE: 'En maintenance'
-	}
+    // Statuts pour les salles
+    ROOM: {
+        AVAILABLE: 'Disponible',
+        OCCUPIED: 'Occupée'
+    },
+    // Statuts pour les équipements
+    EQUIPMENT: {
+        ACTIVE: 'Actif',
+        INACTIVE: 'Inactif',
+        MAINTENANCE: 'Maintenance'
+    },
+    // Statuts pour les services
+    SERVICE: {
+        RUNNING: 'En cours',
+        STOPPED: 'Arrêté',
+        MAINTENANCE: 'En maintenance'
+    },
+    // Statuts pour les outils
+    TOOL: {
+        AVAILABLE: 'Disponible',
+        IN_USE: 'En utilisation',
+        MAINTENANCE: 'En maintenance'
+    },
+    // Statuts pour les caméras
+    CAMERA: {
+        ACTIVE: 'Actif',
+        INACTIVE: 'Inactif',
+        DISCONNECTED: 'Déconnecté',
+        MAINTENANCE: 'Maintenance'
+    },
+    // Statuts pour les projecteurs
+    PROJECTOR: {
+        ON: 'Allumé',
+        OFF: 'Éteint',
+        MAINTENANCE: 'Maintenance'
+    },
+    // Statuts pour le chauffage
+    HEATING: {
+        ACTIVE: 'Actif',
+        INACTIVE: 'Inactif',
+        AUTO: 'Mode Auto',
+        MAINTENANCE: 'Maintenance'
+    },
+    // Statuts pour l'éclairage
+    LIGHTING: {
+        ON: 'Allumé',
+        OFF: 'Éteint',
+        AUTO: 'Mode Auto',
+        MAINTENANCE: 'Maintenance'
+    },
+    // Statuts pour les stores
+    BLIND: {
+        OPEN: 'Ouvert',
+        CLOSED: 'Fermé',
+        PARTIAL: 'Partiellement ouvert',
+        MAINTENANCE: 'Maintenance'
+    },
+    // Statuts pour l'audio
+    AUDIO: {
+        ON: 'Allumé',
+        OFF: 'Éteint',
+        MUTE: 'Mute',
+        MAINTENANCE: 'Maintenance'
+    },
+    // Statuts pour la ventilation
+    VENTILATION: {
+        ACTIVE: 'Actif',
+        INACTIVE: 'Inactif',
+        AUTO: 'Mode Auto',
+        MAINTENANCE: 'Maintenance'
+    },
+    // Statuts pour les distributeurs
+    DISTRIBUTOR: {
+        AVAILABLE: 'Disponible',
+        OUT_OF_STOCK: 'Rupture de stock',
+        MAINTENANCE: 'Maintenance'
+    },
+    // Statuts pour la cafetière
+    COFFEE_MAKER: {
+        AVAILABLE: 'Disponible',
+        BREWING: 'Préparation en cours',
+        CLEANING: 'Nettoyage en cours',
+        MAINTENANCE: 'Maintenance'
+    },
+    // Statuts pour le micro-ondes
+    MICROWAVE: {
+        AVAILABLE: 'Disponible',
+        IN_USE: 'En cours',
+        FINISHED: 'Terminé',
+        MAINTENANCE: 'Maintenance'
+    },
+    // Statuts pour les capteurs d'air
+    AIR_SENSOR: {
+        ACTIVE: 'Actif',
+        INACTIVE: 'Inactif',
+        ALERT: 'Alerte',
+        MAINTENANCE: 'Maintenance'
+    },
+    // Statuts pour le lave-vaisselle
+    DISHWASHER: {
+        AVAILABLE: 'Disponible',
+        RUNNING: 'En cours',
+        FINISHED: 'Terminé',
+        MAINTENANCE: 'Maintenance'
+    },
+    // Statuts pour le scanner
+    SCANNER: {
+        AVAILABLE: 'Disponible',
+        SCANNING: 'Scan en cours',
+        ERROR: 'Erreur',
+        MAINTENANCE: 'Maintenance'
+    },
+    // Statuts pour les bornes
+    TERMINAL: {
+        AVAILABLE: 'Disponible',
+        IN_USE: 'En cours',
+        OUT_OF_SERVICE: 'Hors service',
+        MAINTENANCE: 'Maintenance'
+    },
+    // Statuts pour les capteurs
+    SENSOR: {
+        ACTIVE: 'Actif',
+        INACTIVE: 'Inactif',
+        ALERT: 'Alerte',
+        MAINTENANCE: 'Maintenance'
+    },
+    // Statuts pour les détecteurs
+    DETECTOR: {
+        ACTIVE: 'Actif',
+        INACTIVE: 'Inactif',
+        ALERT: 'Alerte',
+        MAINTENANCE: 'Maintenance'
+    },
+    // Statuts pour les panneaux
+    DISPLAY: {
+        ACTIVE: 'Actif',
+        INACTIVE: 'Inactif',
+        ERROR: 'Erreur',
+        MAINTENANCE: 'Maintenance'
+    },
+    // Statuts pour les barrières
+    BARRIER: {
+        OPEN: 'Ouverte',
+        CLOSED: 'Fermée',
+        ERROR: 'Erreur',
+        MAINTENANCE: 'Maintenance'
+    },
+    // Statuts pour les grilles
+    GATE: {
+        OPEN: 'Ouverte',
+        CLOSED: 'Fermée',
+        ERROR: 'Erreur',
+        MAINTENANCE: 'Maintenance'
+    },
+    // Statuts pour la sécurité
+    SECURITY: {
+        ACTIVE: 'Actif',
+        INACTIVE: 'Inactif',
+        ALERT: 'Alerte',
+        MAINTENANCE: 'Maintenance'
+    }
 };
 
 // Fonction utilitaire pour vérifier le statut
 export const getObjectStatus = (status, type) => {
-	switch (type) {
-		case 'Salle':
-			return status === OBJECT_STATUS.ROOM.AVAILABLE ? 'active' : 'inactive';
-		case 'Équipement':
-			if (status === OBJECT_STATUS.EQUIPMENT.ACTIVE) return 'active';
-			if (status === OBJECT_STATUS.EQUIPMENT.MAINTENANCE) return 'maintenance';
-			return 'inactive';
-		case 'Service':
-			if (status === OBJECT_STATUS.SERVICE.RUNNING) return 'active';
-			if (status === OBJECT_STATUS.SERVICE.MAINTENANCE) return 'maintenance';
-			return 'inactive';
-		case 'Outil':
-			if (status === OBJECT_STATUS.TOOL.AVAILABLE) return 'active';
-			if (status === OBJECT_STATUS.TOOL.MAINTENANCE) return 'maintenance';
-			return 'inactive';
-		default:
-			return 'inactive';
-	}
+    switch (type) {
+        case 'Salle':
+            return status === OBJECT_STATUS.ROOM.AVAILABLE ? 'active' : 'inactive';
+        case 'Équipement':
+            if (status === OBJECT_STATUS.EQUIPMENT.ACTIVE) return 'active';
+            if (status === OBJECT_STATUS.EQUIPMENT.MAINTENANCE) return 'maintenance';
+            return 'inactive';
+        case 'Service':
+            if (status === OBJECT_STATUS.SERVICE.RUNNING) return 'active';
+            if (status === OBJECT_STATUS.SERVICE.MAINTENANCE) return 'maintenance';
+            return 'inactive';
+        case 'Outil':
+            if (status === OBJECT_STATUS.TOOL.AVAILABLE) return 'active';
+            if (status === OBJECT_STATUS.TOOL.MAINTENANCE) return 'maintenance';
+            return 'inactive';
+        case 'Caméra':
+            if (status === OBJECT_STATUS.CAMERA.ACTIVE) return 'active';
+            if (status === OBJECT_STATUS.CAMERA.MAINTENANCE) return 'maintenance';
+            if (status === OBJECT_STATUS.CAMERA.DISCONNECTED) return 'error';
+            return 'inactive';
+        case 'Projecteur':
+            if (status === OBJECT_STATUS.PROJECTOR.ON) return 'active';
+            if (status === OBJECT_STATUS.PROJECTOR.MAINTENANCE) return 'maintenance';
+            return 'inactive';
+        case 'Chauffage':
+            if (status === OBJECT_STATUS.HEATING.ACTIVE) return 'active';
+            if (status === OBJECT_STATUS.HEATING.MAINTENANCE) return 'maintenance';
+            if (status === OBJECT_STATUS.HEATING.AUTO) return 'active';
+            return 'inactive';
+        case 'Éclairage':
+            if (status === OBJECT_STATUS.LIGHTING.ON) return 'active';
+            if (status === OBJECT_STATUS.LIGHTING.MAINTENANCE) return 'maintenance';
+            if (status === OBJECT_STATUS.LIGHTING.AUTO) return 'active';
+            return 'inactive';
+        case 'Store':
+            if (status === OBJECT_STATUS.BLIND.OPEN) return 'active';
+            if (status === OBJECT_STATUS.BLIND.PARTIAL) return 'active';
+            if (status === OBJECT_STATUS.BLIND.MAINTENANCE) return 'maintenance';
+            return 'inactive';
+        case 'Audio':
+            if (status === OBJECT_STATUS.AUDIO.ON) return 'active';
+            if (status === OBJECT_STATUS.AUDIO.MAINTENANCE) return 'maintenance';
+            return 'inactive';
+        case 'Ventilation':
+            if (status === OBJECT_STATUS.VENTILATION.ACTIVE) return 'active';
+            if (status === OBJECT_STATUS.VENTILATION.MAINTENANCE) return 'maintenance';
+            if (status === OBJECT_STATUS.VENTILATION.AUTO) return 'active';
+            return 'inactive';
+        case 'Distributeur':
+            if (status === OBJECT_STATUS.DISTRIBUTOR.AVAILABLE) return 'active';
+            if (status === OBJECT_STATUS.DISTRIBUTOR.MAINTENANCE) return 'maintenance';
+            if (status === OBJECT_STATUS.DISTRIBUTOR.OUT_OF_STOCK) return 'error';
+            return 'inactive';
+        case 'Cafetiere':
+            if (status === OBJECT_STATUS.COFFEE_MAKER.AVAILABLE) return 'active';
+            if (status === OBJECT_STATUS.COFFEE_MAKER.MAINTENANCE) return 'maintenance';
+            if (status === OBJECT_STATUS.COFFEE_MAKER.BREWING || status === OBJECT_STATUS.COFFEE_MAKER.CLEANING) return 'warning';
+            return 'inactive';
+        case 'Microwave':
+            if (status === OBJECT_STATUS.MICROWAVE.AVAILABLE) return 'active';
+            if (status === OBJECT_STATUS.MICROWAVE.MAINTENANCE) return 'maintenance';
+            if (status === OBJECT_STATUS.MICROWAVE.IN_USE) return 'warning';
+            return 'inactive';
+        case 'AirSensor':
+            if (status === OBJECT_STATUS.AIR_SENSOR.ACTIVE) return 'active';
+            if (status === OBJECT_STATUS.AIR_SENSOR.MAINTENANCE) return 'maintenance';
+            if (status === OBJECT_STATUS.AIR_SENSOR.ALERT) return 'error';
+            return 'inactive';
+        case 'Dishwasher':
+            if (status === OBJECT_STATUS.DISHWASHER.AVAILABLE) return 'active';
+            if (status === OBJECT_STATUS.DISHWASHER.MAINTENANCE) return 'maintenance';
+            if (status === OBJECT_STATUS.DISHWASHER.RUNNING) return 'warning';
+            return 'inactive';
+        case 'Scanner':
+            if (status === OBJECT_STATUS.SCANNER.AVAILABLE) return 'active';
+            if (status === OBJECT_STATUS.SCANNER.MAINTENANCE) return 'maintenance';
+            if (status === OBJECT_STATUS.SCANNER.ERROR) return 'error';
+            if (status === OBJECT_STATUS.SCANNER.SCANNING) return 'warning';
+            return 'inactive';
+        case 'Borne':
+            if (status === OBJECT_STATUS.TERMINAL.AVAILABLE) return 'active';
+            if (status === OBJECT_STATUS.TERMINAL.MAINTENANCE) return 'maintenance';
+            if (status === OBJECT_STATUS.TERMINAL.OUT_OF_SERVICE) return 'error';
+            return 'inactive';
+        case 'Capteur':
+            if (status === OBJECT_STATUS.SENSOR.ACTIVE) return 'active';
+            if (status === OBJECT_STATUS.SENSOR.MAINTENANCE) return 'maintenance';
+            if (status === OBJECT_STATUS.SENSOR.ALERT) return 'error';
+            return 'inactive';
+        case 'Detecteur':
+            if (status === OBJECT_STATUS.DETECTOR.ACTIVE) return 'active';
+            if (status === OBJECT_STATUS.DETECTOR.MAINTENANCE) return 'maintenance';
+            if (status === OBJECT_STATUS.DETECTOR.ALERT) return 'error';
+            return 'inactive';
+        case 'Panneau':
+            if (status === OBJECT_STATUS.DISPLAY.ACTIVE) return 'active';
+            if (status === OBJECT_STATUS.DISPLAY.MAINTENANCE) return 'maintenance';
+            if (status === OBJECT_STATUS.DISPLAY.ERROR) return 'error';
+            return 'inactive';
+        case 'Barriere':
+            if (status === OBJECT_STATUS.BARRIER.OPEN) return 'active';
+            if (status === OBJECT_STATUS.BARRIER.MAINTENANCE) return 'maintenance';
+            if (status === OBJECT_STATUS.BARRIER.ERROR) return 'error';
+            return 'inactive';
+        case 'Grille':
+            if (status === OBJECT_STATUS.GATE.OPEN) return 'active';
+            if (status === OBJECT_STATUS.GATE.MAINTENANCE) return 'maintenance';
+            if (status === OBJECT_STATUS.GATE.ERROR) return 'error';
+            return 'inactive';
+        case 'Securite':
+            if (status === OBJECT_STATUS.SECURITY.ACTIVE) return 'active';
+            if (status === OBJECT_STATUS.SECURITY.MAINTENANCE) return 'maintenance';
+            if (status === OBJECT_STATUS.SECURITY.ALERT) return 'error';
+            return 'inactive';
+        default:
+            return 'inactive';
+    }
 };
 
 // Fonction pour compter les objets par statut
@@ -522,63 +759,50 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		setShowUserModal(true);
 	};
 
-	// Ouvre la modal pour modifier un utilisateur existant
-	const handleEditUser = (user) => {
+	// Fonction pour gérer la modification d'un utilisateur
+	const handleEditUser = useCallback((user) => {
 		setSelectedUser(user);
 		setUserFormData({
 			login: user.login,
+			email: user.email,
 			role: user.role,
-			points: user.points,
-			password: ''
+			points: user.points
 		});
 		setShowUserModal(true);
-	};
+	}, []);
 
-	// Supprime un utilisateur après confirmation
-	const handleDeleteUser = async (userId) => {
-		setSelectedItemToDelete(userId);
-		setShowDeleteUserModal(true);
-	};
+	// Fonction pour gérer la suppression d'un utilisateur
+	const handleDeleteUser = useCallback((userId) => {
+		const userToDelete = users.find(user => user.id === userId);
+		if (userToDelete) {
+			setSelectedUser(userToDelete);
+			setShowDeleteUserModal(true);
+		}
+	}, [users]);
 
-	const confirmDeleteUser = () => {
-		setUsers(users.filter(user => user.id !== selectedItemToDelete));
-		setShowDeleteUserModal(false);
-		setSelectedItemToDelete(null);
-	};
-
-	// Sauvegarde les modifications d'un utilisateur
-	const handleUserSubmit = async e => {
+	// Fonction pour gérer la soumission du formulaire utilisateur
+	const handleUserSubmit = useCallback((e) => {
 		e.preventDefault();
-		try {
-		const payload = {
-			name:     userFormData.login,
-			email:    userFormData.email,     // à ajouter dans votre formData si besoin
-			role:     userFormData.role,
-			password: userFormData.password,  // laisser vide si pas modif
-		};
+		// Simuler la mise à jour/création d'utilisateur
 		if (selectedUser) {
-			// modification
-			await fetch(`/api/users/${selectedUser.id}`, {
-			method: 'PUT',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(payload),
-			});
+			setUsers(users.map(user => 
+				user.id === selectedUser.id ? { ...user, ...userFormData } : user
+			));
+			toast.success('Utilisateur modifié avec succès');
 		} else {
-			// création
-			await fetch(`/api/users`, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(payload),
-			});
+			setUsers([...users, { id: Date.now(), ...userFormData }]);
+			toast.success('Utilisateur créé avec succès');
 		}
-		await fetchUsers();               // raffraîchir la liste
 		setShowUserModal(false);
-		} catch (err) {
-		console.error(err);
-		toast.error('Erreur lors de la sauvegarde');
-		}
-	};
-	
+	}, [selectedUser, userFormData, users]);
+
+	// Fonction pour confirmer la suppression d'un utilisateur
+	const confirmDeleteUser = useCallback(() => {
+		setUsers(users.filter(user => user.id !== selectedUser.id));
+		toast.success('Utilisateur supprimé avec succès');
+		setShowDeleteUserModal(false);
+		setSelectedUser(null);
+	}, [selectedUser, users]);
 
 	// --------- Gestion des objets connectés ---------
 
@@ -597,6 +821,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		if (newCategory && !categoryList.includes(newCategory)) {
 			setCategoryList([...categoryList, newCategory]);
 			setNewCategory('');
+			toast.success("La catégorie a été ajoutée avec succès");
 		}
 		setShowCategoryModal(false);
 	};
@@ -671,14 +896,21 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 	};
 
 	const confirmDeleteObject = () => {
+		// Supprimer l'objet
 		setObjects(objects.filter(obj => obj.id !== selectedItemToDelete));
-		// Mettre à jour le statut de l'alerte associée
+		
+		// Afficher le toast de succès
+		toast.success('Objet supprimé avec succès');
+
+		// Mettre à jour le statut de l'alerte si elle existe
 		if (selectedAlertToApprove) {
 			setAlerts(alerts.map(a => 
 				a.id === selectedAlertToApprove.id ? { ...a, status: 'approved' } : a
-			));
-			toast.success('Objet supprimé et demande approuvée');
+				));
+			toast.success('Demande de suppression approuvée');
 		}
+
+		// Réinitialiser les états
 		setShowDeleteObjectModal(false);
 		setSelectedItemToDelete(null);
 		setSelectedAlertToApprove(null);
@@ -692,7 +924,8 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 			// Modification d'un objet existant
 			setObjects(objects.map(obj => 
 				obj.id === selectedObject.id ? { ...obj, ...objectFormData } : obj
-			));
+				));
+			toast.success("L'objet a été modifié avec succès");
 		} else {
 			// Ajout d'un nouvel objet
 			const newObject = {
@@ -700,6 +933,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 				...objectFormData
 			};
 			setObjects([...objects, newObject]);
+			toast.success("L'objet a été ajouté avec succès");
 		}
 		
 		setShowObjectModal(false);
@@ -759,7 +993,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 			...prev,
 			theme: theme
 		}));
-		toast.success(`Thème ${theme === 'light' ? 'clair' : 'sombre'} appliqué`);
+		toast.success(`Theme appliqué`);
 	};
 
 	// Fonction pour appliquer le mode de validation
@@ -874,38 +1108,45 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 			return { ...obj, status: newStatus };
 		});
 
-		setObjects(updatedObjects);
+		// Vérifier si des changements ont été effectués
+		const hasChanges = updatedObjects.some((updatedObj, index) => 
+			updatedObj.status !== objects[index].status
+		);
 
-		// Vérifier les seuils d'alerte
-		const activeObjects = updatedObjects.filter(obj => 
-			obj.status === 'Actif' || obj.status === 'Allumé'
-		).length;
-		const totalObjects = updatedObjects.length;
-		const activePercentage = (activeObjects / totalObjects) * 100;
+		if (hasChanges) {
+			setObjects(updatedObjects);
+			toast.info("Les règles globales ont été appliquées");
 
-		if (activePercentage > globalRules.alertThreshold) {
-			// Créer une alerte si le seuil est dépassé
-			const newAlert = {
-				id: Date.now(),
-				type: 'alert',
-				title: 'Seuil d\'activité dépassé',
-				message: `Le nombre d'objets actifs (${activePercentage.toFixed(1)}%) dépasse le seuil configuré (${globalRules.alertThreshold}%)`,
-				objectId: null,
-				priority: 'high',
-				timestamp: new Date().toISOString(),
-				status: 'pending'
-			};
+			// Vérifier les seuils d'alerte uniquement si des changements ont eu lieu
+			const activeObjects = updatedObjects.filter(obj => 
+				obj.status === 'Actif' || obj.status === 'Allumé'
+			).length;
+			const totalObjects = updatedObjects.length;
+			const activePercentage = (activeObjects / totalObjects) * 100;
 
-			// Vérifier si l'alerte n'existe pas déjà
-			if (!alerts.some(alert => 
-				alert.type === 'alert' && 
-				alert.title === newAlert.title && 
-				alert.status === 'pending'
-			)) {
-				setAlerts([...alerts, newAlert]);
+			if (activePercentage > globalRules.alertThreshold) {
+				const newAlert = {
+					id: Date.now(),
+					type: 'alert',
+					title: "Seuil d'activité dépassé",
+					message: `Le nombre d'objets actifs (${activePercentage.toFixed(1)}%) dépasse le seuil configuré (${globalRules.alertThreshold}%)`,
+					objectId: null,
+					priority: 'high',
+					timestamp: new Date().toISOString(),
+					status: 'pending'
+				};
+
+				if (!alerts.some(alert => 
+					alert.type === 'alert' && 
+					alert.title === newAlert.title && 
+					alert.status === 'pending'
+				)) {
+					setAlerts([...alerts, newAlert]);
+					toast.warning("Le seuil d'activité a été dépassé");
+				}
 			}
 		}
-	}, [objects, globalRules, alerts]);
+	}, [objects, globalRules, alerts, setAlerts]);
 
 	// Ajouter la fonction de réinitialisation des couleurs
 	const resetColors = () => {
@@ -919,7 +1160,6 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		// Forcer un rafraîchissement des styles
 		document.documentElement.style.setProperty('--primary-color', '#3b82f6');
 		document.documentElement.style.setProperty('--secondary-color', '#1f2937');
-		toast.success('Couleurs réinitialisées avec succès');
 	  };
 
 	// Charge les données au démarrage du composant
