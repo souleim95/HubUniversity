@@ -20,6 +20,21 @@ const io = new Server(server, { cors: { origin: "*" } });
 // Helper to handle async errors
 const asyncHandler = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
+async function logAction(userId, action, details) {
+  try {
+    await pool.query(
+      `INSERT INTO action_history (user_id, action, details)
+       VALUES ($1, $2, $3)`,
+      [userId, action, details]
+    );
+  } catch (err) {
+    // Si err.code === '23503' (viol. FK), on l’ignore
+    console.warn('logAction échoué (FK):', err.message);
+  }
+}
+
+
+
 app.use(cors({
   origin: 'http://localhost:3000', // ou l'URL de votre frontend
   credentials: true
@@ -97,10 +112,9 @@ app.post("/api/users", async (req, res) => {
       [name, email, idRole, passwordHash]
     );
     const newUser = insertResult.rows[0];
-
     // 4. Log pour vérification (optionnel)
     console.log("Nouvel utilisateur ajouté :", newUser);
-
+    
     // 5. Retourner l’utilisateur (sans le mot de passe)
     res.status(201).json({
       id: newUser.id,
@@ -159,6 +173,7 @@ app.post("/api/login", async (req, res) => {
     
 
     if (match) {
+      await logAction(user.id, "Connexion", `Connexion de ${user.email}`); 
       // On renvoie l'objet utilisateur sans le mot de passe.
       res.json({ 
         message: "Connexion réussie", 
@@ -290,18 +305,26 @@ app.patch("/api/users/:id/score", async (req, res) => {
   }
 });
 
-// Supprimer un utilisateur
 app.delete('/api/users/:id', asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const result = await pool.query(
+  // 1) Récupérer l’utilisateur
+  const { rows: [user] } = await pool.query(
+    'SELECT id, email FROM users WHERE id = $1',
+    [id]
+  );
+  if (!user) {
+    return res.status(404).json({ error: 'Utilisateur non trouvé.' });
+  }
+  // 2) Journaliser la suppression
+  await logAction(user.id, 'Suppression utilisateur', `Suppression de ${user.email}`);
+  // 3) Supprimer réellement
+  const { rows: [deletedUser] } = await pool.query(
     'DELETE FROM users WHERE id = $1 RETURNING *',
     [id]
   );
-  if (result.rows.length === 0) {
-    return res.status(404).json({ error: 'Utilisateur non trouvé.' });
-  }
-  res.json({ message: 'Utilisateur supprimé.', user: result.rows[0] });
+  res.json({ message: 'Utilisateur supprimé.', user: deletedUser });
 }));
+
 
 // server.js, après app.post("/api/users")…
 app.patch("/api/users/:id", asyncHandler(async (req, res) => {
@@ -327,6 +350,7 @@ app.patch("/api/users/:id", asyncHandler(async (req, res) => {
   if (updateRes.rows.length === 0) {
     return res.status(404).json({ error: "Utilisateur non trouvé." });
   }
+   await logAction(id, 'Modification utilisateur', `Changement de rôle/score pour l'utilisateur ${updateRes.rows[0].email}`); 
   // 3) Retourner le user mis à jour
   res.json({
     user: {
@@ -680,15 +704,6 @@ app.post("/api/salles", asyncHandler(async (req, res) => {
     [nomSalle, idEtatSalle, capaciteSalle]
   );
   res.status(201).json(result.rows[0]);
-}));
-
-app.delete("/api/salles/:id", asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  const result = await pool.query(
-    `DELETE FROM salle WHERE idSalle = $1 RETURNING *`, [id]
-  );
-  if (result.rows.length === 0) return res.status(404).json({ error: 'Salle non trouvée' });
-  res.json({ message: 'Salle supprimée', salle: result.rows[0] });
 }));
 
 // == Projecteurs ==
@@ -1317,6 +1332,24 @@ app.patch("/api/hotte/:id", asyncHandler(async (req, res) => {
   );
   if (result.rows.length === 0) return res.status(404).json({ error: 'Hotte non trouvée' });
   res.json(result.rows[0]);
+}));
+
+// Récupérer l'historique des actions depuis la BDD
+app.get('/api/action-history', asyncHandler(async (req, res) => {
+  const query = `
+    SELECT 
+      ah.id,
+      ah.user_id AS "userId",
+      u.name     AS "userName",
+      ah.action,
+      ah.details,
+      ah.timestamp
+    FROM action_history ah
+    LEFT JOIN users u ON u.id = ah.user_id
+    ORDER BY ah.timestamp DESC
+  `;
+  const { rows } = await pool.query(query);
+  res.json(rows);
 }));
 
 

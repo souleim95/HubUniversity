@@ -358,6 +358,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 	const navigate = useNavigate();
 	const raw = localStorage.getItem('currentUser');
   	const currentUser = raw ? JSON.parse(raw) : null;
+	
 
 	// États pour la gestion des utilisateurs
 	const [users, setUsers] = useState([]);
@@ -502,46 +503,65 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 	const fetchUsers = async () => {
 		setLoadingUsers(true);
 		try {
-		// Utilisez l'URL complète avec le port du backend
-		const res = await fetch('http://localhost:5001/api/users');
-		
-		if (!res.ok) {
-			const errorData = await res.json();
-			throw new Error(errorData.error || 'Erreur réseau');
-		}
-		
-		const data = await res.json();
-		console.log("Données reçues:", data); // Ajoutez ce log pour le débogage
-		
-		const formatted = data.map(u => ({
+		  // Récupère directement data via Axios
+		  const { data } = await axios.get('http://localhost:5001/api/users');
+		  alert(`✅ Utilisateurs reçus (${data.length} entrées)`);
+		  console.log("Données reçues:", data);
+	  
+		  // Formatte les données comme avant
+		  const formatted = data.map(u => ({
 			id: u.id,
 			login: u.name,
 			email: u.email,
 			role: u.role,
 			points: u.score,
-			createdAt: new Date(u.created_at).toLocaleDateString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-			lastLogin: u.last_login ? new Date(u.last_login).toLocaleDateString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '—',
-		}));
-		
-		setUsers(formatted);
+			createdAt: new Date(u.created_at)
+			  .toLocaleDateString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+			lastLogin: u.last_login
+			  ? new Date(u.last_login)
+				  .toLocaleDateString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+			  : '—',
+		  }));
+	  
+		  setUsers(formatted);
 		} catch (err) {
-		console.error("Erreur détaillée:", err);
-		toast.error(`Erreur: ${err.message}`);
+		  // Gestion de l’erreur Axios
+		  const message = err.response?.data?.error || err.message;
+		  alert('❌ Erreur fetchUserHistory: ' + message);
+		  console.error("Erreur détaillée:", err);
+		  toast.error(`Erreur: ${message}`);
 		} finally {
-		setLoadingUsers(false);
+		  setLoadingUsers(false);
 		}
-	};
+	  };
 	
 
 	// Récupère la liste des objets et catégories depuis fakeData.js
 	const fetchObjects = async () => {
-		// Utiliser les données de fakeData
-		setObjects(dataObjects);
+		    try {
+		      const { data } = await axios.get('http://localhost:5001/api/objets');
+		     // Le serveur renvoie [{ type, id, nom, etat }, …]
+		      const shaped = data.map(o => ({
+		        id: o.id,
+		        type: o.type,
+		        name: o.nom,
+		        status: o.etat
+		      }));
+		      setObjects(shaped);
 		
-		// Extraire les types uniques des objets
-		const uniqueTypes = [...new Set(dataObjects.map(obj => obj.type))];
-		setCategoryList(uniqueTypes);
-	};
+		      const uniqueTypes = [...new Set(shaped.map(obj => obj.type))];
+		      setCategoryList(uniqueTypes);
+		    } catch (err) {
+		      toast.error("Impossible de charger les objets : " + err.message);
+		    }
+		  };
+		
+		  // On charge utilisateurs + objets une fois au montage
+		  useEffect(() => {
+		    fetchUsers();
+		    fetchObjects();
+		    fetchReports();
+		  }, []);
 
 	// Récupère les données pour les rapports
 	const fetchReports = useCallback(async () => {
@@ -728,15 +748,14 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 
 	// Ajout de la fonction pour récupérer l'historique
 	const fetchUserHistory = async () => {
-		// Simulation de données d'historique
-		const mockHistory = [
-			{ id: 1, userId: 1, action: 'Connexion', timestamp: '2024-03-20T10:00:00', details: 'Connexion réussie' },
-			{ id: 2, userId: 1, action: 'Modification', timestamp: '2024-03-20T10:15:00', details: 'Modification du profil' },
-			{ id: 3, userId: 2, action: 'Connexion', timestamp: '2024-03-20T11:00:00', details: 'Connexion réussie' },
-			{ id: 4, userId: 1, action: 'Déconnexion', timestamp: '2024-03-20T12:00:00', details: 'Déconnexion normale' },
-		];
-		setUserHistory(mockHistory);
-	};
+		try {
+		  // Si vous avez configuré un proxy dans package.json, vous pouvez juste faire '/api/...'
+		  const res = await axios.get('http://localhost:5001/api/action-history');
+		  setUserHistory(res.data);
+		} catch (error) {
+		  console.error("Erreur lors de la récupération de l'historique :", error);
+		}
+	  };
 
 	// Ajout de la fonction pour filtrer l'historique
 	const filterHistory = (history) => {
@@ -845,11 +864,13 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 	const confirmDeleteUser = useCallback(async () => {
 		try {
 		  // envoie la requête DELETE au back
-		  await axios.delete(`/api/users/${selectedUser.id}`);
-	  
+		  await axios.delete(`http://localhost:5001/api/users/${selectedUser.id}`);
+		  alert('✅ DELETE /api/users/' + selectedUser.id + ' réussi');
 		  // retire de l'état local
 		  setUsers(prev => prev.filter(u => u.id !== selectedUser.id));
+		  alert('✅ State users mis à jour');
 		  toast.success('Utilisateur supprimé avec succès');
+		  alert('▶️ Appel à fetchUserHistory pour rafraîchir l’historique');
 		  setShowDeleteUserModal(false);
 		  setSelectedUser(null);
 	  
@@ -857,8 +878,14 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		  if (currentUser && selectedUser.id === currentUser.id) {
 			handleLogout();
 		  }
+		  await fetchUserHistory();
+		  alert('✅ Historique rafraîchi');
 		} catch (err) {
-		  toast.error('Échec de la suppression de l\'utilisateur');
+			console.error('Erreur suppression utilisateur', err.response || err);
+			const status  = err.response?.status;
+			const serverMessage = err.response?.data?.error || err.message;
+			alert(`❌ Échec suppression (HTTP ${status}) : ${serverMessage}`);
+			toast.error(`Échec suppression : ${serverMessage}`);
 		}
 	}, [selectedUser, currentUser, navigate]);
 
@@ -1220,19 +1247,23 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		document.documentElement.style.setProperty('--secondary-color', '#1f2937');
 	  };
 
-	// Charge les données au démarrage du composant
-	useEffect(() => {
+	  useEffect(() => {
 		const initializeData = async () => {
+		  try {
+			// On charge utilisateurs, objets et historique en parallèle
 			await Promise.all([
-				fetchUsers(),
-				fetchObjects(),
-				fetchUserHistory()
+			  fetchUsers(),
+			  fetchObjects(),
+			  fetchUserHistory()    // appelle setUserHistory(data)
 			]);
-			fetchReports();
+			// Puis les rapports (qui dépendent de users & objects)
+			await fetchReports();
+		  } catch (err) {
+			console.error("Erreur d'initialisation :", err);
+		  }
 		};
 		initializeData();
-	}, []); // Remove fetchReports from dependencies
-
+	  }, []);
 	// Appliquer les règles globales périodiquement
 	useEffect(() => {
 		const interval = setInterval(() => {
