@@ -257,6 +257,19 @@ CREATE TABLE IF NOT EXISTS alarme(
   idEtat INTEGER REFERENCES etat(idEtat)
 );
 
+CREATE TABLE IF NOT EXISTS action_history (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id),
+  action TEXT NOT NULL,
+  timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  details TEXT
+);
+ALTER TABLE action_history
+DROP CONSTRAINT action_history_user_id_fkey,
+ADD CONSTRAINT action_history_user_id_fkey
+FOREIGN KEY (user_id)
+REFERENCES users(id)
+ON DELETE CASCADE;
 
 INSERT INTO salle (nomSalle, idEtatSalle, capaciteSalle) VALUES
   ('Salle informatique', 1, 30),

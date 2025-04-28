@@ -18,6 +18,9 @@ export const useGestionState = () => {
     const [objectHistories, setObjectHistories] = useState({}); // Historique des consommations
     const [allObjects, setAllObjects] = useState([]); // Liste complète des objets
     const [selectedReport, setSelectedReport] = useState('total');
+    const [timeFilter, setTimeFilter] = useState('day');
+    const [historyTimeFilter, setHistoryTimeFilter] = useState('day');
+    const [chartType, setChartType] = useState('line');
 
     // États pour les alertes et confirmations
     const [showAlert, setShowAlert] = useState(false); // Affichage des messages d'alerte
@@ -64,50 +67,69 @@ export const useGestionState = () => {
 
     // Générateur de rapports et statistiques
     const generateReports = (objectsToAnalyze) => {
-        const today = new Date().toISOString().split('T')[0];
+        const getFilteredDates = (filter) => {
+            const dates = [];
+            const today = new Date();
+            
+            switch(filter) {
+              case 'week':
+                for(let i = 6; i >= 0; i--) {
+                  const date = new Date();
+                  date.setDate(today.getDate() - i);
+                  dates.push(date.toISOString().split('T')[0]);
+                }
+                break;
+              case 'month':
+                for(let i = 29; i >= 0; i--) {
+                  const date = new Date();
+                  date.setDate(today.getDate() - i);
+                  dates.push(date.toISOString().split('T')[0]);
+                }
+                break;
+              default: // day
+                dates.push(today.toISOString().split('T')[0]);
+            }
+            return dates;
+        };
       
-        const generateEnergyData = (objs) =>
-          objs.map(obj => ({
-            id: obj.id,
-            date: today,
-            value: obj.status === 'active' ? 50 : 20
+        const generateEnergyData = (objs, dates) =>
+          dates.map(date => ({
+            date,
+            value: Math.round(objs.reduce((sum, obj) => 
+              sum + (obj.status === 'active' ? 50 + Math.random() * 20 : 20)
+            , 0))
           }));
       
+        const dates = getFilteredDates(timeFilter);
+        
         const salles = objectsToAnalyze.filter(obj => categories.salles.items.includes(obj.id));
         const ecole = objectsToAnalyze.filter(obj => categories.ecole.items.includes(obj.id));
         const parking = objectsToAnalyze.filter(obj => categories.parking.items.includes(obj.id));
       
-        const salleEnergyData = generateEnergyData(salles);
-        const ecoleEnergyData = generateEnergyData(ecole);
-        const parkingEnergyData = generateEnergyData(parking);
-        const totalEnergyData = generateEnergyData(objectsToAnalyze); // ici TOUS les objets
-      
         setReports({
-          total: totalEnergyData,
-          salles: salleEnergyData,
-          ecole: ecoleEnergyData,
-          parking: parkingEnergyData,
+          total: generateEnergyData(objectsToAnalyze, dates),
+          salles: generateEnergyData(salles, dates),
+          ecole: generateEnergyData(ecole, dates),
+          parking: generateEnergyData(parking, dates)
         });
 
         // 🔥 Mise à jour de l'historique des consommations par objet
-setObjectHistories(prevHistories => {
-    const updatedHistories = { ...prevHistories };
-    
-    objectsToAnalyze.forEach(obj => {
-      if (!updatedHistories[obj.id]) {
-        updatedHistories[obj.id] = [];
-      }
-      updatedHistories[obj.id].push({
-        date: today,
-        value: obj.status === 'active' ? 50 : 20
-      });
-    });
-  
-    return updatedHistories;
-  });
-  
-      };
-      
+        setObjectHistories(prevHistories => {
+            const updatedHistories = { ...prevHistories };
+            
+            objectsToAnalyze.forEach(obj => {
+              if (!updatedHistories[obj.id]) {
+                updatedHistories[obj.id] = [];
+              }
+              updatedHistories[obj.id].push({
+                date: new Date().toISOString().split('T')[0],
+                value: obj.status === 'active' ? 50 : 20
+              });
+            });
+          
+            return updatedHistories;
+        });
+    };
 
     // Fonction d'export des rapports
     const handleExportReport = (type) => {
@@ -342,20 +364,25 @@ setObjectHistories(prevHistories => {
     const handleOpenSettings = (object) => {
         setEditingSettingsFor(object);
         
+        // Initialiser les paramètres en fonction du type d'objet
+        const defaultSettings = {
+            // Paramètres de base
+            temperature: '',
+            startTime: '',
+            endTime: '',
+            
+            // Paramètres par type
+            mode: 'auto',
+            brightness: '100',
+            resolution: '1080p',
+            detectionMode: 'mouvement',
+            speed: '50',
+        };
+
+        // Récupérer les paramètres existants ou utiliser les valeurs par défaut
         setObjectSettings({
-            temperature: object.settings?.temperature || '',
-            startTime: object.settings?.startTime || '',
-            endTime: object.settings?.endTime || ''
-        });
-        
-        setObjects(prev => {
-            const updated = prev.map(obj =>
-            obj.id === object.id
-                ? { ...obj, settings: { ...objectSettings } }
-                : obj
-            );
-            generateReports(updated);
-            return updated;
+            ...defaultSettings,
+            ...object.settings
         });
     };
       
@@ -435,11 +462,11 @@ setObjectHistories(prevHistories => {
      // 👈 nouvelle dépendance ici
 
     // 🔥 Nouveau useEffect pour générer la conso globale de tous les objets
-useEffect(() => {
-    if (allObjects.length > 0) {
-      generateReports(allObjects);
-    }
-  }, [allObjects]);
+    useEffect(() => {
+        if (allObjects.length > 0) {
+          generateReports(allObjects);
+        }
+    }, [allObjects]);
   
 
   return {
@@ -477,5 +504,8 @@ useEffect(() => {
     alerts, setAlerts,
     reports, setReports,
     selectedReport, setSelectedReport,
+    timeFilter, setTimeFilter,
+    historyTimeFilter, setHistoryTimeFilter,
+    chartType, setChartType,
   };
 };

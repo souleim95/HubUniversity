@@ -16,17 +16,21 @@
  */
 
 // Import des dépendances et composants nécessaires
-import React from 'react';
+import React, { useState } from 'react';
 import { dataObjects, categories } from '../data/projectData';
 import {
   ResponsiveContainer,
   LineChart,
   Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   Tooltip,
   CartesianGrid,
+  Legend,
 } from 'recharts';
+import { toast } from 'react-toastify';
 
 import {
   AdminContainer,
@@ -65,21 +69,76 @@ import {
   TableRow,
   ExportButton,
 } from '../styles/AdminStyles';
-import { FaTools, FaCalendar, FaExclamationTriangle, FaPlus, FaTrash, FaChartBar,FaDownload } from 'react-icons/fa';
+import { FaTools, FaCalendar, FaExclamationTriangle, FaPlus, FaTrash, FaChartBar, FaDownload } from 'react-icons/fa';
 import { useGestionState, categoryToTypeMap } from '../hooks/useGestion';
 
+// Dans useGestion.js, définir les types configurables et leurs paramètres
+export const configurableTypes = {
+  'Chauffage': true,     // Temperature, mode
+  'Éclairage': true,     // Intensité, horaires, mode
+  'Ventilation': true,   // Vitesse, CO2, mode
+  'Caméra': true,        // Résolution, détection, angle
+  'Porte': true,         // Mode d'accès, horaires, sécurité
+  'Panneau': true,       // Type affichage, luminosité, défilement
+  'Audio': true,         // Volume, mode
+  'Store': true,         // Position, mode automatique
+  
+  // Objets non configurables
+  'Salle': false,
+  'Distributeur': false,
+  'Scanner': false,
+  'Borne': false,
+  'Securite': false,
+  'Detecteur': false,
+  'Barriere': false,
+  'Grille': false,
+  'Cafetiere': false,
+  'Microwave': false,
+  'AirSensor': false,
+  'Dishwasher': false,
+  'Projecteur': false
+};
+
+const convertToCSV = (data) => {
+  if (!data || !data.length) return '';
+  const headers = Object.keys(data[0]);
+  const rows = data.map(obj => 
+    headers.map(header => 
+      typeof obj[header] === 'string' ? `"${obj[header]}"` : obj[header]
+    ).join(',')
+  );
+  return [headers.join(','), ...rows].join('\n');
+};
+
+const downloadCSV = (csv, filename) => {
+  if (!csv) {
+    toast.error("Aucune donnée à exporter");
+    return;
+  }
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.setAttribute('download', filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
 
 function GestionPage() {
-
-  // Externalisation de nos const et de nos states dans un fichier constGestion.js
   const {
-    generateReports, handleExportReport,
-    handleEditObject, handleObjectSubmit,
-    handleCategoryChange, handleAddObject,
-    handleAddReservation, handleEditReservation,
-    handleDeleteReservation, handleRequestDeletion,
+    generateReports, // Déjà importé d'ici
+    handleExportReport,
+    handleEditObject,
+    handleObjectSubmit,
+    handleCategoryChange,
+    handleAddObject,
+    handleAddReservation,
+    handleEditReservation,
+    handleDeleteReservation,
+    handleRequestDeletion,
     handleCreateAlert,
-    handleToggleStatus, handleOpenSettings,
+    handleToggleStatus,
+    handleOpenSettings,
     handleReservationSubmit,
     isInefficient,
     objects, setObjects,
@@ -103,9 +162,14 @@ function GestionPage() {
     selectedAlert, 
     alerts, reports,
     selectedReport, setSelectedReport,
-    selectedCategory
+    selectedCategory,
+    allObjects,
+    timeFilter,
+    setTimeFilter,
+    historyTimeFilter, 
+    setHistoryTimeFilter,
+    chartType, setChartType,
   } = useGestionState();
-
 
   return (
     <AdminContainer>
@@ -168,15 +232,19 @@ function GestionPage() {
                 </p>
               )}
               <ButtonGroup>
-                <SecondaryButton onClick={() => handleCreateAlert(object)}>Créer une alerte</SecondaryButton>
+                <SecondaryButton onClick={() => handleCreateAlert(object)}>
+                  Créer une alerte
+                </SecondaryButton>
                 <PrimaryButton onClick={() => handleRequestDeletion(object)}>
                   <FaTrash /> Demander la suppression
                 </PrimaryButton>
-                <SecondaryButton onClick={() => handleOpenSettings(object)}>
-                  Configurer
-                </SecondaryButton>
+                {configurableTypes[object.type] && (
+                  <SecondaryButton onClick={() => handleOpenSettings(object)}>
+                    Configurer
+                  </SecondaryButton>
+                )}
                 <SecondaryButton onClick={() => setSelectedForChart(object)}>
-                  Voir l’historique
+                  Voir l'historique
                 </SecondaryButton>
                 <SecondaryButton onClick={() => handleEditObject(object)}>
                   Modifier
@@ -259,27 +327,70 @@ function GestionPage() {
               <FaChartBar /> Rapports d'Utilisation & Efficacité
             </SectionTitle>
             <ButtonGroup>
-              <ExportButton onClick={() => handleExportReport('energyConsumption')}>
+              <ExportButton onClick={() => handleExportReport('total')}>
                 <FaDownload /> Exporter conso
               </ExportButton>
-              <ExportButton onClick={() => handleExportReport('objectUsage')}>
-                <FaDownload /> Exporter objets inefficaces
+              <ExportButton onClick={() => {
+                // Filtrer les objets inactifs
+                const inactiveObjects = objects.filter(obj => obj.status === 'inactive' || obj.status === 'Inactif');
+                
+                if (inactiveObjects.length === 0) {
+                  toast.error("Aucun objet inactif à exporter");
+                  return;
+                }
+
+                const csv = convertToCSV(inactiveObjects.map(obj => ({
+                  nom: obj.name,
+                  type: obj.type,
+                  status: obj.status,
+                  zone: obj.id,
+                  derniere_activite: new Date().toLocaleDateString()
+                })));
+                
+                downloadCSV(csv, 'objets_inactifs.csv');
+              }}>
+                <FaDownload /> Exporter objets inactifs
               </ExportButton>
             </ButtonGroup>
           </div>
         </SectionHeader>
-        <FormGroup style={{ width: '200px', marginBottom: '1rem' }}>
-  <Label>Type de Consommation</Label>
-  <Select
-    value={selectedReport}
-    onChange={(e) => setSelectedReport(e.target.value)}
-  >
-    <option value="total">Conso Totale</option>
-    <option value="salles">Conso Salles</option>
-    <option value="ecole">Conso École</option>
-    <option value="parking">Conso Parking</option>
-  </Select>
-</FormGroup>
+        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+          <FormGroup style={{ width: '200px' }}>
+            <Label>Type de Consommation</Label>
+            <Select
+              value={selectedReport}
+              onChange={(e) => setSelectedReport(e.target.value)}
+            >
+              <option value="total">Conso Totale</option>
+              <option value="salles">Conso Salles</option>
+              <option value="ecole">Conso École</option>
+              <option value="parking">Conso Parking</option>
+            </Select>
+          </FormGroup>
+
+          <FormGroup style={{ width: '200px' }}>
+            <Label>Période</Label>
+            <Select
+              value={timeFilter}
+              onChange={(e) => setTimeFilter(e.target.value)}
+            >
+              <option value="day">Aujourd'hui</option>
+              <option value="week">Cette semaine</option>
+              <option value="month">Ce mois</option>
+            </Select>
+          </FormGroup>
+
+          <FormGroup style={{ width: '200px' }}>
+            <Label>Type de graphique</Label>
+            <Select
+              value={chartType}
+              onChange={(e) => setChartType(e.target.value)}
+            >
+              <option value="line">Ligne</option>
+              <option value="bar">Barres</option>
+            </Select>
+          </FormGroup>
+        </div>
 
         <StatsGrid>
           <StatCard>
@@ -295,14 +406,52 @@ function GestionPage() {
         </StatsGrid>
 
         <SectionTitle style={{ marginTop: '2rem' }}>Graphique de consommation</SectionTitle>
-        <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={reports[selectedReport]}>
-        <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" />
-            <YAxis />
-            <Tooltip />
-            <Line type="monotone" dataKey="value" stroke="#8884d8" strokeWidth={2} />
-          </LineChart>
+        <ResponsiveContainer width="100%" height={400}>
+          {chartType === 'line' ? (
+            <LineChart data={reports[selectedReport]}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis 
+                dataKey="date"
+                tickFormatter={(date) => new Date(date).toLocaleDateString()}
+              />
+              <YAxis 
+                label={{ value: 'Consommation (kWh)', angle: -90, position: 'insideLeft' }}
+              />
+              <Tooltip 
+                formatter={(value) => [`${value} kWh`, 'Consommation']}
+                labelFormatter={(date) => new Date(date).toLocaleDateString()}
+              />
+              <Legend />
+              <Line 
+                type="monotone" 
+                dataKey="value" 
+                stroke="#8884d8" 
+                strokeWidth={2}
+                name="Consommation"
+              />
+            </LineChart>
+          ) : (
+            <BarChart data={reports[selectedReport]}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis 
+                dataKey="date"
+                tickFormatter={(date) => new Date(date).toLocaleDateString()}
+              />
+              <YAxis
+                label={{ value: 'Consommation (kWh)', angle: -90, position: 'insideLeft' }}
+              />
+              <Tooltip 
+                formatter={(value) => [`${value} kWh`, 'Consommation']}
+                labelFormatter={(date) => new Date(date).toLocaleDateString()}
+              />
+              <Legend />
+              <Bar 
+                dataKey="value" 
+                fill="#8884d8" 
+                name="Consommation"
+              />
+            </BarChart>
+          )}
         </ResponsiveContainer>
       </Section>
 
@@ -424,7 +573,7 @@ function GestionPage() {
                   value={reservationFormData.room}
                   onChange={(e) => setReservationFormData({ ...reservationFormData, room: e.target.value })}
                 >
-                  {objects.filter(obj => obj.type === 'Salle').map((object) => (
+                  {allObjects.filter(obj => obj.type === 'Salle').map((object) => (
                     <option key={object.id} value={object.name}>{object.name}</option>
                   ))}
                 </Select>
@@ -482,53 +631,408 @@ function GestionPage() {
         <ModalOverlay onClick={() => setEditingSettingsFor(null)}>
           <ModalContent onClick={(e) => e.stopPropagation()}>
             <SectionTitle>Configurer {editingSettingsFor.name}</SectionTitle>
+            
+            {/* Configuration pour Chauffage */}
             {editingSettingsFor.type === 'Chauffage' && (
-              <FormGroup>
-                <Label>Température cible (°C)</Label>
-                <Input
-                  type="number"
-                  value={objectSettings.temperature}
-                  onChange={(e) =>
-                    setObjectSettings((prev) => ({ ...prev, temperature: e.target.value }))
-                  }
-                  placeholder="Ex : 22"
-                />
-              </FormGroup>
-            )}
-            {editingSettingsFor.type === 'Éclairage' && (
               <>
                 <FormGroup>
-                  <Label>Heure de début</Label>
+                  <Label>Température cible (°C)</Label>
                   <Input
-                    type="time"
-                    value={objectSettings.startTime}
-                    onChange={(e) =>
-                      setObjectSettings((prev) => ({ ...prev, startTime: e.target.value }))
-                    }
+                    type="number"
+                    min="15"
+                    max="30"
+                    value={objectSettings.temperature}
+                    onChange={(e) => setObjectSettings(prev => ({
+                      ...prev,
+                      temperature: e.target.value
+                    }))}
                   />
                 </FormGroup>
                 <FormGroup>
-                  <Label>Heure de fin</Label>
+                  <Label>Mode</Label>
+                  <Select
+                    value={objectSettings.mode}
+                    onChange={(e) => setObjectSettings(prev => ({
+                      ...prev,
+                      mode: e.target.value
+                    }))}
+                  >
+                    <option value="auto">Automatique</option>
+                    <option value="eco">Éco</option>
+                    <option value="confort">Confort</option>
+                    <option value="horsgel">Hors-gel</option>
+                  </Select>
+                </FormGroup>
+              </>
+            )}
+
+            {/* Configuration pour Éclairage */}
+            {editingSettingsFor.type === 'Éclairage' && (
+              <>
+                <FormGroup>
+                  <Label>Intensité (%)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={objectSettings.brightness}
+                    onChange={(e) => setObjectSettings(prev => ({
+                      ...prev,
+                      brightness: e.target.value
+                    }))}
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Label>Mode d'éclairage</Label>
+                  <Select
+                    value={objectSettings.lightingMode}
+                    onChange={(e) => setObjectSettings(prev => ({
+                      ...prev,
+                      lightingMode: e.target.value
+                    }))}
+                  >
+                    <option value="auto">Automatique</option>
+                    <option value="manual">Manuel</option>
+                    <option value="presence">Détection de présence</option>
+                  </Select>
+                </FormGroup>
+                <FormGroup>
+                  <Label>Heure d'allumage</Label>
+                  <Input
+                    type="time"
+                    value={objectSettings.startTime}
+                    onChange={(e) => setObjectSettings(prev => ({
+                      ...prev,
+                      startTime: e.target.value
+                    }))}
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Label>Heure d'extinction</Label>
                   <Input
                     type="time"
                     value={objectSettings.endTime}
-                    onChange={(e) =>
-                      setObjectSettings((prev) => ({ ...prev, endTime: e.target.value }))
-                    }
+                    onChange={(e) => setObjectSettings(prev => ({
+                      ...prev,
+                      endTime: e.target.value
+                    }))}
                   />
                 </FormGroup>
               </>
             )}
+
+            {/* Configuration pour Caméra */}
+            {editingSettingsFor.type === 'Caméra' && (
+              <>
+                <FormGroup>
+                  <Label>Résolution</Label>
+                  <Select
+                    value={objectSettings.resolution}
+                    onChange={(e) => setObjectSettings(prev => ({
+                      ...prev,
+                      resolution: e.target.value
+                    }))}
+                  >
+                    <option value="720p">HD (720p)</option>
+                    <option value="1080p">Full HD (1080p)</option>
+                    <option value="4k">4K</option>
+                  </Select>
+                </FormGroup>
+                <FormGroup>
+                  <Label>Mode de détection</Label>
+                  <Select
+                    value={objectSettings.detectionMode}
+                    onChange={(e) => setObjectSettings(prev => ({
+                      ...prev,
+                      detectionMode: e.target.value
+                    }))}
+                  >
+                    <option value="mouvement">Mouvement</option>
+                    <option value="presence">Présence</option>
+                    <option value="tout">Tout</option>
+                    <option value="off">Désactivé</option>
+                  </Select>
+                </FormGroup>
+                <FormGroup>
+                  <Label>Angle de vue</Label>
+                  <Select
+                    value={objectSettings.viewAngle}
+                    onChange={(e) => setObjectSettings(prev => ({
+                      ...prev,
+                      viewAngle: e.target.value
+                    }))}
+                  >
+                    <option value="90">90°</option>
+                    <option value="120">120°</option>
+                    <option value="180">180°</option>
+                  </Select>
+                </FormGroup>
+              </>
+            )}
+
+            {/* Configuration pour Ventilation */}
+            {editingSettingsFor.type === 'Ventilation' && (
+              <>
+                <FormGroup>
+                  <Label>Vitesse (%)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={objectSettings.speed}
+                    onChange={(e) => setObjectSettings(prev => ({
+                      ...prev,
+                      speed: e.target.value
+                    }))}
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Label>Mode</Label>
+                  <Select
+                    value={objectSettings.mode}
+                    onChange={(e) => setObjectSettings(prev => ({
+                      ...prev,
+                      mode: e.target.value
+                    }))}
+                  >
+                    <option value="auto">Automatique</option>
+                    <option value="manuel">Manuel</option>
+                    <option value="boost">Boost</option>
+                  </Select>
+                </FormGroup>
+                <FormGroup>
+                  <Label>Seuil CO2 (ppm)</Label>
+                  <Input
+                    type="number"
+                    min="400"
+                    max="2000"
+                    value={objectSettings.co2Threshold}
+                    onChange={(e) => setObjectSettings(prev => ({
+                      ...prev,
+                      co2Threshold: e.target.value
+                    }))}
+                  />
+                </FormGroup>
+              </>
+            )}
+
+            {/* Configuration pour Porte */}
+            {editingSettingsFor.type === 'Porte' && (
+              <>
+                <FormGroup>
+                  <Label>Mode d'accès</Label>
+                  <Select
+                    value={objectSettings.accessMode}
+                    onChange={(e) => setObjectSettings(prev => ({
+                      ...prev,
+                      accessMode: e.target.value
+                    }))}
+                  >
+                    <option value="badge">Badge</option>
+                    <option value="code">Code</option>
+                    <option value="both">Badge + Code</option>
+                  </Select>
+                </FormGroup>
+                <FormGroup>
+                  <Label>Plage horaire d'ouverture</Label>
+                  <Input
+                    type="time"
+                    value={objectSettings.openTime}
+                    onChange={(e) => setObjectSettings(prev => ({
+                      ...prev,
+                      openTime: e.target.value
+                    }))}
+                  />
+                  <Input
+                    type="time"
+                    value={objectSettings.closeTime}
+                    onChange={(e) => setObjectSettings(prev => ({
+                      ...prev,
+                      closeTime: e.target.value
+                    }))}
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Label>Mode sécurité</Label>
+                  <Select
+                    value={objectSettings.securityMode}
+                    onChange={(e) => setObjectSettings(prev => ({
+                      ...prev,
+                      securityMode: e.target.value
+                    }))}
+                  >
+                    <option value="normal">Normal</option>
+                    <option value="high">Haute sécurité</option>
+                    <option value="emergency">Urgence</option>
+                  </Select>
+                </FormGroup>
+              </>
+            )}
+
+            {/* Configuration pour Panneau */}
+            {editingSettingsFor.type === 'Panneau' && (
+              <>
+                <FormGroup>
+                  <Label>Type d'affichage</Label>
+                  <Select
+                    value={objectSettings.displayType}
+                    onChange={(e) => setObjectSettings(prev => ({
+                      ...prev,
+                      displayType: e.target.value
+                    }))}
+                  >
+                    <option value="text">Texte</option>
+                    <option value="image">Image</option>
+                    <option value="mixed">Mixte</option>
+                  </Select>
+                </FormGroup>
+                <FormGroup>
+                  <Label>Luminosité (%)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={objectSettings.brightness}
+                    onChange={(e) => setObjectSettings(prev => ({
+                      ...prev,
+                      brightness: e.target.value
+                    }))}
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Label>Intervalle de défilement (sec)</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="60"
+                    value={objectSettings.scrollInterval}
+                    onChange={(e) => setObjectSettings(prev => ({
+                      ...prev,
+                      scrollInterval: e.target.value
+                    }))}
+                  />
+                </FormGroup>
+              </>
+            )}
+
+            {/* Configuration pour Store */}
+            {editingSettingsFor.type === 'Store' && (
+              <>
+                <FormGroup>
+                  <Label>Position (%)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={objectSettings.position}
+                    onChange={(e) => setObjectSettings(prev => ({
+                      ...prev,
+                      position: e.target.value
+                    }))}
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Label>Mode</Label>
+                  <Select
+                    value={objectSettings.mode}
+                    onChange={(e) => setObjectSettings(prev => ({
+                      ...prev,
+                      mode: e.target.value
+                    }))}
+                  >
+                    <option value="auto">Automatique</option>
+                    <option value="manual">Manuel</option>
+                    <option value="luminosite">Selon luminosité</option>
+                  </Select>
+                </FormGroup>
+                <FormGroup>
+                  <Label>Seuil luminosité (lux)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="1000"
+                    value={objectSettings.lightThreshold}
+                    onChange={(e) => setObjectSettings(prev => ({
+                      ...prev,
+                      lightThreshold: e.target.value
+                    }))}
+                  />
+                </FormGroup>
+              </>
+            )}
+
+            {/* Configuration pour Audio */}
+            {editingSettingsFor.type === 'Audio' && (
+              <>
+                <FormGroup>
+                  <Label>Volume (%)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={objectSettings.volume}
+                    onChange={(e) => setObjectSettings(prev => ({
+                      ...prev,
+                      volume: e.target.value
+                    }))}
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Label>Mode audio</Label>
+                  <Select
+                    value={objectSettings.audioMode}
+                    onChange={(e) => setObjectSettings(prev => ({
+                      ...prev,
+                      audioMode: e.target.value
+                    }))}
+                  >
+                    <option value="stereo">Stéréo</option>
+                    <option value="mono">Mono</option>
+                    <option value="surround">Surround</option>
+                  </Select>
+                </FormGroup>
+                <FormGroup>
+                  <Label>Source</Label>
+                  <Select
+                    value={objectSettings.source}
+                    onChange={(e) => setObjectSettings(prev => ({
+                      ...prev,
+                      source: e.target.value
+                    }))}
+                  >
+                    <option value="hdmi">HDMI</option>
+                    <option value="bluetooth">Bluetooth</option>
+                    <option value="aux">AUX</option>
+                    <option value="usb">USB</option>
+                  </Select>
+                </FormGroup>
+                <FormGroup>
+                  <Label>Égalisation</Label>
+                  <Select
+                    value={objectSettings.equalizer}
+                    onChange={(e) => setObjectSettings(prev => ({
+                      ...prev,
+                      equalizer: e.target.value
+                    }))}
+                  >
+                    <option value="flat">Normal</option>
+                    <option value="voice">Voix</option>
+                    <option value="music">Musique</option>
+                    <option value="movie">Film</option>
+                  </Select>
+                </FormGroup>
+              </>
+            )}
+
             <ButtonGroup>
               <SecondaryButton onClick={() => setEditingSettingsFor(null)}>Annuler</SecondaryButton>
               <PrimaryButton onClick={() => {
                 const updatedObjects = objects.map(obj =>
                   obj.id === editingSettingsFor.id
-                    ? { ...obj, settings: { ...objectSettings } }
+                    ? { ...obj, settings: objectSettings }
                     : obj
                 );
                 setObjects(updatedObjects);
-                generateReports(updatedObjects); // Mets à jour les rapports ici aussi
                 setEditingSettingsFor(null);
               }}>
                 Enregistrer
@@ -538,23 +1042,59 @@ function GestionPage() {
         </ModalOverlay>
       )}
 
+      {/* Amélioration du graphique d'historique */}
       {selectedForChart && (
         <ModalOverlay onClick={() => setSelectedForChart(null)}>
-          <ModalContent onClick={(e) => e.stopPropagation()}>
+          <ModalContent onClick={(e) => e.stopPropagation()} style={{ maxWidth: '800px' }}>
             <SectionTitle>Consommation de {selectedForChart.name}</SectionTitle>
             {objectHistories[selectedForChart.id]?.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={objectHistories[selectedForChart.id]}>
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="value" stroke="#8884d8" strokeWidth={2} />
-                </LineChart>
-              </ResponsiveContainer>
+              <>
+                <FormGroup style={{ width: '200px', marginBottom: '1rem' }}>
+                  <Label>Période</Label>
+                  <Select
+                    value={historyTimeFilter}
+                    onChange={(e) => setHistoryTimeFilter(e.target.value)}
+                  >
+                    <option value="day">Aujourd'hui</option>
+                    <option value="week">Cette semaine</option>
+                    <option value="month">Ce mois</option>
+                  </Select>
+                </FormGroup>
+                <ResponsiveContainer width="100%" height={400}>
+                  <LineChart data={objectHistories[selectedForChart.id]}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis 
+                      dataKey="date"
+                      tickFormatter={(date) => new Date(date).toLocaleDateString()}
+                    />
+                    <YAxis 
+                      label={{ value: 'Consommation (kWh)', angle: -90, position: 'insideLeft' }}
+                    />
+                    <Tooltip 
+                      formatter={(value) => [`${value} kWh`, 'Consommation']}
+                      labelFormatter={(date) => new Date(date).toLocaleDateString()}
+                    />
+                    <Legend />
+                    <Line 
+                      type="monotone" 
+                      dataKey="value" 
+                      stroke="#82ca9d" 
+                      strokeWidth={2}
+                      name="Consommation"
+/>
+                  </LineChart>
+                </ResponsiveContainer>
+                <StatCard style={{ marginTop: '1rem' }}>
+                  <StatValue>
+                    {objectHistories[selectedForChart.id].reduce((sum, e) => sum + e.value, 0)} kWh
+                  </StatValue>
+                  <StatLabel>Consommation Totale</StatLabel>
+                </StatCard>
+              </>
             ) : (
               <p>Aucune donnée disponible pour cet objet.</p>
             )}
-            <ButtonGroup>
+            <ButtonGroup style={{ marginTop: '1rem' }}>
               <PrimaryButton onClick={() => setSelectedForChart(null)}>Fermer</PrimaryButton>
             </ButtonGroup>
           </ModalContent>
