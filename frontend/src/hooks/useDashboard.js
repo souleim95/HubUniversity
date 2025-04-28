@@ -91,7 +91,6 @@ export const useDashboardState = () => {
                 }
               }
             );
-            window.location.reload();
           }
           
           return { points: newPoints, role: newRole, levelUp: newRole !== currentRole };
