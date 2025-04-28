@@ -64,7 +64,6 @@ const Profile = () => {
 
   // Données initiales du formulaire mémorisées
   const initialFormData = useMemo(() => ({
-    // Configuration initiale des champs
     pseudonyme: localStorage.getItem('user') || '',
     genre: localStorage.getItem('genre') || '',
     dateNaissance: localStorage.getItem('dateNaissance') || '',
@@ -72,6 +71,8 @@ const Profile = () => {
     photo: null,
     nom: localStorage.getItem('nom') || '',
     prenom: localStorage.getItem('prenom') || '',
+    email: localStorage.getItem('email') || '',
+    formation: localStorage.getItem('formation') || '',
     oldPassword: '',
     newPassword: '',
     confirmNewPassword: '',
@@ -211,6 +212,14 @@ const Profile = () => {
       localStorage.setItem('prenom', formData.prenom);
       updates.push('prénom');
     }
+    if (formData.email !== initialFormData.email) {
+      localStorage.setItem('email', formData.email);
+      updates.push('email');
+    }
+    if (formData.formation !== initialFormData.formation) {
+      localStorage.setItem('formation', formData.formation);
+      updates.push('formation');
+    }
 
     setIsModified(false);
 
@@ -286,6 +295,7 @@ const Profile = () => {
                   </DeleteButton>
                 )}
               </ProfilePictureContainer>
+
               <InputField
                 name="pseudonyme"
                 placeholder="Pseudonyme"
@@ -300,7 +310,39 @@ const Profile = () => {
                 onChange={handleInputChange}
                 prefix={<FaCalendar />}
               />
-              <InputField name="age" placeholder="Âge" type="number" value={age} readOnly />
+              <InputField 
+                name="age" 
+                placeholder="Âge" 
+                type="number" 
+                value={age} 
+                readOnly 
+              />
+
+              <InputField
+                name="prenom"
+                placeholder="Prénom"
+                value={formData.prenom}
+                onChange={handleInputChange}
+              />
+              <InputField
+                name="nom"
+                placeholder="Nom"
+                value={formData.nom}
+                onChange={handleInputChange}
+              />
+              <InputField
+                name="email"
+                type="email"
+                placeholder="Email"
+                value={formData.email}
+                onChange={handleInputChange}
+              />
+              <InputField
+                name="formation"
+                placeholder="Formation"
+                value={formData.formation}
+                onChange={handleInputChange}
+              />
 
               <select
                 name="genre"
@@ -318,9 +360,14 @@ const Profile = () => {
                 <option value="">Sélectionner un genre</option>
                 <option value="Homme">Homme <FaVenusMars /></option>
                 <option value="Femme">Femme <FaVenusMars /></option>
+                <option value="Autre">Autre <FaVenusMars /></option>
               </select>
 
-              <InputField name="typeMembre" value={formData.typeMembre} readOnly />
+              <InputField 
+                name="typeMembre" 
+                value={formData.typeMembre} 
+                readOnly 
+              />
               
             </ProfileCard>
           ) : (
