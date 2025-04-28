@@ -773,7 +773,7 @@ export const useDashboardState = () => {
                     case 'simulate_transaction':
                         const transactionType = value;
                         const transactionItem = `ISBN${Math.floor(Math.random() * 1000)}`;
-                        const transactionUser = 'user123';
+                        const transactionUser = sessionStorage.getItem('user') || 'Utilisateur inconnu';
                         return {
                         ...equip,
                         status: 'Actif',
