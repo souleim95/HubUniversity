@@ -46,12 +46,12 @@ const ThemedApp = () => {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/formation" element={<Formation />} />
               <Route path="/gestion" element={
-                <ProtectedRoute allowedRoles={['gestionnaire', 'admin']}>
+                <ProtectedRoute allowedRoles={['professeur', 'directeur']}>
                   <Gestion />
                 </ProtectedRoute>
               } />
               <Route path="/admin" element={
-                <ProtectedRoute allowedRoles={['admin']}>
+                <ProtectedRoute allowedRoles={['directeur']}>
                   <AdminPage />
                 </ProtectedRoute>
               } />
