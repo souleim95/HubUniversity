@@ -6,38 +6,45 @@ HubUniversity est une plateforme web moderne conçue pour la gestion intelligent
 
 ## Fonctionnalités Principales 🚀
 
-- **Tableau de Bord Interactif**
-  - Visualisation en temps réel des équipements
-  - Gestion des alertes et notifications
-  - Statistiques d'utilisation
+- **Module Information**
+  - "Free tour" de la plateforme pour les visiteurs
+  - Recherche d’informations locales avec pleins de filtres
+  - Possibilité de s’inscrire à la plateforme
+  - Voir les formations
 
-- **Gestion des Objets Connectés**
-  - Contrôle des équipements (éclairage, chauffage, ventilation...)
-  - Surveillance des statuts
-  - Programmation automatique
+- **Module Visualisation**
+  - Inscription et validation d’utilisateur par e-mail
+  - Connexion sécurisée (vérification login/mot de passe)
+  - Gestion et modification du profil utilisateur
+  - Consultation des profils des autres utilisateurs
+  - Recherche et consultation des objets connectés et services (avec filtres)
+  - Système de progression basé sur points pour accéder à de nouveaux niveaux (élève, professeur, directeur)
 
-- **Interface Utilisateur**
-  - Design responsive et moderne
-  - Navigation intuitive
-  - Thèmes personnalisables
+- **Module Gestion**
+  - Ajout et modification d’objets connectés
+  - Demande de suppression d’objets connectés
+  - Contrôle de l’état et configuration des objets (attributs, paramètres, zones spécifiques)
+  - Surveillance de la consommation énergétique et des statistiques d’utilisation
+  - Génération de rapports d’utilisation et d’optimisation des ressources
+
+- **Module Administration**
+  - Gestion complète des utilisateurs (ajout, modification, suppression, niveaux d’accès)
+  - Supervision des points et ajustement manuel si nécessaire
+  - Gestion des catégories, objets et outils/services
+  - Configuration des règles de fonctionnement (priorités énergétiques, alertes)
+  - Sécurité et maintenance de la base de données (sauvegarde, vérification de l’intégrité)
+  - Personnalisation de la plateforme (apparence, structure des modules)
+  - Rapports avancés sur l’utilisation globale de la plateforme (exportables en CSV/PDF)
 
 - **Services en Temps Réel**
-  - Horaires RER A
-  - Informations météo
-  - État des salles et équipements
+  - Horaires RER A (API RATP)
+  - Informations météo (API METEO)
 
-- **Sécurité et Administration**
-  - Gestion des droits d'accès
-  - Historique des actions
-  - Sauvegarde et maintenance
 
 ## Architecture Technique 🛠
 
 ### Frontend
-- React.js
-- Styled Components
-- React Router
-- Socket.io Client
+- React.js & ces librairies
 - Recharts (visualisation de données)
 
 ### Backend
