@@ -34,16 +34,21 @@ const Faq = () => {
 
   return (
     <FaqContainer id="faq-section">
-      <FaqTitle>Foire aux questions</FaqTitle>
+      <FaqTitle>
+        <h2>Foire aux questions</h2>
+      </FaqTitle>
+      
       <FaqContent>
-
         {/* Colonne gauche */}
         <FaqColumn>
           {firstColumn.map((item, index) => (
             <FaqItem key={index}>
-              <Question onClick={() => toggleQuestion(index)}>
+              <Question 
+                onClick={() => toggleQuestion(index)}
+                isOpen={openIndex === index}
+              >
                 {item.question}
-                {openIndex === index ? ' ▼' : ' ▶'}
+                <span>{openIndex === index ? '−' : '+'}</span>
               </Question>
               <Answer isOpen={openIndex === index}>
                 {item.answer}
@@ -56,9 +61,12 @@ const Faq = () => {
         <FaqColumn>
           {secondColumn.map((item, index) => (
             <FaqItem key={index + midpoint}>
-              <Question onClick={() => toggleQuestion(index + midpoint)}>
+              <Question 
+                onClick={() => toggleQuestion(index + midpoint)}
+                isOpen={openIndex === (index + midpoint)}
+              >
                 {item.question}
-                {openIndex === (index + midpoint) ? ' ▼' : ' ▶'}
+                <span>{openIndex === (index + midpoint) ? '−' : '+'}</span>
               </Question>
               <Answer isOpen={openIndex === (index + midpoint)}>
                 {item.answer}
@@ -66,7 +74,6 @@ const Faq = () => {
             </FaqItem>
           ))}
         </FaqColumn>
-        
       </FaqContent>
     </FaqContainer>
   );

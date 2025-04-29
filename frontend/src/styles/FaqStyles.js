@@ -1,132 +1,98 @@
 import styled from 'styled-components';
 
-export const FaqTitle = styled.h2`
-  color: #333;
-  margin-bottom: 30px;
-  writing-mode: vertical-lr;
-  transform: rotate(180deg);
-  position: absolute;
-  left: -3px;
-  top: 17px;
-  font-size: 2em;
-  padding: 0.7px 4px;
-  border-right: 7px solid rgb(15, 110, 173);
-  border-left: none;
-  font-family: 'Roboto', sans-serif;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-
-  @media (max-width: 768px) {
-    position: static;
-    writing-mode: horizontal-tb;
-    transform: none;
-    border: none;
-    text-align: center;
-    margin: 10px 0;
-  }
-`;
-
 export const FaqContainer = styled.div`
-  max-width: 1400px;
   margin: 40px auto;
-  padding: 20px 20px 20px 100px;
-  position: relative;
-  background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  max-width: 1400px;
+  width: 102.5%;
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  border: 1px solid #eee;
+  transition: transform 0.3s ease;
 
-  @media (max-width: 768px) {
-    padding: 20px;
+  &:hover {
+    transform: scale(1.01);
+    box-shadow: 0 6px 30px rgba(0, 0, 0, 0.15);
   }
+`;
 
-  @media (max-width: 480px) {
-    padding: 15px;
+export const FaqTitle = styled.div`
+  background: #f8fafc;
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  width: 100%;
+
+  h2 {
+    color: #1a202c;
+    font-size: 2.5em;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: -0.02em;
   }
 `;
 
 export const FaqContent = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 20px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
   width: 100%;
 
-  @media (max-width: 480px) {
-    flex-direction: column;
-    align-items: center;
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
   }
 `;
 
 export const FaqColumn = styled.div`
-  flex: 1;
-  min-width: 300px;
-  max-width: 650px;
-  margin: 0 auto;
-  
-  @media (max-width: 768px) {
-    flex: 100%;
-    max-width: 100%;
-  }
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 `;
 
 export const FaqItem = styled.div`
-  margin-bottom: 15px;
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.08);
-  background-color: #fff;
-  transition: box-shadow 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid #f0f0f0;
-  
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  background: white;
+  border: 1px solid #eef2f7;
+  transition: all 0.3s ease;
+
   &:hover {
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
   }
 `;
 
 export const Question = styled.div`
-  padding: 18px 22px;
-  background-color: rgb(33, 86, 140);
-  color: white;
+  padding: 1rem 1.5rem;
+  background: ${props => props.isOpen ? 'rgb(15, 110, 173)' : '#f8fafc'};
+  color: ${props => props.isOpen ? 'white' : '#1a202c'};
   cursor: pointer;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: background-color 0.3s ease, transform 0.3s ease;
-  border-bottom: 1px solid #ddd;
   font-weight: 500;
-  font-size: 16px;
-  border-radius: 8px 8px 0 0;
+  font-size: 1rem;
+  transition: all 0.3s ease;
 
   &:hover {
-    background-color: #34495e;
-    cursor: pointer;
-  }
-
-  @media (max-width: 480px) {
-    font-size: 14px;
-    padding: 14px 16px;
+    background: ${props => props.isOpen ? 'rgb(12, 90, 143)' : '#f1f5f9'};
   }
 `;
 
 export const Answer = styled.div`
-  padding: ${props => props.isOpen ? '18px 22px' : '0 22px'};
-  background-color: #f9f9f9;
-  max-height: ${props => props.isOpen ? '1000px' : '0'};
+  padding: ${props => props.isOpen ? '1.5rem' : '0'};
+  background: white;
+  max-height: ${props => props.isOpen ? '500px' : '0'};
+  opacity: ${props => props.isOpen ? '1' : '0'};
   overflow: hidden;
-  transition: max-height 0.6s ease, padding 0.4s ease, opacity 0.3s ease;
-  box-shadow: ${props => props.isOpen ? '0 4px 10px rgba(0, 0, 0, 0.05)' : 'none'};
-  opacity: ${props => props.isOpen ? 1 : 0};
-  margin-bottom: 0;
-  border-top: 1px solid #eee;
-  font-size: 14px;
+  transition: all 0.3s ease;
   line-height: 1.6;
-  color: #555;
+  color: #4a5568;
+  font-size: 0.95rem;
 `;
