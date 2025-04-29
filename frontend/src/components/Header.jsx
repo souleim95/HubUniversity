@@ -2,7 +2,8 @@ import React from 'react';
 import { 
   RiEyeLine, RiEyeOffLine, RiSearchLine, 
   RiBookLine, RiBuildingLine, RiInformationLine, RiQuestionLine, 
-  RiDashboardLine, RiSettings4Line, RiAdminLine, RiUserLine, RiLogoutBoxLine 
+  RiDashboardLine, RiSettings4Line, RiAdminLine, RiUserLine, RiLogoutBoxLine,
+  RiArrowUpSLine, RiArrowDownSLine // Ajoutez ces imports
 } from 'react-icons/ri';
 import { FaFilter } from 'react-icons/fa';
 import { 
@@ -40,7 +41,9 @@ const Header = () => {
     searchResults, 
     selectedType, setSelectedType,
     selectedStatus, setSelectedStatus,
-    navigate
+    navigate,
+    isHeaderVisible, // Ajoutez ceci
+    toggleHeader    // Et ceci
   } = useHeaderState();
 
   return (
@@ -79,7 +82,7 @@ const Header = () => {
       </div>
 
       {/* Header principal */}
-      <HeaderContainer>
+      <HeaderContainer isVisible={isHeaderVisible}>
         <WelcomeChoices>
           <a href="/"><img src={hubCyLogo} alt="HubCY" /></a>
         </WelcomeChoices>
@@ -202,19 +205,21 @@ const Header = () => {
         <option value="eleve">Étudiant</option>
         <option value="professeur">Enseignant</option>
       </select>
-      <select 
-        name="formation" 
-        value={formData.formation || ''} 
-        onChange={handleChange}
-        required
-      >
-        <option value="">Sélectionnez votre formation</option>
-        <option value="INFORMATIQUE">INFORMATIQUE</option>
-        <option value="GÉNIE CIVIL">GÉNIE CIVIL</option>
-        <option value="BIOTECHNOLOGIES">BIOTECHNOLOGIES</option>
-        <option value="MÉCANIQUE">MÉCANIQUE</option>
-        <option value="MATHÉMATIQUES APPLIQUÉES">MATHÉMATIQUES APPLIQUÉES</option>
-      </select>
+      <select name="formation" value={formData.formation} onChange={handleChange} required>
+                    <option value="">Sélectionnez votre formation</option>
+                    <option value="Mathématique">Master Mathématiques</option>
+                    <option value="Informatique">Master Informatique</option>
+                    <option value="INFORMATIQUE">INFORMATIQUE</option>
+                    <option value="GÉNIE CIVIL">GÉNIE CIVIL</option>
+                    <option value="BIOTECHNOLOGIES">BIOTECHNOLOGIES</option>
+                    <option value="MÉCANIQUE">MÉCANIQUE</option>
+                    <option value="MATHÉMATIQUES APPLIQUÉES">MATHÉMATIQUES APPLIQUÉES</option>
+                    <option value="BIOTECHNOLOGIES & CHIMIE (Chimie voie Recherche)">BIOTECHNOLOGIES & CHIMIE (Chimie voie Recherche)</option>
+                    <option value="BIOTECHNOLOGIES & CHIMIE (Biologie voie Recherche)">BIOTECHNOLOGIES & CHIMIE (Biologie voie Recherche)</option>
+                    <option value="GÉNIE CIVIL - ARCHITECTE (ENSA-V)">GÉNIE CIVIL - ARCHITECTE (ENSA-V)</option>
+                    <option value="DATA - HUMANITÉS DIGITALES (Sciences Po Saint-Germain-en-Laye)">DATA - HUMANITÉS DIGITALES (Sciences Po Saint-Germain-en-Laye)</option>
+                    <option value="INFORMATIQUE - DESIGNER (CY École de Design)">INFORMATIQUE - DESIGNER (CY École de Design)</option>
+                  </select>
     </>
   )}
 
@@ -492,8 +497,33 @@ const Header = () => {
         </div>
 
 
+      {/* Bouton de contrôle du header */}
+      <div
+          onClick={toggleHeader}
+          style={{
+            width: '45px',
+            height: '45px',
+            backgroundColor: '#0f6ead',
+            borderRadius: '50%',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.3s ease-in-out',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.1)';
+            e.currentTarget.style.backgroundColor = '#0d5c91';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)';
+            e.currentTarget.style.backgroundColor = '#0f6ead';
+          }}
+        >
+          {isHeaderVisible ? <RiArrowUpSLine size={24} color="white" /> : <RiArrowDownSLine size={24} color="white" />}
+        </div>
       </div>
-
       {/* Animation pour la fenêtre flottante */}
       <style>
         {`

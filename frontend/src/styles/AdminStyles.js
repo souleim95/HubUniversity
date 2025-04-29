@@ -411,12 +411,24 @@ export const Tab = styled.button`
   padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;
   font-weight: 500;
+  position: relative;
   color: ${props => props.active ? '#3b82f6' : '#6b7280'};
   background-color: ${props => props.active ? '#eff6ff' : 'transparent'};
   transition: all 0.2s ease-in-out;
-
+  border: ${props => props.active ? '2px solid #3b82f6' : 'none'};
+  
   &:hover {
     background-color: ${props => props.active ? '#eff6ff' : '#f3f4f6'};
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: ${props => props.active ? '#3b82f6' : 'transparent'};
   }
 `;
 

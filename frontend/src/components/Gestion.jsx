@@ -201,8 +201,12 @@ function GestionPage() {
       <TabsContainer>
         <TabsList>
           {Object.keys(categories).map(categoryKey => (
-            <Tab key={categoryKey} style={{ color: 'black' }} onClick={() => handleCategoryChange(categoryKey)}>
-              {categories[categoryKey].name }
+            <Tab 
+              key={categoryKey} 
+              active={selectedCategory === categoryKey} 
+              onClick={() => handleCategoryChange(categoryKey)}
+            >
+              {categories[categoryKey].name}
             </Tab>
           ))}
         </TabsList>

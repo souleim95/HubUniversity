@@ -5,7 +5,7 @@ export const HeaderContainer = styled.header`
   background-color: whitesmoke;
   width: 100%;
   position: fixed;
-  top: 0;
+  top: ${props => props.isVisible ? '0' : '-100%'};
   left: 0;
   z-index: 1000;
   border-bottom: solid rgb(15, 110, 173) 3px;
@@ -14,8 +14,9 @@ export const HeaderContainer = styled.header`
   padding: 8px 20px;
   flex-wrap: wrap;
   justify-content: space-between;
-  min-height: 72px; /* Réduit en desktop */
+  min-height: 72px;
   margin-bottom: 10px;
+  transition: top 0.3s ease-in-out;
 
   @media (max-width: 768px) {
     flex-direction: column;
