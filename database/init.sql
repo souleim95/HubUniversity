@@ -1,6 +1,7 @@
+
 CREATE TABLE IF NOT EXISTS role (
   idRole SERIAL PRIMARY KEY,
-  nomRole VARCHAR(100) NOT NULL
+  nomRole VARCHAR(100) 
 );
 
 CREATE TABLE IF NOT EXISTS etat(
@@ -23,10 +24,10 @@ CREATE TABLE IF NOT EXISTS etatBorne(
   nomEtatBorne VARCHAR(50)
 );
 
-INSERT INTO role (nomRole) VALUES
-  ('eleve'),
-  ('professeur'),
-  ('directeur');
+CREATE TABLE IF NOT EXISTS validationReservation(
+  idVal SERIAL PRIMARY KEY, 
+  nomValidation VARCHAR(50)
+);
 
 INSERT INTO etatSalle (nomEtatSalle) VALUES
   ('disponible'),
@@ -46,6 +47,18 @@ INSERT INTO etatBorne(nomEtatBorne) VALUES
   ('Actif');
 
 
+INSERT INTO validationReservation (nomValidation) VALUES 
+  ('non validé'),
+  ('en attente'), 
+  ('validé');
+
+
+INSERT INTO role (nomRole) VALUES
+  ('eleve'),
+  ('professeur'),
+  ('directeur');
+
+
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
@@ -58,6 +71,7 @@ CREATE TABLE IF NOT EXISTS users (
   FOREIGN KEY (idRole) REFERENCES role(idRole)
 );  
 
+
 CREATE TABLE IF NOT EXISTS salle(
   idSalle SERIAL PRIMARY KEY,
   nomSalle VARCHAR(50),
@@ -68,199 +82,216 @@ CREATE TABLE IF NOT EXISTS salle(
 
 CREATE TABLE IF NOT EXISTS projecteur(
   idProjecteur SERIAL PRIMARY KEY, 
-  nomProjecteur VARCHAR(50)  NOT NULL, 
+  nomProjecteur VARCHAR(50)  , 
   idSalle INT, 
-  idEtat INT  NOT NULL,
-  FOREIGN KEY (idSalle) REFERENCES salle(idSalle),
+  idEtat INT  ,
+  FOREIGN KEY (idSalle) REFERENCES salle(idSalle) ON DELETE CASCADE,
   FOREIGN KEY (idEtat) REFERENCES etat(idEtat)
 );
 
 CREATE TABLE IF NOT EXISTS chauffage(
   idChauffage SERIAL PRIMARY KEY, 
-  nomChauffage VARCHAR(50) NOT NULL, 
+  nomChauffage VARCHAR(50) , 
   idSalle INT,
-  idEtat INT NOT NULL, 
-  idModes INT NOT NULL, 
-  FOREIGN KEY (idSalle) REFERENCES salle(idSalle),
+  idEtat INT , 
+  idModes INT , 
+  FOREIGN KEY (idSalle) REFERENCES salle(idSalle) ON DELETE CASCADE,
   FOREIGN KEY (idEtat) REFERENCES etat(idEtat),
   FOREIGN KEY (idModes) REFERENCES modes(idModes)
 );
 
 CREATE TABLE IF NOT EXISTS eclairage(
   idEclairage SERIAL PRIMARY KEY, 
-  nomEclairage VARCHAR(50) NOT NULL,
+  nomEclairage VARCHAR(50) ,
   idSalle INT,
-  idEtat INT NOT NULL,
-  FOREIGN KEY (idSalle) REFERENCES salle(idSalle),
+  idEtat INT ,
+  FOREIGN KEY (idSalle) REFERENCES salle(idSalle) ON DELETE CASCADE,
   FOREIGN KEY (idEtat) REFERENCES etat(idEtat)
 );
 
 CREATE TABLE IF NOT EXISTS store(
   idStore SERIAL PRIMARY KEY, 
-  nomStore VARCHAR(50) NOT NULL,
+  nomStore VARCHAR(50) ,
   idSalle INT,
-  idEtat INT NOT NULL,
-  FOREIGN KEY (idSalle) REFERENCES salle(idSalle),
+  idEtat INT ,
+  FOREIGN KEY (idSalle) REFERENCES salle(idSalle) ON DELETE CASCADE,
   FOREIGN KEY (idEtat) REFERENCES etat(idEtat)
 );
 
 CREATE TABLE IF NOT EXISTS sysAudio(
   idAudio SERIAL PRIMARY KEY, 
-  nomAudio VARCHAR(50) NOT NULL, 
+  nomAudio VARCHAR(50) , 
   idSalle INT, 
-  idEtat INT NOT NULL, 
-  FOREIGN KEY (idSalle) REFERENCES salle(idSalle),
+  idEtat INT , 
+  FOREIGN KEY (idSalle) REFERENCES salle(idSalle) ON DELETE CASCADE,
   FOREIGN KEY (idEtat) REFERENCES etat(idEtat)
 );
 
 CREATE TABLE IF NOT EXISTS grille(
   idGrille SERIAL PRIMARY KEY, 
-  nomGrille VARCHAR(50) NOT NULL, 
-  idEtat INT NOT NULL,
+  nomGrille VARCHAR(50) , 
+  idEtat INT ,
   idSalle INT,
-  FOREIGN KEY (idSalle) REFERENCES salle(idSalle),
+  FOREIGN KEY (idSalle) REFERENCES salle(idSalle) ON DELETE CASCADE,
   FOREIGN KEY (idEtat) REFERENCES etat(idEtat)
 ); 
 
 CREATE TABLE IF NOT EXISTS camera(
   idCamera SERIAL PRIMARY KEY, 
-  nomCamera VARCHAR(50) NOT NULL, 
-  idEtat INT NOT NULL,
+  nomCamera VARCHAR(50) , 
+  idEtat INT ,
   idSalle INT,
-  FOREIGN KEY (idSalle) REFERENCES salle(idSalle),
+  FOREIGN KEY (idSalle) REFERENCES salle(idSalle) ON DELETE CASCADE,
   FOREIGN KEY (idEtat) REFERENCES etat(idEtat)
 );
 
 CREATE TABLE IF NOT EXISTS porte(
   idPorte SERIAL PRIMARY KEY, 
-  nomPorte VARCHAR(50) NOT NULL, 
-  idVerrouillage INT NOT NULL,
+  nomPorte VARCHAR(50) , 
+  idEtat INT ,
   idSalle INT,
-  FOREIGN KEY (idSalle) REFERENCES salle(idSalle),
-  FOREIGN KEY (idVerrouillage) REFERENCES etat(idEtat)
+  FOREIGN KEY (idSalle) REFERENCES salle(idSalle) ON DELETE CASCADE,
+  FOREIGN KEY (idEtat) REFERENCES etat(idEtat)
 ); 
 
 CREATE TABLE IF NOT EXISTS capteur(
   idCapteur SERIAL PRIMARY KEY, 
-  nomCapteur VARCHAR(50) NOT NULL, 
-  idEtat INT NOT NULL,
+  nomCapteur VARCHAR(50) , 
+  idEtat INT ,
   idSalle INT,
-  FOREIGN KEY (idSalle) REFERENCES salle(idSalle),
+  FOREIGN KEY (idSalle) REFERENCES salle(idSalle) ON DELETE CASCADE,
   FOREIGN KEY (idEtat) REFERENCES etat(idEtat)
 ); 
 
 CREATE TABLE IF NOT EXISTS borne(
   idBorne SERIAL PRIMARY KEY, 
-  nomBorne VARCHAR(50) NOT NULL, 
-  idEtatBorne INT NOT NULL,
+  nomBorne VARCHAR(50) , 
+  idEtatBorne INT ,
   idSalle INT,
-  FOREIGN KEY (idSalle) REFERENCES salle(idSalle),
+  FOREIGN KEY (idSalle) REFERENCES salle(idSalle) ON DELETE CASCADE,
   FOREIGN KEY (idEtatBorne) REFERENCES etatBorne(idEtatBorne)
 ); 
 
 CREATE TABLE IF NOT EXISTS distributeur (
   idDistributeur SERIAL PRIMARY KEY,
-  nomDistributeur VARCHAR(50) NOT NULL,
+  nomDistributeur VARCHAR(50) ,
   idSalle INT,
   idEtat INTEGER REFERENCES etat(idEtat),
-  FOREIGN KEY (idSalle) REFERENCES salle(idSalle)
+  FOREIGN KEY (idSalle) REFERENCES salle(idSalle) ON DELETE CASCADE
 );
 
 -- Cafetières
 CREATE TABLE IF NOT EXISTS cafetiere (
   idCafetiere SERIAL PRIMARY KEY,
-  nomCafetiere VARCHAR(50) NOT NULL,
+  nomCafetiere VARCHAR(50) ,
   idSalle INT,
-  FOREIGN KEY (idSalle) REFERENCES salle(idSalle),
-  idEtat INTEGER NOT NULL REFERENCES etat(idEtat)
+  FOREIGN KEY (idSalle) REFERENCES salle(idSalle) ON DELETE CASCADE,
+  idEtat INTEGER  REFERENCES etat(idEtat)
 );
 
 -- Microwaves
 CREATE TABLE IF NOT EXISTS microwave (
   idMicrowave SERIAL PRIMARY KEY,
-  nomMicrowave VARCHAR(50) NOT NULL,
+  nomMicrowave VARCHAR(50) ,
   idSalle INT,
-  FOREIGN KEY (idSalle) REFERENCES salle(idSalle),
-  idEtat INTEGER NOT NULL REFERENCES etat(idEtat)
+  FOREIGN KEY (idSalle) REFERENCES salle(idSalle) ON DELETE CASCADE,
+  idEtat INTEGER  REFERENCES etat(idEtat)
 );
 
 -- AirSensors
 CREATE TABLE IF NOT EXISTS airSensor (
   idAirSensor SERIAL PRIMARY KEY,
-  nomAirSensor VARCHAR(50) NOT NULL,
+  nomAirSensor VARCHAR(50) ,
   idSalle INT,
-  FOREIGN KEY (idSalle) REFERENCES salle(idSalle),
-  idEtat INTEGER NOT NULL REFERENCES etat(idEtat)
+  FOREIGN KEY (idSalle) REFERENCES salle(idSalle) ON DELETE CASCADE,
+  idEtat INTEGER  REFERENCES etat(idEtat)
 );
 
 -- Dishwashers
 CREATE TABLE IF NOT EXISTS dishwasher (
   idDishwasher SERIAL PRIMARY KEY,
-  nomDishwasher VARCHAR(50) NOT NULL,
+  nomDishwasher VARCHAR(50) ,
   idSalle INT,
-  FOREIGN KEY (idSalle) REFERENCES salle(idSalle),
-  idEtat INTEGER NOT NULL REFERENCES etat(idEtat)
+  FOREIGN KEY (idSalle) REFERENCES salle(idSalle) ON DELETE CASCADE,
+  idEtat INTEGER  REFERENCES etat(idEtat)
 );
 
 -- Ventilations
 CREATE TABLE IF NOT EXISTS ventilation (
   idVentilation SERIAL PRIMARY KEY,
-  nomVentilation VARCHAR(50) NOT NULL,
+  nomVentilation VARCHAR(50) ,
   idSalle INT,
-  FOREIGN KEY (idSalle) REFERENCES salle(idSalle),
-  idModes INTEGER NOT NULL REFERENCES modes(idModes)
+  idEtat INTEGER  REFERENCES etat(idEtat),
+  FOREIGN KEY (idSalle) REFERENCES salle(idSalle) ON DELETE CASCADE,
+  idModes INTEGER  REFERENCES modes(idModes)
 );
 
 -- Scanners
 CREATE TABLE IF NOT EXISTS scanner (
   idScanner SERIAL PRIMARY KEY,
-  nomScanner VARCHAR(50) NOT NULL,
+  nomScanner VARCHAR(50) ,
   idSalle INT,
-  idEtat INTEGER NOT NULL REFERENCES etat(idEtat),
-  FOREIGN KEY (idSalle) REFERENCES salle(idSalle)
+  idEtat INTEGER  REFERENCES etat(idEtat),
+  FOREIGN KEY (idSalle) REFERENCES salle(idSalle) ON DELETE CASCADE
   
 );
 
 -- Affichages
 CREATE TABLE IF NOT EXISTS affichage (
   idAffichage SERIAL PRIMARY KEY,
-  nomAffichage VARCHAR(50) NOT NULL,
+  nomAffichage VARCHAR(50) ,
   idSalle INT,
-  FOREIGN KEY (idSalle) REFERENCES salle(idSalle),
-  idEtat INTEGER NOT NULL REFERENCES etat(idEtat)
+  FOREIGN KEY (idSalle) REFERENCES salle(idSalle) ON DELETE CASCADE,
+  idEtat INTEGER  REFERENCES etat(idEtat)
 );
 
 CREATE TABLE IF NOT EXISTS barriere ( 
   idBarriere SERIAL PRIMARY KEY,
-  nomBarriere VARCHAR(50) NOT NULL,
+  nomBarriere VARCHAR(50) ,
   idSalle INT,
-  FOREIGN KEY (idSalle) REFERENCES salle(idSalle),
-  idEtat INTEGER NOT NULL REFERENCES etat(idEtat)
+  FOREIGN KEY (idSalle) REFERENCES salle(idSalle) ON DELETE CASCADE,
+  idEtat INTEGER  REFERENCES etat(idEtat)
 );
 
 CREATE TABLE IF NOT EXISTS hotte (
   idHotte SERIAL PRIMARY KEY, 
-  nomHotte VARCHAR(50) NOT NULL,
-  idSalle INTEGER REFERENCES salle(idSalle), 
+  nomHotte VARCHAR(50) ,
+  idSalle INTEGER REFERENCES salle(idSalle) ON DELETE CASCADE, 
   idEtat INTEGER REFERENCES etat(idEtat)
 );
 
 CREATE TABLE IF NOT EXISTS panneau(
   idPanneau SERIAL PRIMARY KEY, 
-  nomPanneau VARCHAR(50) NOT NULL, 
+  nomPanneau VARCHAR(50) , 
   idEtat INTEGER REFERENCES etat(idEtat)
 );
 
 CREATE TABLE IF NOT EXISTS alarme(
   idAlarme SERIAL PRIMARY KEY, 
-  nomAlarme VARCHAR(50) NOT NULL,
+  nomAlarme VARCHAR(50) ,
   idEtat INTEGER REFERENCES etat(idEtat)
+);
+
+CREATE TABLE IF NOT EXISTS alerte(
+  idAlerte SERIAL PRIMARY KEY, 
+  message VARCHAR(50), 
+  idSalle INTEGER REFERENCES salle(idSalle) ON DELETE CASCADE, 
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS reservation (
+  idReservation SERIAL PRIMARY KEY,
+  idSalle       INTEGER NOT NULL REFERENCES salle(idSalle) ON DELETE CASCADE,
+  start_datetime TIMESTAMP NOT NULL,  -- date+heure de début
+  end_datetime   TIMESTAMP NOT NULL,  -- date+heure de fin
+  idValidationReservation INTEGER NOT NULL REFERENCES validationReservation(idVal) DEFAULT 1,         -- « non validé » par défaut
+  created_at     TIMESTAMP DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS action_history (
   id SERIAL PRIMARY KEY,
   user_id INTEGER REFERENCES users(id),
-  action TEXT NOT NULL,
+  action TEXT ,
   timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   details TEXT
 );
@@ -343,7 +374,7 @@ INSERT INTO grille (nomGrille, idEtat)
 VALUES 
   ('Grille Principale', 1);
 
-INSERT INTO porte (nomPorte, idVerrouillage)
+INSERT INTO porte (nomPorte, idEtat)
 VALUES 
   ('Porte Principale Batiment A', 1);
 

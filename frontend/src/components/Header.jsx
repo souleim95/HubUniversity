@@ -57,7 +57,7 @@ const Header = () => {
 
       <div style={{
         position: 'fixed', left: isSidebarVisible ? '20px' : '-70px',
-        bottom: '100px', display: 'flex', flexDirection: 'column', gap: '15px',
+        bottom: '30px', display: 'flex', flexDirection: 'column', gap: '15px',
         backgroundColor: 'white', padding: '15px 10px', borderRadius: '30px',
         boxShadow: '0 2px 10px rgba(0,0,0,0.1)', zIndex: 1000, transition: 'left 0.3s ease-in-out'
       }}>

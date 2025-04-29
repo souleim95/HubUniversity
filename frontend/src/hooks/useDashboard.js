@@ -104,33 +104,49 @@ export const useDashboardState = () => {
     
     // Fonction pour afficher un toast de gain de points
     const showPointsToast = (points) => {
-      const toast = document.createElement('div');
-      toast.style.position = 'fixed';
-      toast.style.bottom = '20px';
-      toast.style.right = '20px';
-      toast.style.backgroundColor = '#4CAF50';
-      toast.style.color = 'white';
-      toast.style.padding = '10px 20px';
-      toast.style.borderRadius = '4px';
-      toast.style.boxShadow = '0 2px 5px rgba(0,0,0,0.3)';
-      toast.style.zIndex = '1000';
-      toast.style.transition = 'all 0.5s ease-in-out';
-      toast.style.opacity = '0';
-      toast.textContent = `+${points} points !`;
-      
-      document.body.appendChild(toast);
-      
-      setTimeout(() => {
-        toast.style.opacity = '1';
-      }, 100);
-      
-      setTimeout(() => {
-        toast.style.opacity = '0';
-        setTimeout(() => {
-          document.body.removeChild(toast);
-        }, 500);
-      }, 3000);
-    };
+        // Chercher une notification existante
+        let existingToast = document.querySelector('.points-toast');
+        
+        if (existingToast) {
+          // Si une notification existe, mettre à jour son contenu
+          const currentPoints = parseInt(existingToast.textContent.replace(/[^0-9]/g, ''));
+          existingToast.textContent = `+${currentPoints + points} points !`;
+          
+          // Réinitialiser l'animation de fondu
+          existingToast.style.opacity = '1';
+          clearTimeout(existingToast.timeout);
+          
+          existingToast.timeout = setTimeout(() => {
+            existingToast.style.opacity = '0';
+            setTimeout(() => existingToast.remove(), 500);
+          }, 3000);
+        } else {
+          // Créer une nouvelle notification
+          const toast = document.createElement('div');
+          toast.className = 'points-toast';
+          toast.style.position = 'fixed';
+          toast.style.bottom = '160px';
+          toast.style.right = '10px';
+          toast.style.backgroundColor = '#4CAF50';
+          toast.style.color = 'white';
+          toast.style.padding = '10px 20px';
+          toast.style.borderRadius = '4px';
+          toast.style.boxShadow = '0 2px 5px rgba(0,0,0,0.3)';
+          toast.style.zIndex = '1000';
+          toast.style.transition = 'all 0.5s ease-in-out';
+          toast.style.opacity = '0';
+          toast.textContent = `+${points} points !`;
+          
+          document.body.appendChild(toast);
+          
+          setTimeout(() => toast.style.opacity = '1', 100);
+          
+          toast.timeout = setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 500);
+          }, 3000);
+        }
+      };
 
     const isSchoolClosed = () => {
         const grille = objects.find(obj => obj.id === 'grille_ecole');
