@@ -316,7 +316,6 @@ app.delete('/api/users/:id', asyncHandler(async (req, res) => {
     return res.status(404).json({ error: 'Utilisateur non trouvé.' });
   }
   // 2) Journaliser la suppression
-  await logAction(user.id, 'Suppression utilisateur', `Suppression de ${user.email}`);
   // 3) Supprimer réellement
   const { rows: [deletedUser] } = await pool.query(
     'DELETE FROM users WHERE id = $1 RETURNING *',
@@ -350,7 +349,7 @@ app.patch("/api/users/:id", asyncHandler(async (req, res) => {
   if (updateRes.rows.length === 0) {
     return res.status(404).json({ error: "Utilisateur non trouvé." });
   }
-   await logAction(id, 'Modification utilisateur', `Changement de rôle/score pour l'utilisateur ${updateRes.rows[0].email}`); 
+   await logAction(id, 'Modification', `Changement de rôle/score pour l'utilisateur ${updateRes.rows[0].email}`); 
   // 3) Retourner le user mis à jour
   res.json({
     user: {
@@ -1353,6 +1352,13 @@ app.get('/api/action-history', asyncHandler(async (req, res) => {
 }));
 
 
+// Journaliser la déconnexion
+app.post('/api/logout', asyncHandler(async (req, res) => {
+  const { userId } = req.body;
+  // Enregistre l’action "Déconnexion" dans action_history
+  await logAction(userId, 'Déconnexion', `Déconnexion de l'utilisateur ${userId}`);
+  res.json({ message: 'Déconnexion enregistrée' });
+}));
 
 
 

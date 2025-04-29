@@ -165,18 +165,32 @@ export const useHeaderState = () => {
     }
   };
 
- const handleLogout = () => {
-    addToast(`Au revoir ${userName} ! À bientôt.`, 'info');
+  const handleLogout = async () => {
+    try {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+      if (currentUser?.id) {
+        // Appel pour journaliser la déconnexion
+        await axios.post('http://localhost:5001/api/logout', {
+          userId: currentUser.id
+        });
+      }
+    } catch (err) {
+      console.error('Erreur journalisation logout :', err);
+    }
+  
+    toast.info(`Au revoir ${userName} ! À bientôt.`);  // message utilisateur
     sessionStorage.removeItem('user');
     sessionStorage.removeItem('role');
     sessionStorage.removeItem('points');
     setUserName(null);
     setRole(null);
     setUserPoints(0);
+  
     setTimeout(() => {
       window.location.reload();
     }, 3000);
   };
+  
 
  const handleSelectObject = (obj, categoryKey) => {
     // Réinitialiser les états de sélection
