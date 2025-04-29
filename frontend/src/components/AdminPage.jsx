@@ -822,6 +822,15 @@ function AdminPage() {
                   />
                 </FormGroup>
                 <FormGroup>
+                  <Label>Email</Label>
+                  <Input
+                    type="email"
+                    value={userFormData.email}
+                    onChange={e => setUserFormData({ ...userFormData, email: e.target.value })}
+                    required
+                  />
+                </FormGroup>
+                <FormGroup>
                   <Label>Rôle</Label>
                   <Select
                     value={userFormData.role}

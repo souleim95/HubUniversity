@@ -368,7 +368,8 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 	const [showUserPassword, setShowUserPassword] = useState(false);
 	const [userFormData, setUserFormData] = useState({
 		login: '',
-		role: 'student',
+		email: '',
+		role: 'eleve',
 		points: 0,
 		password: ''
 	});
@@ -500,40 +501,29 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 
 	// Récupère la liste des utilisateurs depuis l'API
 	// À remplacer par une vraie implémentation d'API plus tard
-	const fetchUsers = async () => {
+	const fetchUsers = useCallback(async () => {
 		setLoadingUsers(true);
 		try {
-		  // Récupère directement data via Axios
-		  const { data } = await axios.get('http://localhost:5001/api/users');
-		  alert(`✅ Utilisateurs reçus (${data.length} entrées)`);
-		  console.log("Données reçues:", data);
-	  
-		  // Formatte les données comme avant
+		  const { data } = await axios.get('/api/users');
 		  const formatted = data.map(u => ({
 			id: u.id,
 			login: u.name,
 			email: u.email,
 			role: u.role,
 			points: u.score,
-			createdAt: new Date(u.created_at)
-			  .toLocaleDateString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+			createdAt: new Date(u.created_at).toLocaleDateString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
 			lastLogin: u.last_login
-			  ? new Date(u.last_login)
-				  .toLocaleDateString('fr-FR', { hour: '2-digit', minute: '2-digit' })
-			  : '—',
+			  ? new Date(u.last_login).toLocaleDateString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+			  : '—'
 		  }));
-	  
 		  setUsers(formatted);
 		} catch (err) {
-		  // Gestion de l’erreur Axios
 		  const message = err.response?.data?.error || err.message;
-		  alert('❌ Erreur fetchUserHistory: ' + message);
-		  console.error("Erreur détaillée:", err);
-		  toast.error(`Erreur: ${message}`);
+		  toast.error(`Erreur fetchUsers : ${message}`);
 		} finally {
 		  setLoadingUsers(false);
 		}
-	  };
+	  }, []);
 	
 
 	// Récupère la liste des objets et catégories depuis fakeData.js
@@ -773,12 +763,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 	// Ouvre la modal pour ajouter un utilisateur
 	const handleAddUser = () => {
 		setSelectedUser(null);
-		setUserFormData({
-			login: '',
-			role: 'student',
-			points: 0,
-			password: ''
-		});
+		setUserFormData({ login: '', email: '', role: 'eleve', points: 0, password: '' });
 		setShowUserModal(true);
 	};
 
@@ -789,7 +774,8 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 			login: user.login,
 			email: user.email,
 			role: user.role,
-			points: user.points
+			points: user.points,
+			password: ''
 		});
 		setShowUserModal(true);
 	}, []);
@@ -804,73 +790,57 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 	}, [users]);
 
 	// Fonction pour gérer la soumission du formulaire utilisateur
-	const handleUserSubmit = useCallback(async (e) => {
+	const handleUserSubmit = useCallback(async e => {
 		e.preventDefault();
 		try {
 		  if (selectedUser) {
-			// 1) Envoi de la MAJ au serveur
-			const { data } = await axios.patch(
-			  `/api/users/${selectedUser.id}`,
-			  { 
-				role: userFormData.role,
-				score: userFormData.points 
-			  }
-			);
-	  
-			// 2) Mise à jour locale
+			// Mise à jour d'un utilisateur existant
+			const { data } = await axios.patch(`/api/users/${selectedUser.id}`, {
+			  role: userFormData.role,
+			  score: userFormData.points
+			});
 			setUsers(users.map(u =>
 			  u.id === selectedUser.id
 				? { ...u, role: data.user.role, points: data.user.score }
 				: u
 			));
 			toast.success('Utilisateur modifié avec succès');
-	  
-			// 3) Si on s’est démoti-cé soi-même, on redirige
+			// Si on s'est démoti sauf si on est encore autorisé
 			if (currentUser?.id === selectedUser.id && data.user.role !== 'directeur') {
-			  // Mettre à jour le rôle en session pour header
 			  sessionStorage.setItem('role', data.user.role);
-			  // Redirection vers la home adaptée (ex. '/dashboard' ou '/')
 			  navigate('/');
 			}
 		  } else {
-			sessionStorage.setItem('points', data.user.score);
-			navigate('/admin');
-			// Création d’un nouvel utilisateur
-			const { data } = await axios.post(
-			  '/api/users',
-			  { 
-				name: userFormData.login,
-				email: userFormData.email,
-				role: userFormData.role,
-				password: userFormData.password
-			  }
-			);
-			setUsers([...users, {
-			  id: data.id,
-			  login: data.name,
-			  email: data.email,
-			  role: data.role,
-			  points: 0
-			}]);
+			// Création d'un nouvel utilisateur
+			const { data } = await axios.post('/api/users', {
+			  name: userFormData.login,
+			  email: userFormData.email,
+			  role: userFormData.role,
+			  password: userFormData.password
+			});
 			toast.success('Utilisateur créé avec succès');
+			// Recharger la liste depuis API pour afficher dates et id
+			await fetchUsers();
 		  }
 		  setShowUserModal(false);
 		} catch (err) {
-		  toast.error(`Erreur : ${err.response?.data?.error || err.message}`);
+		  const message = err.response?.data?.error || err.message;
+		  toast.error(`Erreur : ${message}`);
 		}
-	  }, [selectedUser, userFormData, users, currentUser, navigate]);
+	  }, [selectedUser, userFormData, users, currentUser, fetchUsers, navigate]);
+	
 	  
 
 	const confirmDeleteUser = useCallback(async () => {
 		try {
 		  // envoie la requête DELETE au back
 		  await axios.delete(`http://localhost:5001/api/users/${selectedUser.id}`);
-		  alert('✅ DELETE /api/users/' + selectedUser.id + ' réussi');
+		  /* alert('✅ DELETE /api/users/' + selectedUser.id + ' réussi'); */
 		  // retire de l'état local
 		  setUsers(prev => prev.filter(u => u.id !== selectedUser.id));
-		  alert('✅ State users mis à jour');
+		  /* alert('✅ State users mis à jour'); */
 		  toast.success('Utilisateur supprimé avec succès');
-		  alert('▶️ Appel à fetchUserHistory pour rafraîchir l’historique');
+		  /* alert('▶️ Appel à fetchUserHistory pour rafraîchir l’historique'); */
 		  setShowDeleteUserModal(false);
 		  setSelectedUser(null);
 	  
@@ -879,12 +849,12 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 			handleLogout();
 		  }
 		  await fetchUserHistory();
-		  alert('✅ Historique rafraîchi');
+		  /* alert('✅ Historique rafraîchi'); */
 		} catch (err) {
 			console.error('Erreur suppression utilisateur', err.response || err);
 			const status  = err.response?.status;
 			const serverMessage = err.response?.data?.error || err.message;
-			alert(`❌ Échec suppression (HTTP ${status}) : ${serverMessage}`);
+			/* alert(`❌ Échec suppression (HTTP ${status}) : ${serverMessage}`); */
 			toast.error(`Échec suppression : ${serverMessage}`);
 		}
 	}, [selectedUser, currentUser, navigate]);
