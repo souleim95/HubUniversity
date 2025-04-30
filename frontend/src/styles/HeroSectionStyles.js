@@ -21,15 +21,11 @@ export const HeroContainer = styled.section`
   position: relative;
   overflow: hidden;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  margin: 0;  /* Réinitialise la marge */
-  padding: 0; /* Réinitialise le padding */
 `;
 
 
 export const Video = styled.video`
   position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
