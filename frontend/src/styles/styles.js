@@ -10,7 +10,6 @@ export const PageContainer = styled.div`
 // Contenu principal de la page
 export const Content = styled.main`
   flex: 1;
-  padding: 20px;
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;

@@ -337,12 +337,38 @@ const Profile = () => {
                 value={formData.email}
                 onChange={handleInputChange}
               />
-              <InputField
+              <select
                 name="formation"
-                placeholder="Formation"
                 value={formData.formation}
                 onChange={handleInputChange}
-              />
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1rem',
+                  marginBottom: '1rem',
+                  borderRadius: '10px',
+                  border: '1px solid #e1e1e1',
+                  backgroundColor: '#1d124e', // Fond plus foncé
+                  color: 'white',
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  outline: 'none',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                <option value="">Sélectionnez votre formation</option>
+                <option value="Mathématique">Master Mathématiques</option>
+                <option value="Informatique">Master Informatique</option>
+                <option value="INFORMATIQUE">INFORMATIQUE</option>
+                <option value="GÉNIE CIVIL">GÉNIE CIVIL</option>
+                <option value="BIOTECHNOLOGIES">BIOTECHNOLOGIES</option>
+                <option value="MÉCANIQUE">MÉCANIQUE</option>
+                <option value="MATHÉMATIQUES APPLIQUÉES">MATHÉMATIQUES APPLIQUÉES</option>
+                <option value="BIOTECHNOLOGIES & CHIMIE (Chimie voie Recherche)">BIOTECHNOLOGIES & CHIMIE (Chimie voie Recherche)</option>
+                <option value="BIOTECHNOLOGIES & CHIMIE (Biologie voie Recherche)">BIOTECHNOLOGIES & CHIMIE (Biologie voie Recherche)</option>
+                <option value="GÉNIE CIVIL - ARCHITECTE (ENSA-V)">GÉNIE CIVIL - ARCHITECTE (ENSA-V)</option>
+                <option value="DATA - HUMANITÉS DIGITALES (Sciences Po Saint-Germain-en-Laye)">DATA - HUMANITÉS DIGITALES (Sciences Po Saint-Germain-en-Laye)</option>
+                <option value="INFORMATIQUE - DESIGNER (CY École de Design)">INFORMATIQUE - DESIGNER (CY École de Design)</option>
+              </select>
 
               <select
                 name="genre"

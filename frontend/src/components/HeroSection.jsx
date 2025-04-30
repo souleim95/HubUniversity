@@ -3,7 +3,9 @@ import welcomeVideo from '../assets/welcome.mp4';
 import { 
   HeroContainer, 
   Video, 
-  HeroContent 
+  HeroContent,
+  Title,
+  Subtitle
 } from '../styles/HeroSectionStyles';
 
 /*
@@ -18,11 +20,12 @@ const HeroSection = () => {
       <Video autoPlay muted loop playsInline>
         <source src={welcomeVideo} type="video/mp4" />
       </Video>
-
-
+      
+      <HeroContent>
+        <Title>Bienvenue sur HubCY</Title>
+        <Subtitle>Découvrez l'école connectée de demain</Subtitle>
+      </HeroContent>
     </HeroContainer>
-
-         
   );
 };
 

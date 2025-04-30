@@ -50,35 +50,63 @@ const Header = () => {
     <>
       {/* Barre latérale */}
       <div style={{
-        position: 'fixed', left: 0, top: '55%', transform: 'translateY(-50%)',
-        width: '5px', height: '100px', backgroundColor: 'black', borderRadius: '0 5px 5px 0',
-        cursor: 'pointer', zIndex: 999, animation: 'pulse 2s infinite'
+        position: 'fixed',
+        left: 0,
+        top: '50%', // Ajout du % manquant
+        maxHeight: 'calc(100vh - 160px)', // Garde une marge de 80px en haut et en bas
+        transform: 'translateY(-50%)',
+        width: '5px',
+        height: '100px',
+        backgroundColor: 'black',
+        borderRadius: '0 5px 5px 0',
+        cursor: 'pointer',
+        zIndex: 999,
+        animation: 'pulse 2s infinite'
       }} onMouseEnter={() => setIsSidebarVisible(true)} />
 
       <div style={{
-        position: 'fixed', left: isSidebarVisible ? '20px' : '-70px',
-        bottom: '30px', display: 'flex', flexDirection: 'column', gap: '15px',
-        backgroundColor: 'white', padding: '15px 10px', borderRadius: '30px',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)', zIndex: 1000, transition: 'left 0.3s ease-in-out'
+        position: 'fixed',
+        left: isSidebarVisible ? '3px' : '-70px', // Changé de 20px à 10px
+        top: '50%',
+        maxHeight: 'calc(100vh - 160px)', // Même chose ici
+        transform: 'translateY(-50%)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '15px',
+        backgroundColor: 'white',
+        padding: '15px 10px',
+        borderRadius: '30px',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+        zIndex: 1000,
+        transition: 'left 0.3s ease-in-out',
+        overflowY: 'auto' // Ajoute un scroll si le contenu dépasse
       }}>
-        {renderSidebarButton(() => navigate('/formation'), <RiBookLine size={20} />, "Nos formations")}
-        {renderSidebarButton(scrollToCampus, <RiBuildingLine size={20} />, "Campus")}
-        {renderSidebarButton(scrollToInfo, <RiInformationLine size={20} />, "Informations")}
-        {renderSidebarButton(scrollToFaq, <RiQuestionLine size={20} />, "FAQ")}
-        {userName && (
-          <>
-            <div style={{ width: '100%', height: '1px', backgroundColor: '#e0e0e0', margin: '5px 0' }} />
-            {renderSidebarButton(() => navigate('/dashboard'), <RiDashboardLine size={20} />, "Tableau de bord")}
-            {renderSidebarButton(() => navigate('/profil'), <RiUserLine size={20} />, "Profil")}
-            {(role === 'professeur' || role === 'directeur') && (
-              renderSidebarButton(() => navigate('/gestion'), <RiSettings4Line size={20} />, "Gestion")
-            )}
-            {role === 'directeur' && (
-              renderSidebarButton(() => navigate('/admin'), <RiAdminLine size={20} />, "Administration")
-            )}
-            {renderSidebarButton(handleLogout, <RiLogoutBoxLine size={20} />, "Déconnexion", '#ffebee')}
-          </>
-        )}
+        <div style={{ 
+          maxHeight: 'calc(100vh - 200px)', // Laisse de la place pour le padding
+          overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '15px'
+        }}>
+          {renderSidebarButton(() => navigate('/formation'), <RiBookLine size={20} />, "Nos formations")}
+          {renderSidebarButton(scrollToCampus, <RiBuildingLine size={20} />, "Campus")}
+          {renderSidebarButton(scrollToInfo, <RiInformationLine size={20} />, "Informations")}
+          {renderSidebarButton(scrollToFaq, <RiQuestionLine size={20} />, "FAQ")}
+          {userName && (
+            <>
+              <div style={{ width: '100%', height: '1px', backgroundColor: '#e0e0e0', margin: '5px 0' }} />
+              {renderSidebarButton(() => navigate('/dashboard'), <RiDashboardLine size={20} />, "Tableau de bord")}
+              {renderSidebarButton(() => navigate('/profil'), <RiUserLine size={20} />, "Profil")}
+              {(role === 'professeur' || role === 'directeur') && (
+                renderSidebarButton(() => navigate('/gestion'), <RiSettings4Line size={20} />, "Gestion")
+              )}
+              {role === 'directeur' && (
+                renderSidebarButton(() => navigate('/admin'), <RiAdminLine size={20} />, "Administration")
+              )}
+              {renderSidebarButton(handleLogout, <RiLogoutBoxLine size={20} />, "Déconnexion", '#ffebee')}
+            </>
+          )}
+        </div>
       </div>
 
       {/* Header principal */}

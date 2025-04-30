@@ -4,7 +4,7 @@ export const InfoContainer = styled.div`
   margin: 20px auto;
   padding: 25px;
   max-width: 1400px;
-  width: 102.5%;
+  width: 102%;
   background: white;
   border-radius: 24px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);

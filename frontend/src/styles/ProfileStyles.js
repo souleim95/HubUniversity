@@ -1,4 +1,22 @@
-import styled from 'styled-components';
+import styled, { createGlobalStyle } from 'styled-components';
+
+// Ajouter ces styles globaux
+export const GlobalStyle = createGlobalStyle`
+  select option {
+    background-color: #1d124e;
+    color: white;
+    padding: 10px;
+  }
+
+  select:hover {
+    border-color: #4a90e2;
+  }
+
+  select:focus {
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+  }
+`;
 
 // Animation (si besoin)
 export const BackgroundContainer = styled.div`
