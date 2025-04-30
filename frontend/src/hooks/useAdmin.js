@@ -528,23 +528,29 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 
 	// Récupère la liste des objets et catégories depuis fakeData.js
 	const fetchObjects = async () => {
-		    try {
-		      const { data } = await axios.get('http://localhost:5001/api/objets');
-		     // Le serveur renvoie [{ type, id, nom, etat }, …]
-		      const shaped = data.map(o => ({
-		        id: o.id,
-		        type: o.type,
-		        name: o.nom,
-		        status: o.etat
-		      }));
-		      setObjects(shaped);
-		
-		      const uniqueTypes = [...new Set(shaped.map(obj => obj.type))];
-		      setCategoryList(uniqueTypes);
-		    } catch (err) {
-		      toast.error("Impossible de charger les objets : " + err.message);
-		    }
-		  };
+		try {
+		  // On récupère l'URL de base depuis .env (ou utilise '' si non défini pour les appels relatifs)
+		  const API_URL = process.env.REACT_APP_API_URL || '';
+		  // Appel GET vers /api/objets
+		  const response = await axios.get(`${API_URL}/api/objets`);
+		  const data = response.data; // on attend un tableau d'objets { id, type, nom, etat }
+	
+		  // On reformate pour le front
+		  const shaped = data.map(o => ({
+			id:     o.id,
+			type:   o.type,
+			name:   o.nom,
+			status: o.etat
+		  }));
+	
+		  // On stocke les objets et la liste unique des catégories
+		  setObjects(shaped);
+		  setCategoryList([...new Set(shaped.map(obj => obj.type))]);
+		} catch (error) {
+		  console.error('Erreur fetchObjects:', error);
+		  toast.error(`Impossible de charger les objets : ${error.message}`);
+		}
+	  };
 		
 		  // On charge utilisateurs + objets une fois au montage
 		  useEffect(() => {
