@@ -13,14 +13,18 @@ const fadeIn = keyframes`
 `;
 
 export const HeroContainer = styled.section`
-  min-height: 95vh;
+  height: 100vh;   /* Assure que le conteneur prend 100% de la hauteur */
+  width: 100vw;    /* Assure que le conteneur prend 100% de la largeur */
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   overflow: hidden;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  margin: 0;  /* Réinitialise la marge */
+  padding: 0; /* Réinitialise le padding */
 `;
+
 
 export const Video = styled.video`
   position: absolute;

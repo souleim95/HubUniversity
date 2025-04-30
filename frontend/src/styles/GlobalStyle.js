@@ -51,7 +51,6 @@ const GlobalStyle = createGlobalStyle`
   }
 
   body {
-    padding-top: 6vh;
     margin: 0;
     min-height: 100vh;
     display: flex;

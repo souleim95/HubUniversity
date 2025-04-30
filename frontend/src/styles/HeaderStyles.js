@@ -192,25 +192,65 @@ export const Overlay = styled.div`
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(3px);
   z-index: 999;
+  animation: fadeOverlay 0.3s ease-in-out;
+
+  @keyframes fadeOverlay {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
 `;
 
 export const LoginFormContainer = styled.div`
   position: fixed;
-  top: 50%;
+  top: 50vh;
   left: 50%;
   transform: translate(-50%, -50%);
   background: white;
   padding: 30px;
   border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   z-index: 1000;
-  width: 380px;
-  animation: slideIn 0.5s ease-in-out;
+  width: 90%;
+  max-width: 400px;
+  max-height: 85vh;
+  overflow-y: auto;
+  animation: popIn 0.3s ease-out;
+
+  @keyframes popIn {
+    0% {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0);
+    }
+    100% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+
+  /* Styliser la barre de défilement */
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #0f6ead;
+    border-radius: 4px;
+  }
 
   h2 {
-    color: rgb(15, 110, 173);
+    color: #0f6ead;
     font-size: 24px;
     margin-bottom: 25px;
     text-align: center;
@@ -336,25 +376,13 @@ export const LoginFormContainer = styled.div`
   @media (max-width: 768px) {
     width: 95%;
     padding: 25px;
+    margin: 10px;
   }
 
   @media (max-width: 480px) {
     width: 90%;
-    padding: 20px 15px;
-
-    h2 {
-      font-size: 20px;
-    }
-
-    input, select {
-      padding: 10px 12px;
-      font-size: 13px;
-    }
-
-    button {
-      font-size: 14px;
-      padding: 10px;
-    }
+    max-height: 85vh;
+    padding: 20px;
   }
 `;
 
