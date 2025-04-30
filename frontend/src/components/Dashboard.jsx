@@ -197,7 +197,13 @@ const Dashboard = () => {
       const { category, room, equipment } = navigationState;
 
       if (category) {
-        setSelectedCategory(category);
+        // Vérifier si la catégorie existe dans les catégories disponibles
+        if (categories[category]) {
+          setSelectedCategory(category);
+        } else {
+          console.warn(`Catégorie '${category}' non trouvée, utilisation de la catégorie par défaut`);
+          setSelectedCategory(Object.keys(categories)[0]); // Utilise la première catégorie comme fallback
+        }
       }
       if (room) {
         setSelectedRoom(room);
