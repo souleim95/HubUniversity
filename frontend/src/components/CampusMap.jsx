@@ -211,14 +211,14 @@ const CampusMap = () => {
                 style={{
                   padding: '16px',
                   backgroundColor: selectedType === category.name 
-                    ? '#18181B' 
+                    ? 'rgb(15, 110, 173)' 
                     : '#ffffff',
                   color: selectedType === category.name 
                     ? '#ffffff' 
                     : '#09090B',
                   border: '1px solid',
                   borderColor: selectedType === category.name 
-                    ? '#18181B' 
+                    ? 'rgb(15, 110, 173)' 
                     : '#E4E4E7',
                   borderRadius: '8px',
                   cursor: 'pointer',
