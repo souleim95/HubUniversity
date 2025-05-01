@@ -22,6 +22,7 @@ export const useGestionState = () => {
     const [timeFilter, setTimeFilter] = useState('day');
     const [historyTimeFilter, setHistoryTimeFilter] = useState('day');
     const [chartType, setChartType] = useState('line');
+    const [initialSettings, setInitialSettings] = useState({});
 
     // États pour les alertes et confirmations
     const [showAlert, setShowAlert] = useState(false); // Affichage des messages d'alerte
@@ -376,6 +377,7 @@ export const useGestionState = () => {
     };
         
     const handleOpenSettings = (object) => {
+        setInitialSettings({ ...object.settings });
         setEditingSettingsFor(object);
         
         // Initialiser les paramètres en fonction du type d'objet
@@ -399,6 +401,22 @@ export const useGestionState = () => {
             ...object.settings
         });
     };
+
+    const handleSaveSettings = (object) => {
+            // Met à jour la liste globale des objets
+            const updatedAll = allObjects.map(obj =>
+              obj.id === object.id
+                ? { ...obj, settings: objectSettings }
+                : obj
+            );
+            setAllObjects(updatedAll);
+            // Met à jour la liste filtrée si besoin
+            setObjects(prev => prev.map(obj =>
+              obj.id === object.id
+                ? { ...obj, settings: objectSettings }
+                : obj
+            ));
+          };
       
     const handleReservationSubmit = (e) => {
         e.preventDefault();
@@ -484,6 +502,8 @@ export const useGestionState = () => {
   
 
   return {
+    initialSettings,
+    handleSaveSettings,
     generateReports, handleExportReport,
     convertToCSV, downloadCSV,
     handleEditObject, handleObjectSubmit,

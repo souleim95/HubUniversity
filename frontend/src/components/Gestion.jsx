@@ -142,6 +142,9 @@ function GestionPage() {
     handleOpenSettings,
     handleReservationSubmit,
     isInefficient,
+    isNameUnique,
+    handleSaveSettings,
+    initialSettings,         // ← ajouté
     objects, setObjects,
     showObjectModal, setShowObjectModal,
     inactiveCount,
