@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { toast} from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { equipments, categories, dataObjects} from '../data/projectData';
-
+import { equipments, categories, dataObjects } from '../data/projectData';
 
 export const useHeaderState = () => {
-  const [isFormOpen, setIsFormOpen] = useState(null); 
+  const [isFormOpen, setIsFormOpen] = useState(null);
   const [formData, setFormData] = useState({
     nom: '',
     prenom: '',
@@ -38,61 +37,68 @@ export const useHeaderState = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [selectedType, setSelectedType] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
-  
+
   const navigate = useNavigate();
 
-
   const getRoleTitle = (roleKey) => {
-    switch(roleKey) {
-      case 'eleve': return 'Étudiant';
-      case 'professeur': return 'Gestionnaire';
-      case 'directeur': return 'Directeur';
-      default: return 'Utilisateur';
+    switch (roleKey) {
+      case 'eleve':
+        return 'Étudiant';
+      case 'professeur':
+        return 'Gestionnaire';
+      case 'directeur':
+        return 'Directeur';
+      default:
+        return 'Utilisateur';
     }
   };
 
- const getRoleColor = (roleKey) => {
-    switch(roleKey) {
-      case 'eleve': return '#4CAF50';
-      case 'professeur': return '#2196F3';
-      case 'directeur': return '#c62828';
-      default: return '#757575';
+  const getRoleColor = (roleKey) => {
+    switch (roleKey) {
+      case 'eleve':
+        return '#4CAF50';
+      case 'professeur':
+        return '#2196F3';
+      case 'directeur':
+        return '#c62828';
+      default:
+        return '#757575';
     }
   };
 
   const toggleForm = (formType) => {
     setIsFormOpen(formType);
-    setFormData({ 
-      nom: '', 
-      prenom: '', 
-      email: '', 
-      role: '', 
-      password: '', 
-      formation: '', 
+    setFormData({
+      nom: '',
+      prenom: '',
+      email: '',
+      role: '',
+      password: '',
+      formation: '',
       pseudonyme: '',
       dateNaissance: '',
       genre: ''
     });
   };
 
- const handleChange = (e) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevState => ({
+    setFormData((prevState) => ({
       ...prevState,
-      [name]: value,  // Mise à jour du champ spécifique
+      [name]: value
     }));
   };
 
- const addToast = (text, type = 'info') => {
+  const addToast = (text, type = 'info') => {
     const id = Date.now();
-    setToasts(prev => [...prev, { id, text, type }]);
+    setToasts((prev) => [...prev, { id, text, type }]);
   };
 
- const removeToast = (id) => {
-    setToasts(prev => prev.filter(toast => toast.id !== id));
+  const removeToast = (id) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
   };
 
- const validateForm = () => {
+  const validateForm = () => {
     const errors = [];
 
     if (isFormOpen === 'signup') {
@@ -120,9 +126,9 @@ export const useHeaderState = () => {
       }
     }
     if (!formData.email.trim()) {
-      errors.push('L\'email est obligatoire');
+      errors.push("L'email est obligatoire");
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      errors.push('Format d\'email invalide');
+      errors.push("Format d'email invalide");
     }
 
     if (!formData.password) {
@@ -132,67 +138,69 @@ export const useHeaderState = () => {
     }
 
     if (errors.length > 0) {
-      errors.forEach(error => addToast(error, 'error'));
+      errors.forEach((error) => addToast(error, 'error'));
       return false;
     }
     return true;
   };
 
- const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
-    let requestData = isFormOpen === 'signup'
-    ? {
-      nom: formData.nom,
-      prenom : formData.prenom,
-      email: formData.email,
-      role: formData.role,
-      password: formData.password,
-      pseudonyme: formData.pseudonyme,
-      formation: formData.formation,
-      dateNaissance: formData.dateNaissance,
-      genre: formData.genre
-    }
-    : { email: formData.email, password: formData.password };
-  
+    let requestData =
+      isFormOpen === 'signup'
+        ? {
+            nom: formData.nom,
+            prenom: formData.prenom,
+            email: formData.email,
+            role: formData.role,
+            password: formData.password,
+            pseudonyme: formData.pseudonyme,
+            formation: formData.formation,
+            dateNaissance: formData.dateNaissance,
+            genre: formData.genre
+          }
+        : { email: formData.email, password: formData.password };
+
     try {
-      addToast(`Tentative de ${isFormOpen === 'signup' ? 'création de compte' : 'connexion'}...`, 'info');
-      
-      const url = isFormOpen === 'signup'
-        ? 'http://localhost:5001/api/users'
-        : 'http://localhost:5001/api/login';
-  
+      const url =
+        isFormOpen === 'signup'
+          ? 'http://localhost:5001/api/users'
+          : 'http://localhost:5001/api/login';
+
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestData),
+        body: JSON.stringify(requestData)
       });
-  
+
       const data = await response.json();
 
       if (response.ok) {
         if (isFormOpen === 'login') {
+          // Stockage des données utilisateur
           sessionStorage.setItem('user', data.user.nom);
           sessionStorage.setItem('prenom', data.user.prenom);
           sessionStorage.setItem('role', data.user.role);
           sessionStorage.setItem('userId', data.user.id);
           localStorage.setItem('currentUser', JSON.stringify(data.user));
           sessionStorage.setItem('points', data.user.score);
+
+          // Mise à jour des états
           setUserName(data.user.prenom || data.user.nom);
           setRole(data.user.role);
           setUserPoints(parseInt(data.user.score, 10));
-          
-          addToast(`Bienvenue ${data.user.prenom} ! Connexion réussie.`, 'success');
-          
+
+          toast.success(`Bienvenue ${data.user.prenom} !`);
+
           setTimeout(() => {
             window.location.reload();
           }, 1500);
         } else {
-          addToast('Compte créé avec succès ! Vous pouvez maintenant vous connecter.', 'success');
+          toast.success('Compte créé avec succès ! Vous pouvez maintenant vous connecter.');
           setIsFormOpen('login');
-          // remplace ton setFormData actuel par :
           setFormData({
             nom: '',
             prenom: '',
@@ -204,22 +212,20 @@ export const useHeaderState = () => {
             dateNaissance: '',
             genre: ''
           });
-
-          
         }
       } else {
         if (data.error.includes('exist')) {
-          addToast('Cet email est déjà utilisé', 'error');
+          toast.error('Cet email est déjà utilisé');
         } else if (data.error.includes('password')) {
-          addToast('Mot de passe incorrect', 'error');
+          toast.error('Mot de passe incorrect');
         } else if (data.error.includes('found')) {
-          addToast('Aucun compte trouvé avec cet email', 'error');
+          toast.error('Aucun compte trouvé avec cet email');
         } else {
-          addToast(data.error || 'Une erreur est survenue', 'error');
+          toast.error(data.error || 'Une erreur est survenue');
         }
       }
     } catch (error) {
-      addToast('Erreur de connexion au serveur. Veuillez réessayer.', 'error');
+      toast.error('Erreur de connexion au serveur. Veuillez réessayer.');
     }
   };
 
@@ -235,22 +241,21 @@ export const useHeaderState = () => {
     } catch (err) {
       console.error('Erreur journalisation logout :', err);
     }
-  
-    toast.info(`Au revoir ${userName} ! À bientôt.`);  // message utilisateur
+
+    toast.info(`Au revoir ${userName} ! À bientôt.`); // message utilisateur
     sessionStorage.removeItem('user');
     sessionStorage.removeItem('role');
     sessionStorage.removeItem('points');
     setUserName(null);
     setRole(null);
     setUserPoints(0);
-  
+
     setTimeout(() => {
       window.location.reload();
     }, 3000);
   };
-  
 
- const handleSelectObject = (obj, categoryKey) => {
+  const handleSelectObject = (obj, categoryKey) => {
     // Réinitialiser les états de sélection
     setSelectedCategory(null);
     setSelectedRoom(null);
@@ -261,7 +266,7 @@ export const useHeaderState = () => {
     let targetCategory = categoryKey;
     let targetRoom = null;
     let targetEquipment = null;
-  
+
     if (!targetCategory) {
       for (const [key, value] of Object.entries(categories)) {
         if (value.items && value.items.includes(obj.id)) {
@@ -270,13 +275,13 @@ export const useHeaderState = () => {
         }
       }
     }
-    
+
     if (obj.type === 'Salle') {
       targetRoom = obj.id;
     } else {
       targetEquipment = obj.id;
       for (const [roomId, roomEquips] of Object.entries(equipments)) {
-        if (roomEquips.some(e => e.id === obj.id)) {
+        if (roomEquips.some((e) => e.id === obj.id)) {
           targetRoom = roomId;
           break;
         }
@@ -284,11 +289,11 @@ export const useHeaderState = () => {
     }
 
     // Mettre à jour les états avec les nouvelles sélections
-    
+
     setSelectedCategory(targetCategory);
     setSelectedRoom(targetRoom);
     setSelectedEquipment(targetEquipment);
-  
+
     toast.info(
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         <span style={{ fontWeight: 'bold', marginBottom: '5px' }}>
@@ -301,7 +306,7 @@ export const useHeaderState = () => {
         </span>
       </div>,
       {
-        position: "top-right",
+        position: 'top-right',
         autoClose: 3000,
         hideProgressBar: false,
         closeOnClick: true,
@@ -314,21 +319,21 @@ export const useHeaderState = () => {
           border: '1px solid #e9ecef',
           borderLeft: '4px solid #0f6ead',
           borderRadius: '8px',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
         }
       }
     );
-  
-    navigate('/dashboard', { 
-      state: { 
-        category: targetCategory, 
-        room: targetRoom, 
-        equipment: targetEquipment 
-      } 
+
+    navigate('/dashboard', {
+      state: {
+        category: targetCategory,
+        room: targetRoom,
+        equipment: targetEquipment
+      }
     });
   };
 
- const scrollToFaq = () => {
+  const scrollToFaq = () => {
     // Si nous ne sommes pas sur la page d'accueil, naviguer d'abord vers celle-ci
     if (window.location.pathname !== '/') {
       navigate('/');
@@ -348,7 +353,7 @@ export const useHeaderState = () => {
     }
   };
 
- const scrollToInfo = () => {
+  const scrollToInfo = () => {
     if (window.location.pathname !== '/') {
       navigate('/');
       setTimeout(() => {
@@ -365,7 +370,7 @@ export const useHeaderState = () => {
     }
   };
 
- const scrollToCampus = () => {
+  const scrollToCampus = () => {
     if (window.location.pathname !== '/') {
       navigate('/');
       setTimeout(() => {
@@ -382,12 +387,11 @@ export const useHeaderState = () => {
     }
   };
 
- const toggleHeader = () => {
+  const toggleHeader = () => {
     setIsHeaderVisible(!isHeaderVisible);
   };
 
-
- const renderSidebarButton = (onClick, icon, title, color = '#f5f5f5') => (
+  const renderSidebarButton = (onClick, icon, title, color = '#f5f5f5') => (
     <div
       onClick={onClick}
       style={{
@@ -415,86 +419,91 @@ export const useHeaderState = () => {
     </div>
   );
 
- const handleSearch = (e) => {
+  const handleSearch = (e) => {
     const text = e.target.value;
     setSearchText(text);
     performSearch(text);
   };
 
-// Mise à jour de la fonction performSearch
-  const performSearch = useCallback((text = searchText) => {
-    try {
-      let results = [];
-      
-      // Recherche dans les objets principaux
-      const mainObjects = dataObjects.filter(obj => {
-        const textMatch = text.trim() === '' || 
-          obj.name.toLowerCase().includes(text.toLowerCase()) || 
-          obj.id.toLowerCase().includes(text.toLowerCase());
-        
-        const typeMatch = selectedType === 'all' || obj.type === selectedType;
-        const statusMatch = selectedStatus === 'all' || obj.status === selectedStatus;
-        let categoryMatch = selectedCategory === 'all';
-        
-        if (!categoryMatch && categories[selectedCategory]?.items) {
-          categoryMatch = categories[selectedCategory].items.includes(obj.id);
-        }
-        
-        return textMatch && typeMatch && statusMatch && categoryMatch;
-      });
-      
-      results.push(...mainObjects);
-  
-      // Recherche dans les équipements de chaque salle
-      Object.entries(equipments).forEach(([roomId, roomEquipments]) => {
-        const roomEquipmentResults = roomEquipments.filter(equip => {
-          const textMatch = text.trim() === '' || 
-            equip.name.toLowerCase().includes(text.toLowerCase()) || 
-            equip.id.toLowerCase().includes(text.toLowerCase());
-          
-          const typeMatch = selectedType === 'all' || equip.type === selectedType;
-          const statusMatch = selectedStatus === 'all' || equip.status === selectedStatus;
+  const performSearch = useCallback(
+    (text = searchText) => {
+      try {
+        let results = [];
+
+        // Recherche dans les objets principaux
+        const mainObjects = dataObjects.filter((obj) => {
+          const textMatch =
+            text.trim() === '' ||
+            obj.name.toLowerCase().includes(text.toLowerCase()) ||
+            obj.id.toLowerCase().includes(text.toLowerCase());
+
+          const typeMatch = selectedType === 'all' || obj.type === selectedType;
+          const statusMatch = selectedStatus === 'all' || obj.status === selectedStatus;
           let categoryMatch = selectedCategory === 'all';
-          
-          // Vérifier la catégorie de la salle parente
-          if (!categoryMatch) {
-            for (const [catKey, catValue] of Object.entries(categories)) {
-              if (catValue.items && (catValue.items.includes(roomId) || catValue.items.includes(equip.id))) {
-                categoryMatch = catKey === selectedCategory;
-                break;
-              }
-            }
+
+          if (!categoryMatch && categories[selectedCategory]?.items) {
+            categoryMatch = categories[selectedCategory].items.includes(obj.id);
           }
-          
+
           return textMatch && typeMatch && statusMatch && categoryMatch;
         });
-  
-        results.push(...roomEquipmentResults);
-      });
-  
-      // Suppression des doublons par ID et tri
-      results = [...new Map(results.map(item => [item.id, item])).values()];
-      results.sort((a, b) => {
-        if (a.type === selectedType && b.type !== selectedType) return -1;
-        if (a.type !== selectedType && b.type === selectedType) return 1;
-        return a.name.localeCompare(b.name);
-      });
-  
-      setSearchResults(results);
-    } catch (error) {
-      console.error("Erreur lors de la recherche:", error);
-      setSearchResults([]);
-    }
-  }, [searchText, selectedType, selectedStatus, selectedCategory]);
-  
-// Extraire les types et statuts uniques des objets (comme dans SearchBox)
-  const statusTypes = [...new Set(dataObjects.map(obj => obj.status))].sort();
+
+        results.push(...mainObjects);
+
+        // Recherche dans les équipements de chaque salle
+        Object.entries(equipments).forEach(([roomId, roomEquipments]) => {
+          const roomEquipmentResults = roomEquipments.filter((equip) => {
+            const textMatch =
+              text.trim() === '' ||
+              equip.name.toLowerCase().includes(text.toLowerCase()) ||
+              equip.id.toLowerCase().includes(text.toLowerCase());
+
+            const typeMatch = selectedType === 'all' || equip.type === selectedType;
+            const statusMatch = selectedStatus === 'all' || equip.status === selectedStatus;
+            let categoryMatch = selectedCategory === 'all';
+
+            // Vérifier la catégorie de la salle parente
+            if (!categoryMatch) {
+              for (const [catKey, catValue] of Object.entries(categories)) {
+                if (
+                  catValue.items &&
+                  (catValue.items.includes(roomId) || catValue.items.includes(equip.id))
+                ) {
+                  categoryMatch = catKey === selectedCategory;
+                  break;
+                }
+              }
+            }
+
+            return textMatch && typeMatch && statusMatch && categoryMatch;
+          });
+
+          results.push(...roomEquipmentResults);
+        });
+
+        // Suppression des doublons par ID et tri
+        results = [...new Map(results.map((item) => [item.id, item])).values()];
+        results.sort((a, b) => {
+          if (a.type === selectedType && b.type !== selectedType) return -1;
+          if (a.type !== selectedType && b.type === selectedType) return 1;
+          return a.name.localeCompare(b.name);
+        });
+
+        setSearchResults(results);
+      } catch (error) {
+        console.error('Erreur lors de la recherche:', error);
+        setSearchResults([]);
+      }
+    },
+    [searchText, selectedType, selectedStatus, selectedCategory]
+  );
+
+  const statusTypes = [...new Set(dataObjects.map((obj) => obj.status))].sort();
   const sortedCategories = Object.entries(categories)
     .map(([key, value]) => ({ key, name: value.name }))
     .sort((a, b) => a.name.localeCompare(b.name));
 
   const handleSearchButtonClick = () => {
-    // Fermer la recherche du header si elle est ouverte
     if (isSearchOpen) {
       setIsSearchOpen(false);
     }
@@ -509,79 +518,113 @@ export const useHeaderState = () => {
       setUserName(sessionStorage.getItem('user'));
       setRole(sessionStorage.getItem('role'));
     };
-  
+
     window.addEventListener('storage', updatePointsFromStorage);
-    const intervalId = setInterval(updatePointsFromStorage, 1000); // Changed from 200ms to 1000ms
-  
+    const intervalId = setInterval(updatePointsFromStorage, 1000);
+
     return () => {
       window.removeEventListener('storage', updatePointsFromStorage);
       clearInterval(intervalId);
     };
-  }, []); // tableau de dépendances vide : l'effet s'exécute qu'une seule fois
-    
-    useEffect(() => {
-      const handleMouseMove = (e) => {
-        setMousePosition({ x: e.clientX, y: e.clientY });
-        // Afficher la sidebar si la souris est à moins de 100px du bord gauche
-        setIsSidebarVisible(e.clientX < 100);
-      };
-  
-      window.addEventListener('mousemove', handleMouseMove);
-      return () => window.removeEventListener('mousemove', handleMouseMove);
-    }, []);
-  
-    // Ajouter cet effet pour mettre à jour les résultats quand les filtres changent
-    useEffect(() => {
-      if (isSearchWindowOpen) {
-        performSearch();
+  }, []);
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+      setIsSidebarVisible(e.clientX < 100);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  useEffect(() => {
+    if (isSearchWindowOpen) {
+      performSearch();
+    }
+  }, [selectedType, selectedStatus, selectedCategory, isSearchWindowOpen, performSearch]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      const searchWindow = document.getElementById('search-window');
+      const searchButton = document.getElementById('search-button');
+
+      if (
+        searchWindow &&
+        !searchWindow.contains(event.target) &&
+        searchButton &&
+        !searchButton.contains(event.target)
+      ) {
+        setIsSearchWindowOpen(false);
       }
-    }, [selectedType, selectedStatus, selectedCategory, isSearchWindowOpen, performSearch]);
-  
-    // Ajouter cette fonction useEffect pour gérer les clics à l'extérieur
-    useEffect(() => {
-      const handleClickOutside = (event) => {
-        const searchWindow = document.getElementById('search-window');
-        const searchButton = document.getElementById('search-button');
-        
-        if (searchWindow && !searchWindow.contains(event.target) && 
-            searchButton && !searchButton.contains(event.target)) {
-          setIsSearchWindowOpen(false);
-        }
-      };
-  
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return {
-    handleLogout, handleSubmit,
+    handleLogout,
+    handleSubmit,
     validateForm,
-    handleSelectObject, getRoleTitle, getRoleColor,
-    toggleForm, handleChange, addToast, removeToast,
-    scrollToCampus, scrollToInfo, scrollToFaq,
-    handleSearchButtonClick, renderSidebarButton,
-    sortedCategories, handleSearch,
-    statusTypes, performSearch,
-    isFormOpen, setIsFormOpen,
-    formData, setFormData,
-    userName, setUserName,
-    role, setRole, toggleHeader,
-    userPoints, setUserPoints,
-    selectedCategory, setSelectedCategory,
-    selectedRoom, setSelectedRoom,
-    selectedEquipment, setSelectedEquipment,
-    showPassword, setShowPassword,
-    toasts, setToasts,
-    isHeaderVisible, setIsHeaderVisible,
-    mousePosition, setMousePosition,
-    isSidebarVisible, setIsSidebarVisible,
-    isSearchOpen, setIsSearchOpen,
-    isSearchWindowOpen, setIsSearchWindowOpen,
-    showFilters, setShowFilters,
-    searchText, setSearchText,
-    searchResults, setSearchResults,
-    selectedType, setSelectedType,
-    selectedStatus, setSelectedStatus,
-    navigate, isLoggedIn
+    handleSelectObject,
+    getRoleTitle,
+    getRoleColor,
+    toggleForm,
+    handleChange,
+    addToast,
+    removeToast,
+    scrollToCampus,
+    scrollToInfo,
+    scrollToFaq,
+    handleSearchButtonClick,
+    renderSidebarButton,
+    sortedCategories,
+    handleSearch,
+    statusTypes,
+    performSearch,
+    isFormOpen,
+    setIsFormOpen,
+    formData,
+    setFormData,
+    userName,
+    setUserName,
+    role,
+    setRole,
+    toggleHeader,
+    userPoints,
+    setUserPoints,
+    selectedCategory,
+    setSelectedCategory,
+    selectedRoom,
+    setSelectedRoom,
+    selectedEquipment,
+    setSelectedEquipment,
+    showPassword,
+    setShowPassword,
+    toasts,
+    setToasts,
+    isHeaderVisible,
+    setIsHeaderVisible,
+    mousePosition,
+    setMousePosition,
+    isSidebarVisible,
+    setIsSidebarVisible,
+    isSearchOpen,
+    setIsSearchOpen,
+    isSearchWindowOpen,
+    setIsSearchWindowOpen,
+    showFilters,
+    setShowFilters,
+    searchText,
+    setSearchText,
+    searchResults,
+    setSearchResults,
+    selectedType,
+    setSelectedType,
+    selectedStatus,
+    setSelectedStatus,
+    navigate,
+    isLoggedIn
   };
 };

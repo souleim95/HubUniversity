@@ -24,7 +24,8 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { Navigate } from 'react-router-dom'; 
-import Toast from './Toast';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 import {
   ProfileContainer,
@@ -59,7 +60,7 @@ const Profile = () => {
   const userId = sessionStorage.getItem('userId');
   // États pour la gestion du profil
   const [isPublic, setIsPublic] = useState(true);  // Vue publique/privée
-  const [age, setAge] = useState('');              // Âge calculé
+  
   const [photoUrl, setPhotoUrl] = useState(localStorage.getItem('photoUrl') || null);
   const [toasts, setToasts] = useState([]);
 
@@ -95,7 +96,7 @@ const Profile = () => {
       })
       .catch(err => {
         console.error("Erreur chargement profil:", err);
-        addToast("Impossible de charger le profil", "error");
+        toast.error("Impossible de charger le profil");
       });
   }, [userId]);
   
@@ -109,21 +110,7 @@ const Profile = () => {
     }
   }, []);
 
-  useEffect(() => {
-    // Calcul de l'âge
-    if (formData.dateNaissance) {
-      const birthDate = new Date(formData.dateNaissance);
-      const today = new Date();
-      let calculatedAge = today.getFullYear() - birthDate.getFullYear();
-      if (
-        today.getMonth() < birthDate.getMonth() ||
-        (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate())
-      ) {
-        calculatedAge--;
-      }
-      setAge(calculatedAge);
-    }
-  }, [formData.dateNaissance]);
+  
 
   useEffect(() => {
     setIsModified(JSON.stringify(formData) !== JSON.stringify(initialFormData));
@@ -140,14 +127,14 @@ const Profile = () => {
       if (file) {
         const maxSize = 5 * 1024 * 1024; // 5MB
         if (file.size > maxSize) {
-          addToast('La taille de l\'image ne doit pas dépasser 5MB', 'error');
+          toast.error('La taille de l\'image ne doit pas dépasser 5MB');
           return;
         }
         if (!file.type.startsWith('image/')) {
-          addToast('Seules les images sont acceptées', 'error');
+          toast.error('Seules les images sont acceptées');
           return;
         }
-        addToast('Photo de profil mise à jour', 'success');
+        toast.success('Photo de profil mise à jour');
       }
     }
 
@@ -177,16 +164,7 @@ const Profile = () => {
       photo: null,
     }));
     setIsModified(true);
-    addToast('Photo de profil supprimée avec succès', 'info');
-  };
-
-  const addToast = (text, type = 'info') => {
-    const id = Date.now();
-    setToasts(prev => [...prev, { id, text, type }]);
-  };
-
-  const removeToast = (id) => {
-    setToasts(prev => prev.filter(toast => toast.id !== id));
+    toast.info('Photo de profil supprimée avec succès');
   };
 
   const handleSave = async () => {
@@ -212,15 +190,15 @@ const Profile = () => {
     // 2. Gestion du mot de passe
     if (formData.newPassword || formData.confirmNewPassword || formData.oldPassword) {
       if (!formData.oldPassword) {
-        addToast('Veuillez renseigner votre ancien mot de passe', 'error');
+        toast.error('Veuillez renseigner votre ancien mot de passe');
         return;
       }
       if (formData.newPassword !== formData.confirmNewPassword) {
-        addToast('Les nouveaux mots de passe ne correspondent pas', 'error');
+        toast.error('Les nouveaux mots de passe ne correspondent pas');
         return;
       }
       if (formData.newPassword.length < 8) {
-        addToast('Le nouveau mot de passe doit contenir au moins 8 caractères', 'error');
+        toast.error('Le nouveau mot de passe doit contenir au moins 8 caractères');
         return;
       }
       updates.password = formData.newPassword; // le back hache automatiquement
@@ -228,7 +206,7 @@ const Profile = () => {
   
     // 3. S’il n’y a rien à mettre à jour, sortir
     if (Object.keys(updates).length === 0) {
-      addToast('Aucune modification détectée', 'info');
+      toast.info('Aucune modification détectée');
       return;
     }
   
@@ -266,11 +244,11 @@ const Profile = () => {
       localStorage.setItem('email', updated.email);
       localStorage.setItem('formation', updated.formation);
   
-      addToast('Profil mis à jour avec succès', 'success');
+      toast.success('Profil mis à jour avec succès');
       setIsModified(false);
     } catch (err) {
       console.error("Erreur mise à jour profil :", err);
-      addToast(err.response?.data?.error || 'Erreur serveur lors de la mise à jour', 'error');
+      toast.error(err.response?.data?.error || 'Erreur serveur lors de la mise à jour');
     }
   };
   
@@ -306,7 +284,17 @@ const Profile = () => {
   return (
     <>
       {/* Système de notifications */}
-      <Toast messages={toasts} removeToast={removeToast} />
+      <ToastContainer 
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
       
       {/* Interface du profil */}
       <BackgroundContainer>
@@ -365,13 +353,7 @@ const Profile = () => {
                 onChange={handleInputChange}
                 prefix={<FaCalendar />}
               />
-              <InputField 
-                name="age" 
-                placeholder="Âge" 
-                type="number" 
-                value={age} 
-                readOnly 
-              />
+      
 
               <InputField
                 name="prenom"

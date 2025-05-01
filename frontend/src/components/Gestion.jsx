@@ -30,7 +30,8 @@ import {
   CartesianGrid,
   Legend,
 } from 'recharts';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import {
   AdminContainer,
@@ -171,8 +172,66 @@ function GestionPage() {
     chartType, setChartType,
   } = useGestionState();
 
+  // Gestionnaires d'événements avec toast
+  const handleObjectAction = (object, action) => {
+    switch(action) {
+      case 'submit':
+        // La validation se fait avant la soumission
+        if (!isNameUnique(object.name)) {
+            toast.error("Un objet avec ce nom existe déjà");
+            return;
+        }
+        handleObjectSubmit(object);
+        toast.success(`L'objet ${object.name} a été ${editingObject ? 'modifié' : 'créé'} avec succès`);
+        break;
+        
+      case 'toggle':
+        handleToggleStatus(object);
+        toast.info(`Statut de ${object.name} changé en ${object.status === 'active' ? 'inactif' : 'actif'}`);
+        break;
+        
+      case 'alert':
+        handleCreateAlert(object);
+        toast.warning(`Une alerte a été créée pour ${object.name}`);
+        break;
+        
+      case 'settings':
+        handleOpenSettings(object);
+        // Ne pas afficher de toast ici, attendre la sauvegarde
+        break;
+
+      case 'saveSettings':
+        // Ajouter dans le bouton Enregistrer du modal de configuration
+        handleSaveSettings(object);
+        toast.success(`Configuration de ${object.name} enregistrée avec succès`);
+        break;
+
+      case 'changeCategory':
+        // Ajouter cette validation lors du changement de catégorie
+        toast.info(`Catégorie de ${object.name} changée en ${object.category}`);
+        break;
+    }
+  };
+
+  const handleReservationDelete = (id) => {
+    handleDeleteReservation(id);
+    toast.success('Réservation supprimée avec succès');
+  };
+
   return (
     <AdminContainer>
+      <ToastContainer 
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+
       <AdminHeader>
         <AdminTitle style={{ color: '#f8f9fa' }}>Gestion des Objets Connectés</AdminTitle>
         <AdminSubtitle style={{ color: '#f8f9fa' }}>Gestion des objets, des réservations de salles et des alertes</AdminSubtitle>
@@ -236,14 +295,14 @@ function GestionPage() {
                 </p>
               )}
               <ButtonGroup>
-                <SecondaryButton onClick={() => handleCreateAlert(object)}>
+                <SecondaryButton onClick={() => handleObjectAction(object, 'alert')}>
                   Créer une alerte
                 </SecondaryButton>
                 <PrimaryButton onClick={() => handleRequestDeletion(object)}>
                   <FaTrash /> Demander la suppression
                 </PrimaryButton>
                 {configurableTypes[object.type] && (
-                  <SecondaryButton onClick={() => handleOpenSettings(object)}>
+                  <SecondaryButton onClick={() => handleObjectAction(object, 'settings')}>
                     Configurer
                   </SecondaryButton>
                 )}
@@ -253,7 +312,7 @@ function GestionPage() {
                 <SecondaryButton onClick={() => handleEditObject(object)}>
                   Modifier
                 </SecondaryButton>
-                <SecondaryButton onClick={() => handleToggleStatus(object)}>
+                <SecondaryButton onClick={() => handleObjectAction(object, 'toggle')}>
                   {object.status === 'active' ? 'Désactiver' : 'Activer'}
                 </SecondaryButton>
               </ButtonGroup>
@@ -315,7 +374,7 @@ function GestionPage() {
                 <TableCell>
                   <ButtonGroup>
                     <SecondaryButton onClick={() => handleEditReservation(reservation)}>Modifier</SecondaryButton>
-                    <PrimaryButton onClick={() => handleDeleteReservation(reservation.id)}>Supprimer</PrimaryButton>
+                    <PrimaryButton onClick={() => handleReservationDelete(reservation.id)}>Supprimer</PrimaryButton>
                   </ButtonGroup>
                 </TableCell>
               </TableRow>
@@ -463,8 +522,15 @@ function GestionPage() {
       {showObjectModal && (
         <ModalOverlay onClick={() => setShowObjectModal(false)}>
           <ModalContent onClick={(e) => e.stopPropagation()}>
-            <SectionTitle>Ajouter un objet connecté</SectionTitle>
-            <form onSubmit={handleObjectSubmit}>
+            <SectionTitle>{editingObject ? 'Modifier' : 'Ajouter'} un objet connecté</SectionTitle>
+            <form onSubmit={(e) => {
+                e.preventDefault();
+                const success = handleObjectSubmit(e);
+                if (success) {
+                    toast.success(`Objet ${editingObject ? 'modifié' : 'créé'} avec succès`);
+                    setShowObjectModal(false);
+                }
+            }}>
               <FormGroup>
                 <Label>Nom de l'objet</Label>
                 <Input
@@ -479,14 +545,17 @@ function GestionPage() {
                 <Select
                   value={objectFormData.category}
                   onChange={(e) => {
-                    const selectedCategory = e.target.value;
-                    const validTypes = categoryToTypeMap[selectedCategory] || [];
+                    const newCategory = e.target.value;
+                    if (editingObject && newCategory !== objectFormData.category) {
+                      toast.warning("Attention : Le changement de catégorie peut affecter les équipements associés");
+                    }
                     setObjectFormData({
                       ...objectFormData,
-                      category: selectedCategory,
-                      type: validTypes[0] || '',
+                      category: newCategory,
+                      type: categoryToTypeMap[newCategory][0] || ''
                     });
                   }}
+                  disabled={!!editingObject}
                 >
                   {Object.keys(categories).map((categoryKey) => (
                     <option key={categoryKey} value={categoryKey}>
@@ -725,55 +794,6 @@ function GestionPage() {
               </>
             )}
 
-            {/* Configuration pour Caméra */}
-            {editingSettingsFor.type === 'Caméra' && (
-              <>
-                <FormGroup>
-                  <Label>Résolution</Label>
-                  <Select
-                    value={objectSettings.resolution}
-                    onChange={(e) => setObjectSettings(prev => ({
-                      ...prev,
-                      resolution: e.target.value
-                    }))}
-                  >
-                    <option value="720p">HD (720p)</option>
-                    <option value="1080p">Full HD (1080p)</option>
-                    <option value="4k">4K</option>
-                  </Select>
-                </FormGroup>
-                <FormGroup>
-                  <Label>Mode de détection</Label>
-                  <Select
-                    value={objectSettings.detectionMode}
-                    onChange={(e) => setObjectSettings(prev => ({
-                      ...prev,
-                      detectionMode: e.target.value
-                    }))}
-                  >
-                    <option value="mouvement">Mouvement</option>
-                    <option value="presence">Présence</option>
-                    <option value="tout">Tout</option>
-                    <option value="off">Désactivé</option>
-                  </Select>
-                </FormGroup>
-                <FormGroup>
-                  <Label>Angle de vue</Label>
-                  <Select
-                    value={objectSettings.viewAngle}
-                    onChange={(e) => setObjectSettings(prev => ({
-                      ...prev,
-                      viewAngle: e.target.value
-                    }))}
-                  >
-                    <option value="90">90°</option>
-                    <option value="120">120°</option>
-                    <option value="180">180°</option>
-                  </Select>
-                </FormGroup>
-              </>
-            )}
-
             {/* Configuration pour Ventilation */}
             {editingSettingsFor.type === 'Ventilation' && (
               <>
@@ -820,105 +840,6 @@ function GestionPage() {
               </>
             )}
 
-            {/* Configuration pour Porte */}
-            {editingSettingsFor.type === 'Porte' && (
-              <>
-                <FormGroup>
-                  <Label>Mode d'accès</Label>
-                  <Select
-                    value={objectSettings.accessMode}
-                    onChange={(e) => setObjectSettings(prev => ({
-                      ...prev,
-                      accessMode: e.target.value
-                    }))}
-                  >
-                    <option value="badge">Badge</option>
-                    <option value="code">Code</option>
-                    <option value="both">Badge + Code</option>
-                  </Select>
-                </FormGroup>
-                <FormGroup>
-                  <Label>Plage horaire d'ouverture</Label>
-                  <Input
-                    type="time"
-                    value={objectSettings.openTime}
-                    onChange={(e) => setObjectSettings(prev => ({
-                      ...prev,
-                      openTime: e.target.value
-                    }))}
-                  />
-                  <Input
-                    type="time"
-                    value={objectSettings.closeTime}
-                    onChange={(e) => setObjectSettings(prev => ({
-                      ...prev,
-                      closeTime: e.target.value
-                    }))}
-                  />
-                </FormGroup>
-                <FormGroup>
-                  <Label>Mode sécurité</Label>
-                  <Select
-                    value={objectSettings.securityMode}
-                    onChange={(e) => setObjectSettings(prev => ({
-                      ...prev,
-                      securityMode: e.target.value
-                    }))}
-                  >
-                    <option value="normal">Normal</option>
-                    <option value="high">Haute sécurité</option>
-                    <option value="emergency">Urgence</option>
-                  </Select>
-                </FormGroup>
-              </>
-            )}
-
-            {/* Configuration pour Panneau */}
-            {editingSettingsFor.type === 'Panneau' && (
-              <>
-                <FormGroup>
-                  <Label>Type d'affichage</Label>
-                  <Select
-                    value={objectSettings.displayType}
-                    onChange={(e) => setObjectSettings(prev => ({
-                      ...prev,
-                      displayType: e.target.value
-                    }))}
-                  >
-                    <option value="text">Texte</option>
-                    <option value="image">Image</option>
-                    <option value="mixed">Mixte</option>
-                  </Select>
-                </FormGroup>
-                <FormGroup>
-                  <Label>Luminosité (%)</Label>
-                  <Input
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={objectSettings.brightness}
-                    onChange={(e) => setObjectSettings(prev => ({
-                      ...prev,
-                      brightness: e.target.value
-                    }))}
-                  />
-                </FormGroup>
-                <FormGroup>
-                  <Label>Intervalle de défilement (sec)</Label>
-                  <Input
-                    type="number"
-                    min="1"
-                    max="60"
-                    value={objectSettings.scrollInterval}
-                    onChange={(e) => setObjectSettings(prev => ({
-                      ...prev,
-                      scrollInterval: e.target.value
-                    }))}
-                  />
-                </FormGroup>
-              </>
-            )}
-
             {/* Configuration pour Store */}
             {editingSettingsFor.type === 'Store' && (
               <>
@@ -948,19 +869,6 @@ function GestionPage() {
                     <option value="manual">Manuel</option>
                     <option value="luminosite">Selon luminosité</option>
                   </Select>
-                </FormGroup>
-                <FormGroup>
-                  <Label>Seuil luminosité (lux)</Label>
-                  <Input
-                    type="number"
-                    min="0"
-                    max="1000"
-                    value={objectSettings.lightThreshold}
-                    onChange={(e) => setObjectSettings(prev => ({
-                      ...prev,
-                      lightThreshold: e.target.value
-                    }))}
-                  />
                 </FormGroup>
               </>
             )}
@@ -1010,33 +918,20 @@ function GestionPage() {
                     <option value="usb">USB</option>
                   </Select>
                 </FormGroup>
-                <FormGroup>
-                  <Label>Égalisation</Label>
-                  <Select
-                    value={objectSettings.equalizer}
-                    onChange={(e) => setObjectSettings(prev => ({
-                      ...prev,
-                      equalizer: e.target.value
-                    }))}
-                  >
-                    <option value="flat">Normal</option>
-                    <option value="voice">Voix</option>
-                    <option value="music">Musique</option>
-                    <option value="movie">Film</option>
-                  </Select>
-                </FormGroup>
               </>
             )}
 
             <ButtonGroup>
-              <SecondaryButton onClick={() => setEditingSettingsFor(null)}>Annuler</SecondaryButton>
+              <SecondaryButton onClick={() => {
+                if (JSON.stringify(initialSettings) !== JSON.stringify(objectSettings)) {
+                  toast.warning("Les modifications non sauvegardées seront perdues");
+                }
+                setEditingSettingsFor(null);
+              }}>
+                Annuler
+              </SecondaryButton>
               <PrimaryButton onClick={() => {
-                const updatedObjects = objects.map(obj =>
-                  obj.id === editingSettingsFor.id
-                    ? { ...obj, settings: objectSettings }
-                    : obj
-                );
-                setObjects(updatedObjects);
+                handleObjectAction(editingSettingsFor, 'saveSettings');
                 setEditingSettingsFor(null);
               }}>
                 Enregistrer

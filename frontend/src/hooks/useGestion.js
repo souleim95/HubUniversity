@@ -1,5 +1,6 @@
 // Import des dépendances et composants nécessaires
 import { useState, useEffect} from 'react';
+import { toast } from 'react-toastify';
 import { dataObjects, categories, equipments } from '../data/projectData';
 
 // Configuration des types d'objets autorisés par catégorie
@@ -178,9 +179,21 @@ export const useGestionState = () => {
         setShowObjectModal(true);
     };
 
+    // Ajout de la fonction isNameUnique
+    const isNameUnique = (name, objects, excludeId = null) => {
+        return !allObjects.some(obj => 
+            obj.name.toLowerCase() === name.toLowerCase() && 
+            obj.id !== excludeId
+        );
+    };
+
     // Gestionnaire pour la soumission du formulaire d'objet
     const handleObjectSubmit = (e) => {
         e.preventDefault();
+        
+        if (!isNameUnique(objectFormData.name, allObjects, editingObject?.id)) {
+            return false; // Indique l'échec de la validation
+        }
         
         const prefixMap = {
             salles: 'salle',
@@ -246,6 +259,7 @@ export const useGestionState = () => {
 
         setShowObjectModal(false);
         setEditingObject(null);
+        return true; // Indique le succès
     };
     
     // Gestionnaire pour les actions sur les alertes
@@ -480,6 +494,7 @@ export const useGestionState = () => {
     handleToggleStatus, handleOpenSettings,
     handleReservationSubmit,
     isInefficient,
+    isNameUnique, // Ajout de isNameUnique dans le return
     objects, setObjects,
     selectedCategory, setSelectedCategory,
     showObjectModal, setShowObjectModal,
