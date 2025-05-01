@@ -76,6 +76,7 @@ const CampusMap = () => {
 
   const handleCardDoubleClick = (obj) => {
     if (!isLoggedIn) {
+      document.getElementById('open-login-btn')?.click();
       return;
     }
 

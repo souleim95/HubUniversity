@@ -10,6 +10,7 @@ export const useHeaderState = () => {
   const [isFormOpen, setIsFormOpen] = useState(null); 
   const [formData, setFormData] = useState({ name: '', email: '', role: '', password: '', formation: '' });
   const [userName, setUserName] = useState(sessionStorage.getItem('user') || null);
+  const isLoggedIn = !!sessionStorage.getItem('user');
   const [role, setRole] = useState(sessionStorage.getItem('role') || null);
   const [userPoints, setUserPoints] = useState(parseInt(sessionStorage.getItem('points') || '0'));
   const [selectedCategory, setSelectedCategory] = useState('salles');
@@ -524,6 +525,6 @@ export const useHeaderState = () => {
     searchResults, setSearchResults,
     selectedType, setSelectedType,
     selectedStatus, setSelectedStatus,
-    navigate
+    navigate, isLoggedIn
   };
 };

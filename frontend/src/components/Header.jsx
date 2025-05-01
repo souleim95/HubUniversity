@@ -43,7 +43,9 @@ const Header = () => {
     selectedStatus, setSelectedStatus,
     navigate,
     isHeaderVisible, // Ajoutez ceci
-    toggleHeader    // Et ceci
+    toggleHeader ,
+    isLoggedIn // Et ceci
+
   } = useHeaderState();
 
   return (
@@ -132,7 +134,7 @@ const Header = () => {
                 </div>
               </div>
             ) : (
-              <ConnectButton onClick={() => toggleForm('login')}>Connexion</ConnectButton>
+              <ConnectButton id = "open-login-btn" onClick={() => toggleForm('login')}>Connexion</ConnectButton>
             )}
           </div>
         </NavLinks>
@@ -289,6 +291,7 @@ const Header = () => {
         gap: '10px',
         zIndex: 1001,
       }}>
+       
         {/* Fenêtre de recherche flottante */}
         {isSearchWindowOpen && (
           <div 
@@ -497,32 +500,34 @@ const Header = () => {
         )}
 
         {/* Bouton de recherche */}
-        <div
-          id="search-button"
-          onClick={handleSearchButtonClick}
-          style={{
-            width: '45px',
-            height: '45px',
-            backgroundColor: '#0f6ead',
-            borderRadius: '50%',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'all 0.3s ease-in-out',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'scale(1.1)';
-            e.currentTarget.style.backgroundColor = '#0d5c91';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'scale(1)';
-            e.currentTarget.style.backgroundColor = '#0f6ead';
-          }}
-        >
-          <RiSearchLine size={24} color="white" />
-        </div>
+        {userName && (
+      <div
+        id="search-button"
+        onClick={handleSearchButtonClick}
+        style={{
+          width: '45px',
+          height: '45px',
+          backgroundColor: '#0f6ead',
+          borderRadius: '50%',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          transition: 'all 0.3s ease-in-out',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'scale(1.1)';
+          e.currentTarget.style.backgroundColor = '#0d5c91';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'scale(1)';
+          e.currentTarget.style.backgroundColor = '#0f6ead';
+        }}
+      >
+        <RiSearchLine size={24} color="white" />
+      </div>
+)}
 
 
       {/* Bouton de contrôle du header */}
