@@ -57,80 +57,177 @@ pool.connect()
 // Route de test de l'API
 app.get("/api", (req, res) => res.send("Backend API is running 🚀"));
 
-// Route pour récupérer les utilisateurs avec leur rôle
-app.get("/api/users", async (req, res) => {
+
+app.get('/api/users', async (req, res) => {
   try {
-    const query = `
-        SELECT 
-          u.id,
-          u.name,
-          u.email,
-          COALESCE(u.score, 0) AS score,
-          r.nomRole AS role,
-          u.created_at,
-          u.last_login
-        FROM users u
-        JOIN role r ON u.idRole = r.idRole
-        ORDER BY u.id
-      `;
-    const { rows } = await pool.query(query);
-    res.json(rows);
+    const result = await pool.query(`
+      SELECT
+        id,
+        nom,
+        prenom,
+        email,
+        idRole,
+        genre,
+        password,
+        COALESCE(score, 0) AS score,
+        created_at,
+        pseudonyme,
+        formation,
+        last_login,
+        dateNaissance
+      FROM users
+    `);
+    res.json(result.rows);
   } catch (err) {
-    console.error("Erreur de récupération des utilisateurs :", err);
-    res.status(500).send("Erreur serveur");
+    console.error(err);
+    res.status(500).json({ error: 'Erreur serveur' });
   }
 });
 
-// Route pour ajouter un nouvel utilisateur (code corrigé)
+app.get("/api/users/:id", asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const query = `
+    SELECT id, nom, prenom, email, pseudonyme, genre, formation, dateNaissance
+    FROM users
+    WHERE id = $1
+  `;
+  const { rows } = await pool.query(query, [id]);
+  if (rows.length === 0) {
+    return res.status(404).json({ error: "Utilisateur non trouvé." });
+  }
+  res.json(rows[0]);
+}));
+
+// Route pour récupérer les utilisateurs avec leur rôle
+// app.get("/api/users", async (req, res) => {
+//   try {
+//     const query = `
+//         SELECT 
+//           u.id,
+//           u.name,
+//           u.email,
+//           COALESCE(u.score, 0) AS score,
+//           r.nomRole AS role,
+//           u.created_at,
+//           u.last_login
+//         FROM users u
+//         JOIN role r ON u.idRole = r.idRole
+//         ORDER BY u.id
+//       `;
+//     const { rows } = await pool.query(query);
+//     res.json(rows);
+//   } catch (err) {
+//     console.error("Erreur de récupération des utilisateurs :", err);
+//     res.status(500).send("Erreur serveur");
+//   }
+// });
+
 app.post("/api/users", async (req, res) => {
-  const { name, email, role, password } = req.body;
-  // Vérification des champs obligatoires
-  if (!name || !email || !role || !password) {
-    return res.status(400).json({ 
-      error: "Les champs name, email, role et password sont obligatoires." 
+  const {
+    nom,
+    prenom,
+    email,
+    role,
+    password,
+    genre,
+    score,
+    pseudonyme,
+    formation,
+    last_login,
+    dateNaissance
+  } = req.body;
+
+  // Vérification précise des champs obligatoires
+  const missingFields = [];
+  if (!nom) missingFields.push("nom");
+  if (!prenom) missingFields.push("prenom");
+  if (!email) missingFields.push("email");
+  if (!role) missingFields.push("role");
+  if (!password) missingFields.push("password");
+  if (!pseudonyme) missingFields.push("pseudonyme");
+  if (!formation) missingFields.push("formation");
+  if (!dateNaissance) missingFields.push("dateNaissance");
+
+  if (missingFields.length > 0) {
+    return res.status(400).json({
+      error: `Les champs suivants sont obligatoires et manquants : ${missingFields.join(", ")}.`
     });
   }
 
   try {
-    // 1. Vérifier que le rôle existe et récupérer son id
+    // 1. Vérification du rôle
     const roleResult = await pool.query(
       "SELECT idRole FROM role WHERE nomRole = $1",
       [role]
     );
     if (roleResult.rows.length === 0) {
-      return res.status(400).json({ error: `Le rôle '${role}' est invalide.` });
+      return res.status(400).json({ error: `Le rôle '${role}' est invalide ou inexistant.` });
     }
+
     const idRole = roleResult.rows[0].idrole || roleResult.rows[0].idRole;
 
-    // 2. Hacher le mot de passe
+    // 2. Hachage du mot de passe
     const saltRounds = 10;
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
-    // 3. Insérer le nouvel utilisateur avec l’idRole récupéré
-    const insertResult = await pool.query(
-      "INSERT INTO users (name, email, idRole, password) VALUES ($1, $2, $3, $4) RETURNING *",
-      [name, email, idRole, passwordHash]
-    );
+    // 3. Insertion utilisateur
+    const insertQuery = `
+      INSERT INTO users (
+        nom, prenom, email, idRole, password,
+        genre, score, pseudonyme, formation,
+        last_login, dateNaissance
+      ) VALUES (
+        $1, $2, $3, $4,
+        $5, $6, $7, $8,
+        $9, $10, $11
+      ) RETURNING *
+    `;
+
+
+    const insertValues = [
+      nom,
+      prenom,
+      email,
+      idRole,
+      passwordHash,
+      genre || null,
+      score || 0,
+      pseudonyme,
+      formation,
+      last_login || null,
+      dateNaissance
+    ];
+
+    const insertResult = await pool.query(insertQuery, insertValues);
     const newUser = insertResult.rows[0];
-    // 4. Log pour vérification (optionnel)
-    console.log("Nouvel utilisateur ajouté :", newUser);
-    
-    // 5. Retourner l’utilisateur (sans le mot de passe)
+
+    // 4. Réponse sans mot de passe
     res.status(201).json({
-      id: newUser.id,
-      name: newUser.name,
-      email: newUser.email,
-      role: role  
+      message: "Utilisateur créé avec succès.",
+      user: {
+        id: newUser.id,
+        nom: newUser.nom,
+        email: newUser.email,
+        role: role,
+        genre: newUser.genre,
+        score: newUser.score,
+        pseudonyme: newUser.pseudonyme,
+        formation: newUser.formation,
+        last_login: newUser.last_login,
+        dateNaissance: newUser.datenaissance,
+        created_at: newUser.created_at
+      }
     });
+
   } catch (err) {
-    console.error("Erreur lors de l'ajout d'un utilisateur :", err);
-    // Vérifier le code d'erreur pour une violation de contrainte unique (duplicate email)
+    console.error("Erreur lors de la création de l'utilisateur :", err);
     if (err.code === '23505') {
-      return res.status(400).json({ error: "Un utilisateur utilise déjà cette adresse e-mail. Veuillez la changer." });
+      return res.status(400).json({ error: "L'adresse e-mail est déjà utilisée." });
     }
-    res.status(500).json({ error: "Erreur interne du serveur." });
+    res.status(500).json({ error: "Erreur interne du serveur. Veuillez réessayer plus tard." });
   }
 });
+
 
 
 
@@ -146,7 +243,7 @@ app.post("/api/login", async (req, res) => {
   try {
     // Requête jointe pour récupérer le nom du rôle (r.nomRole as role)
     const query = `
-      SELECT u.id, u.name, u.email, u.password, COALESCE(u.score, 0) as score, r.nomRole as role
+      SELECT u.id, u.nom, u.prenom, u.email, u.password, COALESCE(u.score, 0) as score, r.nomRole as role
       FROM users u 
       JOIN role r ON u.idRole = r.idRole
       WHERE u.email = $1
@@ -179,7 +276,8 @@ app.post("/api/login", async (req, res) => {
         message: "Connexion réussie", 
         user: { 
           id: user.id, 
-          name: user.name, 
+          nom: user.nom, 
+          prenom : user.prenom,
           email: user.email, 
           role: user.role, 
           score: newScore
@@ -239,6 +337,84 @@ app.get("/api/rer-schedule", async (req, res) => {
   } catch (err) {
     console.error("Erreur lors de la récupération des horaires RER :", err);
     res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+app.patch('/users/:id/email', async (req, res) => {
+  const { id } = req.params;
+  const { email } = req.body;
+  try {
+    const result = await pool.query(`
+      UPDATE users SET email = $1 WHERE id = $2 RETURNING email
+    `, [email, id]);
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur mise à jour email' });
+  }
+});
+
+app.patch('/api/users/:id', async (req, res) => {
+  const { id } = req.params;
+  const {
+    nom,
+    prenom,
+    idRole,
+    genre,
+    password,
+    score,
+    pseudonyme,
+    formation,
+    last_login,
+    dateNaissance
+  } = req.body;
+
+  try {
+    let hashedPassword = null;
+    if (password) {
+      const saltRounds = 10;
+      hashedPassword = await bcrypt.hash(password, saltRounds);
+    }
+
+    const result = await pool.query(`
+      UPDATE users SET
+        nom = COALESCE($1, nom),
+        prenom = COALESCE($2, prenom),
+        idRole = COALESCE($3, idRole),
+        genre = COALESCE($4, genre),
+        password = COALESCE($5, password),
+        score = COALESCE($6, score),
+        pseudonyme = COALESCE($7, pseudonyme),
+        formation = COALESCE($8, formation),
+        last_login = COALESCE($9, last_login),
+        dateNaissance = COALESCE($10, dateNaissance)
+      WHERE id = $11
+      RETURNING id, nom, prenom, email, idRole, genre, score, pseudonyme, formation, last_login, dateNaissance, created_at
+    `, [
+      nom || null,
+      prenom || null,
+      idRole || null,
+      genre || null,
+      hashedPassword || null,
+      score || null,
+      pseudonyme || null,
+      formation || null,
+      last_login || null,
+      dateNaissance || null,
+      id
+    ]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Utilisateur introuvable." });
+    }
+
+    res.json({
+      message: "Utilisateur mis à jour avec succès.",
+      user: result.rows[0]
+    });
+
+  } catch (err) {
+    console.error("Erreur lors de la mise à jour :", err);
+    res.status(500).json({ error: "Erreur serveur lors de la mise à jour de l'utilisateur." });
   }
 });
 
@@ -343,7 +519,7 @@ app.patch("/api/users/:id", asyncHandler(async (req, res) => {
     `UPDATE users 
      SET idRole = $1, score = $2
      WHERE id = $3
-     RETURNING id, name, email, score`,
+     RETURNING id, nom, prenom, email, score`,
     [idRole, score, id]
   );
   if (updateRes.rows.length === 0) {
@@ -354,7 +530,7 @@ app.patch("/api/users/:id", asyncHandler(async (req, res) => {
   res.json({
     user: {
       id: updateRes.rows[0].id,
-      name: updateRes.rows[0].name,
+      nom: updateRes.rows[0].nom,
       email: updateRes.rows[0].email,
       role,
       score: updateRes.rows[0].score
@@ -845,7 +1021,7 @@ app.get('/api/action-history', asyncHandler(async (req, res) => {
     SELECT 
       ah.id,
       ah.user_id AS "userId",
-      u.name     AS "userName",
+      u.nom     AS "nom",
       ah.action,
       ah.details,
       ah.timestamp

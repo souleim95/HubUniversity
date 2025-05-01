@@ -61,13 +61,18 @@ INSERT INTO role (nomRole) VALUES
 
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
-  name VARCHAR(100) NOT NULL,
+  nom VARCHAR(100) NOT NULL,
+  prenom VARCHAR(100) NOT NULL, 
   email VARCHAR(100) UNIQUE NOT NULL,
   idRole INTEGER DEFAULT 1,
+  genre VARCHAR(50), 
   password VARCHAR(255) NOT NULL,
   score INT DEFAULT 0,
   created_at TIMESTAMP DEFAULT NOW(),
+  pseudonyme VARCHAR(50),
+  formation VARCHAR(200),
   last_login TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  dateNaissance TIMESTAMP, 
   FOREIGN KEY (idRole) REFERENCES role(idRole)
 );  
 

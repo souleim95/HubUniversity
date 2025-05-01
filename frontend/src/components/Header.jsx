@@ -164,9 +164,9 @@ const Header = () => {
       />
       <input 
         type="text" 
-        name="name" 
+        name="nom" 
         placeholder="Nom" 
-        value={formData.name || ''} 
+        value={formData.nom || ''} 
         onChange={handleChange} 
         required 
       />

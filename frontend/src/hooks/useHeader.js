@@ -8,7 +8,17 @@ import { equipments, categories, dataObjects} from '../data/projectData';
 
 export const useHeaderState = () => {
   const [isFormOpen, setIsFormOpen] = useState(null); 
-  const [formData, setFormData] = useState({ name: '', email: '', role: '', password: '', formation: '' });
+  const [formData, setFormData] = useState({
+    nom: '',
+    prenom: '',
+    email: '',
+    role: '',
+    password: '',
+    formation: '',
+    pseudonyme: '',
+    dateNaissance: '',
+    genre: ''
+  });
   const [userName, setUserName] = useState(sessionStorage.getItem('user') || null);
   const isLoggedIn = !!sessionStorage.getItem('user');
   const [role, setRole] = useState(sessionStorage.getItem('role') || null);
@@ -50,9 +60,19 @@ export const useHeaderState = () => {
     }
   };
 
- const toggleForm = (formType) => {
+  const toggleForm = (formType) => {
     setIsFormOpen(formType);
-    setFormData({ name: '', email: '', role: '', password: '' });
+    setFormData({ 
+      nom: '', 
+      prenom: '', 
+      email: '', 
+      role: '', 
+      password: '', 
+      formation: '', 
+      pseudonyme: '',
+      dateNaissance: '',
+      genre: ''
+    });
   };
 
  const handleChange = (e) => {
@@ -76,16 +96,29 @@ export const useHeaderState = () => {
     const errors = [];
 
     if (isFormOpen === 'signup') {
-      if (!formData.name.trim()) {
+      if (!formData.nom.trim()) {
         errors.push('Le nom est obligatoire');
-      } else if (formData.name.length < 3) {
+      } else if (formData.nom.length < 3) {
         errors.push('Le nom doit contenir au moins 3 caractères');
+      }
+      if (!formData.prenom.trim()) {
+        errors.push('Le prénom est obligatoire');
+      } else if (formData.prenom.length < 3) {
+        errors.push('Le prénom doit contenir au moins 3 caractères');
       }
       if (!formData.role) {
         errors.push('Veuillez sélectionner votre rôle');
       }
+      if (!formData.pseudonyme.trim()) {
+        errors.push('Le pseudonyme est obligatoire');
+      }
+      if (!formData.formation.trim()) {
+        errors.push('La formation est obligatoire');
+      }
+      if (!formData.dateNaissance.trim()) {
+        errors.push('La date de naissance est obligatoire');
+      }
     }
-
     if (!formData.email.trim()) {
       errors.push('L\'email est obligatoire');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
@@ -111,8 +144,18 @@ export const useHeaderState = () => {
     if (!validateForm()) return;
 
     let requestData = isFormOpen === 'signup'
-      ? { name: formData.name, email: formData.email, role: formData.role, password: formData.password }
-      : { email: formData.email, password: formData.password };
+    ? {
+      nom: formData.nom,
+      prenom : formData.prenom,
+      email: formData.email,
+      role: formData.role,
+      password: formData.password,
+      pseudonyme: formData.pseudonyme,
+      formation: formData.formation,
+      dateNaissance: formData.dateNaissance,
+      genre: formData.genre
+    }
+    : { email: formData.email, password: formData.password };
   
     try {
       addToast(`Tentative de ${isFormOpen === 'signup' ? 'création de compte' : 'connexion'}...`, 'info');
@@ -131,16 +174,17 @@ export const useHeaderState = () => {
 
       if (response.ok) {
         if (isFormOpen === 'login') {
-          sessionStorage.setItem('user', data.user.name);
+          sessionStorage.setItem('user', data.user.nom);
+          sessionStorage.setItem('prenom', data.user.prenom);
           sessionStorage.setItem('role', data.user.role);
           sessionStorage.setItem('userId', data.user.id);
           localStorage.setItem('currentUser', JSON.stringify(data.user));
           sessionStorage.setItem('points', data.user.score);
-          setUserName(data.user.name);
+          setUserName(data.user.prenom || data.user.nom);
           setRole(data.user.role);
           setUserPoints(parseInt(data.user.score, 10));
           
-          addToast(`Bienvenue ${data.user.name} ! Connexion réussie.`, 'success');
+          addToast(`Bienvenue ${data.user.prenom} ! Connexion réussie.`, 'success');
           
           setTimeout(() => {
             window.location.reload();
@@ -148,7 +192,20 @@ export const useHeaderState = () => {
         } else {
           addToast('Compte créé avec succès ! Vous pouvez maintenant vous connecter.', 'success');
           setIsFormOpen('login');
-          setFormData({ ...formData, name: '', role: '', password: '' });
+          // remplace ton setFormData actuel par :
+          setFormData({
+            nom: '',
+            prenom: '',
+            email: '',
+            role: '',
+            password: '',
+            pseudonyme: '',
+            formation: '',
+            dateNaissance: '',
+            genre: ''
+          });
+
+          
         }
       } else {
         if (data.error.includes('exist')) {

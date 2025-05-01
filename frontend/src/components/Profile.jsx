@@ -25,6 +25,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Navigate } from 'react-router-dom'; 
 import Toast from './Toast';
+import axios from 'axios';
 import {
   ProfileContainer,
   Header,
@@ -55,34 +56,49 @@ import profileBackground from '../assets/profil.png';
 const Profile = () => {
   // Vérification de l'authentification
   const isLoggedIn = !!sessionStorage.getItem('user');
-  
+  const userId = sessionStorage.getItem('userId');
   // États pour la gestion du profil
   const [isPublic, setIsPublic] = useState(true);  // Vue publique/privée
   const [age, setAge] = useState('');              // Âge calculé
   const [photoUrl, setPhotoUrl] = useState(localStorage.getItem('photoUrl') || null);
   const [toasts, setToasts] = useState([]);
 
-  // Données initiales du formulaire mémorisées
-  const initialFormData = useMemo(() => ({
-    pseudonyme: localStorage.getItem('user') || '',
-    genre: localStorage.getItem('genre') || '',
-    dateNaissance: localStorage.getItem('dateNaissance') || '',
-    typeMembre: localStorage.getItem('role') || '',
-    photo: null,
-    nom: localStorage.getItem('nom') || '',
-    prenom: localStorage.getItem('prenom') || '',
-    email: localStorage.getItem('email') || '',
-    formation: localStorage.getItem('formation') || '',
-    oldPassword: '',
-    newPassword: '',
-    confirmNewPassword: '',
-  }), []); // Empty dependency array since these values only need to be initialized once
-
-  const [formData, setFormData] = useState(initialFormData);
+  const [initialFormData, setInitialFormData] = useState({});
+  const [formData, setFormData]       = useState({});
   const [isModified, setIsModified] = useState(false);
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
+
+  // Charger le profil au montage
+  useEffect(() => {
+    if (!userId) return;
+  
+    axios.get(`http://localhost:5001/api/users/${userId}`)
+      .then(({ data }) => {
+        const loadedData = {
+          pseudonyme: data.pseudonyme || '',
+          genre: data.genre || '',
+          dateNaissance: data.dateNaissance?.split('T')[0] || '',
+          formation: data.formation || '',
+          nom: data.nom || '',
+          prenom: data.prenom || '',
+          email: data.email || '',
+          oldPassword: '',
+          newPassword: '',
+          confirmNewPassword: '',
+          photo: null
+        };
+  
+        setFormData(loadedData);
+        setInitialFormData(loadedData);  // mettre à jour le point de comparaison
+      })
+      .catch(err => {
+        console.error("Erreur chargement profil:", err);
+        addToast("Impossible de charger le profil", "error");
+      });
+  }, [userId]);
+  
 
   // Effets pour la gestion des données
   useEffect(() => {
@@ -173,11 +189,30 @@ const Profile = () => {
     setToasts(prev => prev.filter(toast => toast.id !== id));
   };
 
-   // Si l'utilisateur souhaite modifier son mot de passe, on vérifie l'ancien, la correspondance et la longueur du nouveau
-  const handleSave = () => {
+  const handleSave = async () => {
+    if (!userId) return;
+    
+    // 1. Construire l’objet updates uniquement avec les champs modifiés
+    const updates = {};
+    if (formData.pseudonyme !== initialFormData.pseudonyme)
+      updates.pseudonyme = formData.pseudonyme;
+    if (formData.genre !== initialFormData.genre)
+      updates.genre = formData.genre;
+    if (formData.dateNaissance !== initialFormData.dateNaissance)
+      updates.dateNaissance = formData.dateNaissance;
+    if (formData.nom !== initialFormData.nom)
+      updates.nom = formData.nom;
+    if (formData.prenom !== initialFormData.prenom)
+      updates.prenom = formData.prenom;
+    if (formData.email !== initialFormData.email)
+      updates.email = formData.email;
+    if (formData.formation !== initialFormData.formation)
+      updates.formation = formData.formation;
+    
+    // 2. Gestion du mot de passe
     if (formData.newPassword || formData.confirmNewPassword || formData.oldPassword) {
       if (!formData.oldPassword) {
-        addToast('Veuillez renseigner votre ancien mot de passe pour effectuer la modification', 'error');
+        addToast('Veuillez renseigner votre ancien mot de passe', 'error');
         return;
       }
       if (formData.newPassword !== formData.confirmNewPassword) {
@@ -188,49 +223,57 @@ const Profile = () => {
         addToast('Le nouveau mot de passe doit contenir au moins 8 caractères', 'error');
         return;
       }
-      addToast('Votre mot de passe a été modifié avec succès', 'success');
+      updates.password = formData.newPassword; // le back hache automatiquement
     }
-
-    const updates = [];
-    if (formData.pseudonyme !== initialFormData.pseudonyme) {
-      localStorage.setItem('user', formData.pseudonyme);
-      updates.push('pseudonyme');
+  
+    // 3. S’il n’y a rien à mettre à jour, sortir
+    if (Object.keys(updates).length === 0) {
+      addToast('Aucune modification détectée', 'info');
+      return;
     }
-    if (formData.genre !== initialFormData.genre) {
-      localStorage.setItem('genre', formData.genre);
-      updates.push('genre');
-    }
-    if (formData.dateNaissance !== initialFormData.dateNaissance) {
-      localStorage.setItem('dateNaissance', formData.dateNaissance);
-      updates.push('date de naissance');
-    }
-    if (formData.nom !== initialFormData.nom) {
-      localStorage.setItem('nom', formData.nom);
-      updates.push('nom');
-    }
-    if (formData.prenom !== initialFormData.prenom) {
-      localStorage.setItem('prenom', formData.prenom);
-      updates.push('prénom');
-    }
-    if (formData.email !== initialFormData.email) {
-      localStorage.setItem('email', formData.email);
-      updates.push('email');
-    }
-    if (formData.formation !== initialFormData.formation) {
-      localStorage.setItem('formation', formData.formation);
-      updates.push('formation');
-    }
-
-    setIsModified(false);
-
-    if (updates.length > 0) {
-      addToast(
-        `Modifications enregistrées : ${updates.join(', ')}`,
-        'success'
+  
+    try {
+      // 4. Appel PATCH
+      const { data } = await axios.patch(
+        `http://localhost:5001/api/users/${userId}`,
+        updates,
+        { headers: { 'Content-Type': 'application/json' } }
       );
+  
+      // data.user (ton back renvoie { message, user: { ... } })
+      const updated = data.user;
+  
+      // 5. Mettre à jour le state et le localStorage
+      setFormData(prev => ({
+        ...prev,
+        pseudonyme:   updated.pseudonyme,
+        genre:        updated.genre,
+        dateNaissance: updated.dateNaissance?.split('T')[0] || '',
+        nom:          updated.nom,
+        prenom:       updated.prenom,
+        email:        updated.email,
+        formation:    updated.formation
+      }));
+      // et pour le mot de passe on clear
+      setFormData(fd => ({ ...fd, oldPassword: '', newPassword: '', confirmNewPassword: '' }));
+  
+      // localStorage
+      localStorage.setItem('user', updated.pseudonyme);
+      localStorage.setItem('genre', updated.genre);
+      localStorage.setItem('dateNaissance', updated.dateNaissance);
+      localStorage.setItem('nom', updated.nom);
+      localStorage.setItem('prenom', updated.prenom);
+      localStorage.setItem('email', updated.email);
+      localStorage.setItem('formation', updated.formation);
+  
+      addToast('Profil mis à jour avec succès', 'success');
+      setIsModified(false);
+    } catch (err) {
+      console.error("Erreur mise à jour profil :", err);
+      addToast(err.response?.data?.error || 'Erreur serveur lors de la mise à jour', 'error');
     }
   };
-
+  
   const toggleOldPasswordVisibility = () => {
     setShowOldPassword(!showOldPassword);
   };
@@ -243,10 +286,22 @@ const Profile = () => {
     setShowConfirmNewPassword(!showConfirmNewPassword);
   };
 
+  // exemple de conversion JS vers YYYY-MM-DD :
+  const formatDateToInput = (dateValue) => {
+    if (!dateValue) return '';
+    const date = new Date(dateValue);
+    // Format en YYYY-MM-DD
+    return date.toISOString().slice(0, 10);
+  };
+
   if (!isLoggedIn) {
     //renvoie vers la page d'acceuil
     return <Navigate to="/" replace />;
   }
+  if (!formData || Object.keys(formData).length === 0) {
+    return <p style={{ color: 'white' }}>Chargement du profil...</p>;
+  }
+  console.log("Valeur envoyée au champ date :", formData.dateNaissance, formatDateToInput(formData.dateNaissance));
 
   return (
     <>
@@ -337,38 +392,12 @@ const Profile = () => {
                 value={formData.email}
                 onChange={handleInputChange}
               />
-              <select
+              <InputField
                 name="formation"
+                placeholder="Formation"
                 value={formData.formation}
                 onChange={handleInputChange}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem 1rem',
-                  marginBottom: '1rem',
-                  borderRadius: '10px',
-                  border: '1px solid #e1e1e1',
-                  backgroundColor: '#1d124e', // Fond plus foncé
-                  color: 'white',
-                  fontSize: '1rem',
-                  cursor: 'pointer',
-                  outline: 'none',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                <option value="">Sélectionnez votre formation</option>
-                <option value="Mathématique">Master Mathématiques</option>
-                <option value="Informatique">Master Informatique</option>
-                <option value="INFORMATIQUE">INFORMATIQUE</option>
-                <option value="GÉNIE CIVIL">GÉNIE CIVIL</option>
-                <option value="BIOTECHNOLOGIES">BIOTECHNOLOGIES</option>
-                <option value="MÉCANIQUE">MÉCANIQUE</option>
-                <option value="MATHÉMATIQUES APPLIQUÉES">MATHÉMATIQUES APPLIQUÉES</option>
-                <option value="BIOTECHNOLOGIES & CHIMIE (Chimie voie Recherche)">BIOTECHNOLOGIES & CHIMIE (Chimie voie Recherche)</option>
-                <option value="BIOTECHNOLOGIES & CHIMIE (Biologie voie Recherche)">BIOTECHNOLOGIES & CHIMIE (Biologie voie Recherche)</option>
-                <option value="GÉNIE CIVIL - ARCHITECTE (ENSA-V)">GÉNIE CIVIL - ARCHITECTE (ENSA-V)</option>
-                <option value="DATA - HUMANITÉS DIGITALES (Sciences Po Saint-Germain-en-Laye)">DATA - HUMANITÉS DIGITALES (Sciences Po Saint-Germain-en-Laye)</option>
-                <option value="INFORMATIQUE - DESIGNER (CY École de Design)">INFORMATIQUE - DESIGNER (CY École de Design)</option>
-              </select>
+              />
 
               <select
                 name="genre"
