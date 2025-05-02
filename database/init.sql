@@ -123,7 +123,7 @@ CREATE TABLE IF NOT EXISTS store(
   FOREIGN KEY (idEtat) REFERENCES etat(idEtat)
 );
 
-CREATE TABLE IF NOT EXISTS sysAudio(
+CREATE TABLE IF NOT EXISTS sysaudio(
   idAudio SERIAL PRIMARY KEY, 
   nomAudio VARCHAR(50) , 
   idSalle INT, 
@@ -402,7 +402,7 @@ INSERT INTO ventilation(nomVentilation, idSalle, idModes)
 VALUES
   ('Systeme  de Ventilation', 6, 1); 
 
-INSERT INTO sysAudio(nomAudio, idSalle, idEtat) 
+INSERT INTO sysaudio(nomAudio, idSalle, idEtat) 
 VALUES 
   ('Systeme Audio', 2, 1),
   ('Sonorisation', 6, 1); 

@@ -586,11 +586,11 @@ app.get("/api/objets", asyncHandler(async (req, res) => {
 
     -- Audio
     SELECT 
-      'sysAudio' AS type,
+      'sysaudio' AS type,
       a.idAudio  AS id,
       a.nomAudio AS nom,
       e.nomEtat  AS etat
-    FROM sysAudio a
+    FROM sysaudio a
     LEFT JOIN etat e      ON a.idEtat = e.idEtat
 
     UNION ALL
@@ -787,6 +787,112 @@ app.get("/api/objets", asyncHandler(async (req, res) => {
   }
 }));
 
+// server.js, après app.get("/api/objets")…
+app.post("/api/objets", asyncHandler(async (req, res) => {
+  const { type, nom } = req.body;
+  const t = type.toLowerCase();
+
+  let sql, values;
+  switch(t) {
+    case 'projecteur':
+      sql    = 'INSERT INTO projecteur (nomProjecteur) VALUES ($1) RETURNING idProjecteur AS id, nomProjecteur AS nom';
+      values = [nom];
+      break;
+    case 'chauffage':
+      sql    = 'INSERT INTO chauffage (nomChauffage) VALUES ($1) RETURNING idChauffage AS id, nomChauffage AS nom';
+      values = [nom];
+      break;
+    case 'eclairage':
+      sql    = 'INSERT INTO eclairage (nomEclairage) VALUES ($1) RETURNING idEclairage AS id, nomEclairage AS nom';
+      values = [nom];
+      break;
+    case 'store':
+      sql    = 'INSERT INTO store (nomStore) VALUES ($1) RETURNING idStore AS id, nomStore AS nom';
+      values = [nom];
+      break;
+    case 'sysaudio':
+      sql    = 'INSERT INTO sysaudio (nomAudio) VALUES ($1) RETURNING idAudio AS id, nomAudio AS nom';
+      values = [nom];
+      break;
+    case 'grille':
+      sql    = 'INSERT INTO grille (nomGrille) VALUES ($1) RETURNING idGrille AS id, nomGrille AS nom';
+      values = [nom];
+      break;
+    case 'camera':
+      sql    = 'INSERT INTO camera (nomCamera) VALUES ($1) RETURNING idCamera AS id, nomCamera AS nom';
+      values = [nom];
+      break;
+    case 'porte':
+      sql    = 'INSERT INTO porte (nomPorte) VALUES ($1) RETURNING idPorte AS id, nomPorte AS nom';
+      values = [nom];
+      break;
+    case 'capteur':
+      sql    = 'INSERT INTO capteur (nomCapteur) VALUES ($1) RETURNING idCapteur AS id, nomCapteur AS nom';
+      values = [nom];
+      break;
+    case 'borne':
+      sql    = 'INSERT INTO borne (nomBorne) VALUES ($1) RETURNING idBorne AS id, nomBorne AS nom';
+      values = [nom];
+      break;
+    case 'distributeur':
+      sql    = 'INSERT INTO distributeur (nomDistributeur) VALUES ($1) RETURNING idDistributeur AS id, nomDistributeur AS nom';
+      values = [nom];
+      break;
+    case 'cafetiere':
+      sql    = 'INSERT INTO cafetiere (nomCafetiere) VALUES ($1) RETURNING idCafetiere AS id, nomCafetiere AS nom';
+      values = [nom];
+      break;
+    case 'microwave':
+      sql    = 'INSERT INTO microwave (nomMicrowave) VALUES ($1) RETURNING idMicrowave AS id, nomMicrowave AS nom';
+      values = [nom];
+      break;
+    case 'airsensor':
+      sql    = 'INSERT INTO airSensor (nomAirSensor) VALUES ($1) RETURNING idAirSensor AS id, nomAirSensor AS nom';
+      values = [nom];
+      break;
+    case 'dishwasher':
+      sql    = 'INSERT INTO dishwasher (nomDishwasher) VALUES ($1) RETURNING idDishwasher AS id, nomDishwasher AS nom';
+      values = [nom];
+      break;
+    case 'ventilation':
+      sql    = 'INSERT INTO ventilation (nomVentilation) VALUES ($1) RETURNING idVentilation AS id, nomVentilation AS nom';
+      values = [nom];
+      break;
+    case 'scanner':
+      sql    = 'INSERT INTO scanner (nomScanner) VALUES ($1) RETURNING idScanner AS id, nomScanner AS nom';
+      values = [nom];
+      break;
+    case 'affichage':
+      sql    = 'INSERT INTO affichage (nomAffichage) VALUES ($1) RETURNING idAffichage AS id, nomAffichage AS nom';
+      values = [nom];
+      break;
+    case 'barriere':
+      sql    = 'INSERT INTO barriere (nomBarriere) VALUES ($1) RETURNING idBarriere AS id, nomBarriere AS nom';
+      values = [nom];
+      break;
+    case 'hotte':
+      sql    = 'INSERT INTO hotte (nomHotte) VALUES ($1) RETURNING idHotte AS id, nomHotte AS nom';
+      values = [nom];
+      break;
+    case 'panneau':
+      sql    = 'INSERT INTO panneau (nomPanneau) VALUES ($1) RETURNING idPanneau AS id, nomPanneau AS nom';
+      values = [nom];
+      break;
+    case 'alarme':
+      sql    = 'INSERT INTO alarme (nomAlarme) VALUES ($1) RETURNING idAlarme AS id, nomAlarme AS nom';
+      values = [nom];
+      break;
+    case 'salle':
+      sql    = 'INSERT INTO salle (nomSalle) VALUES ($1) RETURNING idSalle AS id, nomSalle AS nom';
+      values = [nom];
+      break;
+    default:
+      return res.status(400).json({ error: `Type inconnu : ${type}` }); 
+  }
+const { rows } = await pool.query(sql, values);
+res.status(201).json({ type, id: rows[0].id, nom: rows[0].nom, etat: null });
+}));
+
 app.get("/api/salles/:id/objets", asyncHandler(async (req, res) => {
   const { id } = req.params;
 
@@ -838,11 +944,11 @@ app.get("/api/salles/:id/objets", asyncHandler(async (req, res) => {
 
     -- Systèmes Audio
     SELECT
-      'sysAudio'      AS type,
+      'sysaudio'      AS type,
       a.idAudio       AS id,
       a.nomAudio      AS nom,
       a.idEtat        AS etat
-    FROM sysAudio a
+    FROM sysaudio a
     WHERE a.idSalle = $1
 
     UNION ALL
@@ -1038,7 +1144,7 @@ const resources = {
   chauffage:    { pk: 'idChauffage',   fields: ['nomChauffage', "idSalle",  'idEtat', 'idModes'] },
   eclairage:    { pk: 'idEclairage',   fields: ['nomEclairage', "idSalle",  'idEtat'] },
   store:        { pk: 'idStore',       fields: ['nomStore',    "idSalle",   'idEtat'] },
-  sysAudio:     { pk: 'idAudio',       fields: ['nomAudio',   "idSalle",    'idEtat'] },
+  sysaudio:     { pk: 'idAudio',       fields: ['nomAudio',   "idSalle",    'idEtat'] },
   grille:       { pk: 'idGrille',      fields: ['nomGrille',  "idSalle",    'idEtat'] },
   camera:       { pk: 'idCamera',      fields: ['nomCamera',   "idSalle",   'idEtat'] },
   porte:        { pk: 'idPorte',       fields: ['nomPorte',   "idSalle",    'idEtat'] },

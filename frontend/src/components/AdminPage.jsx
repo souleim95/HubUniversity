@@ -35,7 +35,7 @@ import {
 } from '../styles/AdminStyles';
 import { FaUsers, FaTools, FaShieldAlt, FaPalette, FaChartBar, FaPlus, FaEdit, FaTrash, FaDownload, FaExclamationTriangle, FaCheck, FaHistory, FaCog, FaUser, FaEye, FaEyeSlash } from 'react-icons/fa';
 // Importer les données depuis fakeData.js
-import { dataObjects, equipments, categories, objectTypes } from '../data/projectData';
+//import { dataObjects, equipments, categories, objectTypes } from '../data/projectData';
 import { PlatformContext } from '../context/PlatformContext';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -120,8 +120,8 @@ function AdminPage() {
             <StatLabel>Consommation Totale</StatLabel>
           </StatCard>
           <StatCard>
-            <StatValue>{Object.keys(equipments).reduce((sum, roomId) => sum + equipments[roomId].length, 0)}</StatValue>
-            <StatLabel>Équipements Totaux</StatLabel>
+           <StatValue>{categoryList.length}</StatValue>
+           <StatLabel>Catégories</StatLabel>
           </StatCard>
         </StatsGrid>
 
@@ -694,8 +694,8 @@ function AdminPage() {
               </ButtonGroup>
             </SectionHeader>
 
-            {/* Statistiques */}
-            <Grid>
+            
+            {/* <Grid>
               <Card style={{ padding: '20px', textAlign: 'center', backgroundColor: '#ffffff', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
                 <CardTitle>Consommation Énergétique</CardTitle>
                 <StatValue style={{ color: '#4CAF50', fontSize: '2.5rem', margin: '10px 0' }}>
@@ -802,7 +802,7 @@ function AdminPage() {
                   ))}
                 </div>
               </Card>
-            </Grid>
+            </Grid> */}
           </Section>
         )}
 

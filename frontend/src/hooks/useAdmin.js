@@ -974,27 +974,35 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 	// Enregistre un nouvel objet ou modifie un objet existant
 	const handleObjectSubmit = async (e) => {
 		e.preventDefault();
-		
-		if (selectedObject) {
-			// Modification d'un objet existant
-			setObjects(objects.map(obj => 
-				obj.id === selectedObject.id ? { ...obj, ...objectFormData } : obj
-				));
-			toast.success("L'objet a été modifié avec succès");
-		} else {
-			// Ajout d'un nouvel objet
-			const newObject = {
-				id: `obj_${Date.now()}`,
-				...objectFormData
+		try {
+		  if (selectedObject) {
+			// … votre code de modification existant
+		  } else {
+			// Création réelle en base
+			const payload = {
+			  type: objectFormData.type,
+			  nom:  objectFormData.name
 			};
-			setObjects([...objects, newObject]);
-			toast.success("L'objet a été ajouté avec succès");
+			const { data } = await axios.post('/api/objets', payload);
+			// On ajoute l’objet retourné à l’état
+			setObjects(prev => [
+			  ...prev,
+			  {
+				id:     data.id,
+				type:   data.type,
+				name:   data.nom,
+				status: data.etat
+			  }
+			]);
+			await fetchObjects();
+			toast.success("L'objet a été ajouté en base avec succès");
+		  }
+		  setShowObjectModal(false);
+		  setSelectedObject(null);
+		} catch (err) {
+		  toast.error("Erreur lors de l'ajout : " + (err.response?.data?.error || err.message));
 		}
-		
-		setShowObjectModal(false);
-		setSelectedObject(null);
-	};
-
+	  };
 	// --------- Gestion des rapports ---------
 
 	// Exporte les données d'un rapport en CSV
