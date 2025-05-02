@@ -59,30 +59,26 @@ app.get("/api", (req, res) => res.send("Backend API is running 🚀"));
 
 
 app.get('/api/users', async (req, res) => {
-  try {
-    const result = await pool.query(`
-      SELECT
-        id,
-        nom,
-        prenom,
-        email,
-        idRole,
-        genre,
-        password,
-        COALESCE(score, 0) AS score,
-        created_at,
-        pseudonyme,
-        formation,
-        last_login,
-        dateNaissance
-      FROM users
-    `);
-    res.json(result.rows);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Erreur serveur' });
-  }
-});
+     try {
+       const { rows } = await pool.query(`
+         SELECT
+           u.id,
+           u.pseudonyme   AS login,
+           u.email,
+           COALESCE(u.score, 0)   AS points,
+           u.created_at   AS inscription,
+           u.last_login   AS last_login,
+           r.nomRole      AS role
+         FROM users u
+         LEFT JOIN role r ON u.idRole = r.idRole
+         ORDER BY u.id
+       `);
+       res.json(rows);
+     } catch (err) {
+       console.error(err);
+       res.status(500).json({ error: 'Erreur serveur' });
+    }
+  });
 
 app.get("/api/users/:id", asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -270,6 +266,12 @@ app.post("/api/login", async (req, res) => {
     
 
     if (match) {
+      await pool.query(
+            `UPDATE users
+               SET last_login = NOW()
+             WHERE id = $1`,
+            [user.id]
+          );
       await logAction(user.id, "Connexion", `Connexion de ${user.email}`); 
       // On renvoie l'objet utilisateur sans le mot de passe.
       res.json({ 
@@ -353,71 +355,6 @@ app.patch('/users/:id/email', async (req, res) => {
   }
 });
 
-app.patch('/api/users/:id', async (req, res) => {
-  const { id } = req.params;
-  const {
-    nom,
-    prenom,
-    idRole,
-    genre,
-    password,
-    score,
-    pseudonyme,
-    formation,
-    last_login,
-    dateNaissance
-  } = req.body;
-
-  try {
-    let hashedPassword = null;
-    if (password) {
-      const saltRounds = 10;
-      hashedPassword = await bcrypt.hash(password, saltRounds);
-    }
-
-    const result = await pool.query(`
-      UPDATE users SET
-        nom = COALESCE($1, nom),
-        prenom = COALESCE($2, prenom),
-        idRole = COALESCE($3, idRole),
-        genre = COALESCE($4, genre),
-        password = COALESCE($5, password),
-        score = COALESCE($6, score),
-        pseudonyme = COALESCE($7, pseudonyme),
-        formation = COALESCE($8, formation),
-        last_login = COALESCE($9, last_login),
-        dateNaissance = COALESCE($10, dateNaissance)
-      WHERE id = $11
-      RETURNING id, nom, prenom, email, idRole, genre, score, pseudonyme, formation, last_login, dateNaissance, created_at
-    `, [
-      nom || null,
-      prenom || null,
-      idRole || null,
-      genre || null,
-      hashedPassword || null,
-      score || null,
-      pseudonyme || null,
-      formation || null,
-      last_login || null,
-      dateNaissance || null,
-      id
-    ]);
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Utilisateur introuvable." });
-    }
-
-    res.json({
-      message: "Utilisateur mis à jour avec succès.",
-      user: result.rows[0]
-    });
-
-  } catch (err) {
-    console.error("Erreur lors de la mise à jour :", err);
-    res.status(500).json({ error: "Erreur serveur lors de la mise à jour de l'utilisateur." });
-  }
-});
-
 // Route pour augmenter le score d'un utilisateur
 app.patch("/api/users/:id/score", async (req, res) => {
 // Récupération de l'id de l'utilisateur depuis l'URL
@@ -468,7 +405,7 @@ app.patch("/api/users/:id/score", async (req, res) => {
         WHERE id = $2
       `, [newRole, id]);
     }
-    
+    await logAction(id, "Modification", `Points mis à jour de ${increment} pour l'utilisateur ${id}`);
     res.json({
       message: "Score mis à jour avec succès.",
       score: rows[0].score,
@@ -505,38 +442,41 @@ app.delete('/api/users/:id', asyncHandler(async (req, res) => {
 app.patch("/api/users/:id", asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { role, score } = req.body;
-  // 1) Vérifier le nouveau rôle
-  const roleRes = await pool.query(
+
+  // 1) Vérifier que le rôle passé est valide
+  const { rows: roleRows } = await pool.query(
     "SELECT idRole FROM role WHERE nomRole = $1",
     [role]
   );
-  if (roleRes.rows.length === 0) {
+  if (!roleRows.length) {
     return res.status(400).json({ error: `Rôle invalide : ${role}` });
   }
-  const idRole = roleRes.rows[0].idrole || roleRes.rows[0].idRole;
-  // 2) Mettre à jour score et rôle
-  const updateRes = await pool.query(
-    `UPDATE users 
-     SET idRole = $1, score = $2
+  const newIdRole = roleRows[0].idrole;
+
+  // 2) Mettre à jour role & score en une seule requête
+  const { rows } = await pool.query(`
+    UPDATE users
+       SET idRole = $1,
+           score  = COALESCE($2, score)
      WHERE id = $3
-     RETURNING id, nom, prenom, email, score`,
-    [idRole, score, id]
-  );
-  if (updateRes.rows.length === 0) {
+     RETURNING id, nom, prenom, email, COALESCE(score,0) AS score
+  `, [newIdRole, score, id]);
+
+  if (!rows.length) {
     return res.status(404).json({ error: "Utilisateur non trouvé." });
   }
-   await logAction(id, 'Modification', `Changement de rôle/score pour l'utilisateur ${updateRes.rows[0].email}`); 
-  // 3) Retourner le user mis à jour
+
+  await logAction(id, "Modification", `Mise à jour rôle+points de ${rows[0].email}`);
+  // 3) Renvoyer aussi le `role` en clair
   res.json({
+    message: "Utilisateur mis à jour avec succès.",
     user: {
-      id: updateRes.rows[0].id,
-      nom: updateRes.rows[0].nom,
-      email: updateRes.rows[0].email,
-      role,
-      score: updateRes.rows[0].score
+      ...rows[0],
+      role   // on renvoie la chaîne ‘directeur’ ou autre
     }
   });
 }));
+
 
 app.get("/api/objets", asyncHandler(async (req, res) => {
   const query = `

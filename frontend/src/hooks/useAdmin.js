@@ -507,13 +507,13 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		  const { data } = await axios.get('/api/users');
 		  const formatted = data.map(u => ({
 			id: u.id,
-			login: u.name,
+			login: u.login,
 			email: u.email,
 			role: u.role,
-			points: u.score,
-			createdAt: new Date(u.created_at).toLocaleDateString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+			points: u.points,
+			createdAt: new Date(u.inscription).toLocaleDateString('fr-FR', { days: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
 			lastLogin: u.last_login
-			  ? new Date(u.last_login).toLocaleDateString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+			  ? new Date(u.last_login).toLocaleDateString('fr-FR', { days: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 			  : '—'
 		  }));
 		  setUsers(formatted);
@@ -794,40 +794,54 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		e.preventDefault();
 		try {
 		  if (selectedUser) {
-			// Mise à jour d'un utilisateur existant
-			const { data } = await axios.patch(`/api/users/${selectedUser.id}`, {
-			  role: userFormData.role,
-			  score: userFormData.points
-			});
+			// Si seul le score change, on appelle l'endpoint /score
+			if (userFormData.role === selectedUser.role) {
+			  const increment = userFormData.points - selectedUser.points;
+			  const { data } = await axios.patch(
+				`/api/users/${selectedUser.id}/score`,
+				{ increment }
+			  );
+			  setUsers(users.map(u =>
+				u.id === selectedUser.id
+				  ? { ...u, points: data.score }
+				  : u
+			  ));
+			  toast.success('Points mis à jour avec succès');
+			  setShowUserModal(false);
+			  await fetchUsers();
+			  window.location.reload();
+			  return;
+			}
+			// Sinon, on change rôle+score ensemble
+			const { data } = await axios.patch(
+			  `/api/users/${selectedUser.id}`,
+			  {
+				role:  userFormData.role,
+				score: userFormData.points
+			  }
+			);
 			setUsers(users.map(u =>
 			  u.id === selectedUser.id
 				? { ...u, role: data.user.role, points: data.user.score }
 				: u
 			));
 			toast.success('Utilisateur modifié avec succès');
-			// Si on s'est démoti sauf si on est encore autorisé
-			if (currentUser?.id === selectedUser.id && data.user.role !== 'directeur') {
+			// Ne redirige que si le rôle **a vraiment changé** et que ce n’est plus directeur
+			if (
+			  currentUser?.id === selectedUser.id &&
+			  userFormData.role !== selectedUser.role &&
+			  data.user.role !== 'directeur'
+			) {
 			  sessionStorage.setItem('role', data.user.role);
 			  navigate('/');
 			}
-		  } else {
-			// Création d'un nouvel utilisateur
-			const { data } = await axios.post('/api/users', {
-			  name: userFormData.login,
-			  email: userFormData.email,
-			  role: userFormData.role,
-			  password: userFormData.password
-			});
-			toast.success('Utilisateur créé avec succès');
-			// Recharger la liste depuis API pour afficher dates et id
-			await fetchUsers();
+			setShowUserModal(false);
 		  }
-		  setShowUserModal(false);
 		} catch (err) {
-		  const message = err.response?.data?.error || err.message;
-		  toast.error(`Erreur : ${message}`);
+		  toast.error(`Erreur : ${err.response?.data?.error || err.message}`);
 		}
-	  }, [selectedUser, userFormData, users, currentUser, fetchUsers, navigate]);
+	  }, [selectedUser, userFormData, users, currentUser, navigate]);
+	  
 	
 	  
 
