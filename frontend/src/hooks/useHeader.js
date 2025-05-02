@@ -230,22 +230,22 @@ export const useHeaderState = () => {
   };
 
   const handleLogout = async () => {
-    alert('👉 handleLogout déclenché');  
+    /* alert('👉 handleLogout déclenché');   */
     try {
       const currentUser = JSON.parse(localStorage.getItem('currentUser'));
       if (currentUser?.id) {
-        alert(`🟢 userId=${currentUser.id} prêt pour l’API logout`);
+        /* alert(`🟢 userId=${currentUser.id} prêt pour l’API logout`); */
         // Appel pour journaliser la déconnexion
         await axios.post('http://localhost:5001/api/logout', {
           userId: currentUser.id
         });
-        alert('✅ API logout terminée avec succès');
+        /* alert('✅ API logout terminée avec succès'); */
       }     
     } catch (err) {
       console.error('🚨 Erreur journalisation logout :', err.response);
-      alert(`🚨 Échec logout : ${err.response.status} – ${JSON.stringify(err.response.data)}`);
+      /* alert(`🚨 Échec logout : ${err.response.status} – ${JSON.stringify(err.response.data)}`); */
     }
-    alert(`ℹ️ Avant toast et nettoyage session (userName=${userName})`);
+    /* alert(`ℹ️ Avant toast et nettoyage session (userName=${userName})`); */
     toast.info(`Au revoir ${userName} ! À bientôt.`); // message utilisateur
     sessionStorage.removeItem('user');
     sessionStorage.removeItem('role');
@@ -253,9 +253,9 @@ export const useHeaderState = () => {
     setUserName(null);
     setRole(null);
     setUserPoints(0);
-    alert('⌛ Préparation reload de la page');
+    /* alert('⌛ Préparation reload de la page'); */
     setTimeout(() => {
-      alert('🔄 reload de la page maintenant');
+      /* alert('🔄 reload de la page maintenant'); */
       window.location.reload();
     }, 300);
   };
