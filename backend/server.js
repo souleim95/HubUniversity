@@ -1078,6 +1078,7 @@ app.get('/api/action-history', asyncHandler(async (req, res) => {
   const { rows } = await pool.query(query);
   res.json(rows);
 }));
+
 const resources = {
   salle:        { pk: 'idSalle',       fields: ['nomSalle',       'idEtatSalle'] },
   projecteur:   { pk: 'idProjecteur',  fields: ['nomProjecteur',"idSalle", 'idEtat'] },
@@ -1106,6 +1107,19 @@ const resources = {
 };
 //reste bornes et un autre truc aussi 
 
+// Journaliser la déconnexion
+app.post('/api/logout', asyncHandler(async (req, res) => {
+  console.log('🛎️ POST /api/logout — req.body =', req.body);
+  
+  const { userId } = req.body;
+  if (!userId) {
+    console.error('❌ userId manquant dans /api/logout');
+    return res.status(400).json({ error: 'userId manquant' });
+  }
+
+  await logAction(userId, 'Déconnexion', `Déconnexion de l'utilisateur ${userId}`);
+  res.json({ message: 'Déconnexion enregistrée' });
+}));
 app.get("/api/:resource/:id", asyncHandler(async (req, res, next) => {
   const { resource, id } = req.params;
 
@@ -1324,13 +1338,6 @@ app.delete("/api/reservation/:id", asyncHandler(async (req, res) => {
 
 
 
-// Journaliser la déconnexion
-app.post('/api/logout', asyncHandler(async (req, res) => {
-  const { userId } = req.body;
-  // Enregistre l’action "Déconnexion" dans action_history
-  await logAction(userId, 'Déconnexion', `Déconnexion de l'utilisateur ${userId}`);
-  res.json({ message: 'Déconnexion enregistrée' });
-}));
 
 
 

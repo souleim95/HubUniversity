@@ -402,7 +402,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 			push: true
 		}
 	});
-
+	
 	// États pour les rapports et statistiques
 	const [reports, setReports] = useState({
 		energyConsumption: [],
@@ -424,7 +424,6 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		dateFrom: '',
 		dateTo: ''
 	});
-
 	// Ajout des états pour les alertes
 	const [alerts, setAlerts] = useState([
 		{
@@ -738,11 +737,15 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 
 	// Ajout de la fonction pour récupérer l'historique
 	const fetchUserHistory = async () => {
+		/* alert('👉 fetchUserHistory : début de la requête'); */
 		try {
 		  // Si vous avez configuré un proxy dans package.json, vous pouvez juste faire '/api/...'
+		  const response = await axios.get('http://localhost:5001/api/action-history');
 		  const res = await axios.get('http://localhost:5001/api/action-history');
+		  /* alert(`✅ fetchUserHistory : reçu ${response.data.length} enregistrements`); */
 		  setUserHistory(res.data);
 		} catch (error) {
+		  /* alert('🚨 fetchUserHistory erreur : ' + error.message); */
 		  console.error("Erreur lors de la récupération de l'historique :", error);
 		}
 	  };
@@ -843,7 +846,15 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 	  }, [selectedUser, userFormData, users, currentUser, navigate]);
 	  
 	
-	  
+	  useEffect(() => {
+		//alert('⚡ useEffect(useAdmin) : montage ou filtre modifié, on relance fetchUserHistory');
+		const handleLogoutEvent = () => {
+	      /* lert('🔔 événement app:logout reçu, refetch history'); */
+		  fetchUserHistory();  // remonte le tableau avec la nouvelle entrée "Déconnexion"
+		};
+		window.addEventListener('app:logout', handleLogoutEvent);
+		return () => window.removeEventListener('app:logout', handleLogoutEvent);
+	  }, [fetchUserHistory]);
 
 	const confirmDeleteUser = useCallback(async () => {
 		try {
