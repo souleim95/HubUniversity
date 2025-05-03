@@ -1,29 +1,20 @@
+# Utiliser l'image officielle Node.js
 FROM node:18
 
-# Créer répertoire principal
+# Définir le dossier de travail
 WORKDIR /app
 
-# ---------- BUILD FRONTEND ----------
-# Copier et builder le frontend
-COPY ./frontend ./frontend
-WORKDIR /app/frontend
-RUN npm install
-RUN npm run build
+# Copier les fichiers package.json et package-lock.json
+COPY package*.json ./
 
-# ---------- SETUP BACKEND ----------
-WORKDIR /app
-COPY ./backend/package*.json ./backend/
-WORKDIR /app/backend
+# Installer les dépendances
 RUN npm install
 
-# Copier les fichiers backend
-COPY ./backend .
+# Copier tout le reste du code
+COPY . . 
 
-# Copier le build React dans le dossier attendu par server.js
-RUN cp -r /app/frontend/build ./build
-
-# Port exposé
+# Exposer le port sur lequel l'application va écouter
 EXPOSE 5001
 
-# Lancement du serveur
+# Lancer le serveur Node.js
 CMD ["node", "server.js"]
