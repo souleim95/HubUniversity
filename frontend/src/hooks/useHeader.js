@@ -18,8 +18,8 @@ export const useHeaderState = () => {
     dateNaissance: '',
     genre: ''
   });
-  const [userName, setUserName] = useState(sessionStorage.getItem('user') || null);
-  const isLoggedIn = !!sessionStorage.getItem('user');
+  const [userName, setUserName] = useState(sessionStorage.getItem('pseudo') || null);
+  const isLoggedIn = !!sessionStorage.getItem('pseudo');
   const [role, setRole] = useState(sessionStorage.getItem('role') || null);
   const [userPoints, setUserPoints] = useState(parseInt(sessionStorage.getItem('points') || '0'));
   const [selectedCategory, setSelectedCategory] = useState('salles');
@@ -181,19 +181,19 @@ export const useHeaderState = () => {
       if (response.ok) {
         if (isFormOpen === 'login') {
           // Stockage des données utilisateur
-          sessionStorage.setItem('user', data.user.nom);
           sessionStorage.setItem('prenom', data.user.prenom);
+          sessionStorage.setItem('pseudo', data.user.pseudonyme);
           sessionStorage.setItem('role', data.user.role);
           sessionStorage.setItem('userId', data.user.id);
           localStorage.setItem('currentUser', JSON.stringify(data.user));
           sessionStorage.setItem('points', data.user.score);
 
           // Mise à jour des états
-          setUserName(data.user.prenom || data.user.nom);
+          setUserName(data.user.pseudonyme);
           setRole(data.user.role);
           setUserPoints(parseInt(data.user.score, 10));
 
-          toast.success(`Bienvenue ${data.user.prenom} !`);
+          toast.success(`Bienvenue ${data.user.pseudonyme} !`);
 
           setTimeout(() => {
             window.location.reload();
@@ -230,35 +230,37 @@ export const useHeaderState = () => {
   };
 
   const handleLogout = async () => {
-    /* alert('👉 handleLogout déclenché');   */
+    // 1) Optionnel : prévenir le back
     try {
       const currentUser = JSON.parse(localStorage.getItem('currentUser'));
       if (currentUser?.id) {
-        /* alert(`🟢 userId=${currentUser.id} prêt pour l’API logout`); */
-        // Appel pour journaliser la déconnexion
-        await axios.post('http://localhost:5001/api/logout', {
-          userId: currentUser.id
-        });
-        /* alert('✅ API logout terminée avec succès'); */
-      }     
-    } catch (err) {
-      console.error('🚨 Erreur journalisation logout :', err.response);
-      /* alert(`🚨 Échec logout : ${err.response.status} – ${JSON.stringify(err.response.data)}`); */
+        await axios.post('/api/logout', { userId: currentUser.id });
+      }
+    } catch {
+      /* ignore */
     }
-    /* alert(`ℹ️ Avant toast et nettoyage session (userName=${userName})`); */
-    toast.info(`Au revoir ${userName} ! À bientôt.`); // message utilisateur
+  
+    // 2) Notifications
+    toast.info(`Au revoir ${userName} ! À bientôt.`);
+  
+    // 3) Nettoyage complet de la session
+    sessionStorage.removeItem('pseudo');
     sessionStorage.removeItem('user');
+    sessionStorage.removeItem('prenom');
     sessionStorage.removeItem('role');
+    sessionStorage.removeItem('userId');
     sessionStorage.removeItem('points');
+    localStorage.removeItem('currentUser');
+  
+    // 4) Mise à jour des états
     setUserName(null);
     setRole(null);
     setUserPoints(0);
-    /* alert('⌛ Préparation reload de la page'); */
-    setTimeout(() => {
-      /* alert('🔄 reload de la page maintenant'); */
-      window.location.reload();
-    }, 300);
+  
+    // 5) Redirection ou reload
+    navigate('/');   // ou window.location.reload();
   };
+  
 
   const handleSelectObject = (obj, categoryKey) => {
     // Réinitialiser les états de sélection
@@ -520,7 +522,7 @@ export const useHeaderState = () => {
       const stored = sessionStorage.getItem('points');
       const parsed = parseInt(stored, 10);
       setUserPoints(isNaN(parsed) ? 0 : parsed);
-      setUserName(sessionStorage.getItem('user'));
+      setUserName(sessionStorage.getItem('pseudo'));
       setRole(sessionStorage.getItem('role'));
     };
 

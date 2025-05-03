@@ -56,7 +56,7 @@ import profileBackground from '../assets/profil.png';
 */
 const Profile = () => {
   // Vérification de l'authentification
-  const isLoggedIn = !!sessionStorage.getItem('user');
+  const isLoggedIn = !!sessionStorage.getItem('pseudo');
   const userId = sessionStorage.getItem('userId');
   // États pour la gestion du profil
   const [isPublic, setIsPublic] = useState(true);  // Vue publique/privée
@@ -70,6 +70,41 @@ const Profile = () => {
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
+
+  const verifyOldPassword = async () => {
+    try {
+      const { data } = await axios.get(`/api/users/${userId}/password`, {
+        params: { oldPassword: formData.oldPassword }
+      });
+      return data.match; // true ou false
+    } catch (err) {
+      console.error('Erreur vérif oldPassword:', err);
+      toast.error('Impossible de vérifier l’ancien mot de passe.');
+      return false;
+    }
+  };
+
+  const submitPasswordChange = async () => {
+    try {
+      const { data } = await axios.patch(`/api/users/${userId}/password`, {
+        oldPassword: formData.oldPassword,
+        newPassword: formData.newPassword,
+        confirmNewPassword: formData.confirmNewPassword
+      });
+      toast.success(data.message || 'Mot de passe mis à jour !');
+      // vider les champs
+      setFormData(f => ({
+        ...f,
+        oldPassword: '',
+        newPassword: '',
+        confirmNewPassword: ''
+      }));
+    } catch (err) {
+      const msg = err.response?.data?.error || 'Erreur serveur lors du changement de mot de passe.';
+      toast.error(msg);
+      console.error('Erreur patch password:', err);
+    }
+  };
 
   // Charger le profil au montage
   useEffect(() => {
@@ -169,88 +204,101 @@ const Profile = () => {
 
   const handleSave = async () => {
     if (!userId) return;
-    
-    // 1. Construire l’objet updates uniquement avec les champs modifiés
-    const updates = {};
-    if (formData.pseudonyme !== initialFormData.pseudonyme)
-      updates.pseudonyme = formData.pseudonyme;
-    if (formData.genre !== initialFormData.genre)
-      updates.genre = formData.genre;
-    if (formData.dateNaissance !== initialFormData.dateNaissance)
-      updates.dateNaissance = formData.dateNaissance;
-    if (formData.nom !== initialFormData.nom)
-      updates.nom = formData.nom;
-    if (formData.prenom !== initialFormData.prenom)
-      updates.prenom = formData.prenom;
-    if (formData.email !== initialFormData.email)
-      updates.email = formData.email;
-    if (formData.formation !== initialFormData.formation)
-      updates.formation = formData.formation;
-    
-    // 2. Gestion du mot de passe
-    if (formData.newPassword || formData.confirmNewPassword || formData.oldPassword) {
+    const wantsApply = window.confirm("Voulez-vous appliquer ces modifications ?");
+    if (!wantsApply) return;
+
+    // 1) Construire l’objet profileUpdates
+    const profileUpdates = {};
+    ['nom', 'prenom', 'email', 'pseudonyme', 'genre', 'formation', 'dateNaissance']
+      .forEach(key => {
+        if (formData[key] !== initialFormData[key]) {
+          profileUpdates[key] = formData[key];
+        }
+      });
+
+    // 2) Préparer le flag de changement de mot de passe
+    const wantsPasswordChange = 
+      formData.oldPassword || formData.newPassword || formData.confirmNewPassword;
+
+    // 3) Validation locale
+    if (wantsPasswordChange) {
       if (!formData.oldPassword) {
-        toast.error('Veuillez renseigner votre ancien mot de passe');
+        toast.error('Veuillez renseigner votre ancien mot de passe.');
         return;
       }
       if (formData.newPassword !== formData.confirmNewPassword) {
-        toast.error('Les nouveaux mots de passe ne correspondent pas');
+        toast.error('Les nouveaux mots de passe ne correspondent pas.');
         return;
       }
       if (formData.newPassword.length < 8) {
-        toast.error('Le nouveau mot de passe doit contenir au moins 8 caractères');
+        toast.error('Le mot de passe doit faire au moins 8 caractères.');
         return;
       }
-      updates.password = formData.newPassword; // le back hache automatiquement
+
+      // 4) Vérification de l’ancien mot de passe
+      const ok = await verifyOldPassword();
+      if (!ok) {
+        toast.error('Ancien mot de passe incorrect.');
+        return;
+      }
+
+      // 5) Envoi du nouveau mot de passe
+      try {
+        const { data } = await axios.patch(
+          `/api/users/${userId}/password`,
+          {
+            oldPassword: formData.oldPassword,
+            newPassword: formData.newPassword,
+            confirmNewPassword: formData.confirmNewPassword
+          }
+        );
+        toast.success(data.message || 'Mot de passe mis à jour.', { containerId: 'profile-toast' });
+        // On vide les champs liés au mot de passe
+        setFormData(f => ({
+          ...f,
+          oldPassword: '',
+          newPassword: '',
+          confirmNewPassword: ''
+        }));
+      } catch (err) {
+        const msg = err.response?.data?.error || 'Erreur lors du changement de mot de passe.';
+        console.error(err);
+        toast.error(msg, { containerId: 'profile-toast' });
+        return;
+      }
     }
-  
-    // 3. S’il n’y a rien à mettre à jour, sortir
-    if (Object.keys(updates).length === 0) {
-      toast.info('Aucune modification détectée');
-      return;
+
+    // 6) Mise à jour du profil si nécessaire
+    if (Object.keys(profileUpdates).length > 0) {
+      try {
+        const { data } = await axios.patch(`/api/users/${userId}`, profileUpdates);
+        const updated = data.user;
+        // Met à jour le state
+        setFormData(f => ({
+          ...f,
+          nom:           updated.nom,
+          prenom:        updated.prenom,
+          email:         updated.email,
+          pseudonyme:    updated.pseudonyme,
+          genre:         updated.genre,
+          formation:     updated.formation,
+          dateNaissance: updated.dateNaissance?.split('T')[0] || ''
+        }));
+        // Réinitialise la baseline
+        setInitialFormData(prev => ({ ...prev, ...profileUpdates }));
+        toast.success(data.message || 'Profil mis à jour.', { containerId: 'profile-toast' });
+      } catch (err) {
+        const msg = err.response?.data?.error || 'Erreur lors de la mise à jour du profil.';
+        console.error(err);
+        toast.error(msg, { containerId: 'profile-toast' });
+        return;
+      }
     }
-  
-    try {
-      // 4. Appel PATCH
-      const { data } = await axios.patch(
-        `http://localhost:5001/api/users/${userId}`,
-        updates,
-        { headers: { 'Content-Type': 'application/json' } }
-      );
-  
-      // data.user (ton back renvoie { message, user: { ... } })
-      const updated = data.user;
-  
-      // 5. Mettre à jour le state et le localStorage
-      setFormData(prev => ({
-        ...prev,
-        pseudonyme:   updated.pseudonyme,
-        genre:        updated.genre,
-        dateNaissance: updated.dateNaissance?.split('T')[0] || '',
-        nom:          updated.nom,
-        prenom:       updated.prenom,
-        email:        updated.email,
-        formation:    updated.formation
-      }));
-      // et pour le mot de passe on clear
-      setFormData(fd => ({ ...fd, oldPassword: '', newPassword: '', confirmNewPassword: '' }));
-  
-      // localStorage
-      localStorage.setItem('user', updated.pseudonyme);
-      localStorage.setItem('genre', updated.genre);
-      localStorage.setItem('dateNaissance', updated.dateNaissance);
-      localStorage.setItem('nom', updated.nom);
-      localStorage.setItem('prenom', updated.prenom);
-      localStorage.setItem('email', updated.email);
-      localStorage.setItem('formation', updated.formation);
-  
-      toast.success('Profil mis à jour avec succès');
-      setIsModified(false);
-    } catch (err) {
-      console.error("Erreur mise à jour profil :", err);
-      toast.error(err.response?.data?.error || 'Erreur serveur lors de la mise à jour');
-    }
+
+    // 7) Fin du process
+    setIsModified(false);
   };
+  
   
   const toggleOldPasswordVisibility = () => {
     setShowOldPassword(!showOldPassword);
@@ -284,13 +332,13 @@ const Profile = () => {
   return (
     <>
       {/* Système de notifications */}
-      <ToastContainer 
+      <ToastContainer
+        containerId="profile-toast"   // <-- ici ton ID unique
         position="top-right"
         autoClose={3000}
         hideProgressBar={false}
         newestOnTop={false}
         closeOnClick
-        rtl={false}
         pauseOnFocusLoss
         draggable
         pauseOnHover

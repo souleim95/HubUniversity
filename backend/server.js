@@ -239,7 +239,7 @@ app.post("/api/login", async (req, res) => {
   try {
     // Requête jointe pour récupérer le nom du rôle (r.nomRole as role)
     const query = `
-      SELECT u.id, u.nom, u.prenom, u.email, u.password, COALESCE(u.score, 0) as score, r.nomRole as role
+      SELECT u.id, u.nom, u.prenom, u.email, u.password, u.pseudonyme, COALESCE(u.score, 0) as score, r.nomRole as role
       FROM users u 
       JOIN role r ON u.idRole = r.idRole
       WHERE u.email = $1
@@ -280,6 +280,7 @@ app.post("/api/login", async (req, res) => {
           id: user.id, 
           nom: user.nom, 
           prenom : user.prenom,
+          pseudonyme : user.pseudonyme,
           email: user.email, 
           role: user.role, 
           score: newScore
@@ -439,44 +440,183 @@ app.delete('/api/users/:id', asyncHandler(async (req, res) => {
 
 
 // server.js, après app.post("/api/users")…
-app.patch("/api/users/:id", asyncHandler(async (req, res) => {
+// server.js (ou dans ton router users.js)
+app.patch('/api/users/:id', asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { role, score } = req.body;
+  const {
+    role,
+    score,
+    nom,
+    prenom,
+    email,
+    pseudonyme,
+    genre,
+    formation,
+    dateNaissance,
+    oldPassword,
+    newPassword,
+    confirmNewPassword
+  } = req.body;
 
-  // 1) Vérifier que le rôle passé est valide
-  const { rows: roleRows } = await pool.query(
-    "SELECT idRole FROM role WHERE nomRole = $1",
-    [role]
-  );
-  if (!roleRows.length) {
-    return res.status(400).json({ error: `Rôle invalide : ${role}` });
-  }
-  const newIdRole = roleRows[0].idrole;
-
-  // 2) Mettre à jour role & score en une seule requête
-  const { rows } = await pool.query(`
-    UPDATE users
-       SET idRole = $1,
-           score  = COALESCE($2, score)
-     WHERE id = $3
-     RETURNING id, nom, prenom, email, COALESCE(score,0) AS score
-  `, [newIdRole, score, id]);
-
-  if (!rows.length) {
-    return res.status(404).json({ error: "Utilisateur non trouvé." });
-  }
-
-  await logAction(id, "Modification", `Mise à jour rôle+points de ${rows[0].email}`);
-  // 3) Renvoyer aussi le `role` en clair
-  res.json({
-    message: "Utilisateur mis à jour avec succès.",
-    user: {
-      ...rows[0],
-      role   // on renvoie la chaîne ‘directeur’ ou autre
+  // 1) Gestion du changement de mot de passe (si présent)
+  if (oldPassword || newPassword || confirmNewPassword) {
+    if (!oldPassword || !newPassword || !confirmNewPassword) {
+      return res.status(400).json({ error: 'Tous les champs de mot de passe sont requis.' });
     }
-  });
+    if (newPassword !== confirmNewPassword) {
+      return res.status(400).json({ error: 'Les nouveaux mots de passe ne correspondent pas.' });
+    }
+    // Récupère le hash existant
+    const { rows: userRows } = await pool.query(
+      'SELECT password_hash FROM users WHERE id = $1',
+      [id]
+    );
+    if (!userRows.length) {
+      return res.status(404).json({ error: 'Utilisateur introuvable.' });
+    }
+    const match = await bcrypt.compare(oldPassword, userRows[0].password_hash);
+    if (!match) {
+      return res.status(400).json({ error: 'Ancien mot de passe incorrect.' });
+    }
+    // Hashe et met à jour
+    const newHash = await bcrypt.hash(newPassword, 12);
+    await pool.query(
+      'UPDATE users SET password_hash = $1 WHERE id = $2',
+      [newHash, id]
+    );
+  }
+
+  // 2) Construction dynamique des autres champs à mettre à jour
+  const sets = [];
+  const values = [];
+  let idx = 1;
+
+  // Si un rôle a été fourni, on le valide et on l'ajoute
+  if (role !== undefined) {
+    const { rows: roleRows } = await pool.query(
+      'SELECT idRole FROM role WHERE nomRole = $1',
+      [role]
+    );
+    if (!roleRows.length) {
+      return res.status(400).json({ error: `Rôle invalide : ${role}` });
+    }
+    sets.push(`idRole = $${idx++}`);
+    values.push(roleRows[0].idRole);
+  }
+
+  // Si un score a été fourni
+  if (score !== undefined) {
+    sets.push(`score = $${idx++}`);
+    values.push(score);
+  }
+
+  // Pour tous les autres champs de profil
+  if (nom !== undefined)          { sets.push(`nom = $${idx++}`); values.push(nom); }
+  if (prenom !== undefined)       { sets.push(`prenom = $${idx++}`); values.push(prenom); }
+  if (email !== undefined)        { sets.push(`email = $${idx++}`); values.push(email); }
+  if (pseudonyme !== undefined)   { sets.push(`pseudonyme = $${idx++}`); values.push(pseudonyme); }
+  if (genre !== undefined)        { sets.push(`genre = $${idx++}`); values.push(genre); }
+  if (formation !== undefined)    { sets.push(`formation = $${idx++}`); values.push(formation); }
+  if (dateNaissance !== undefined){ sets.push(`dateNaissance = $${idx++}`); values.push(dateNaissance); }
+
+  // Si au moins un champ à mettre à jour
+  if (sets.length > 0) {
+    // On ajoute l'id en dernier paramètre
+    values.push(id);
+    const sql = `
+      UPDATE users
+         SET ${sets.join(', ')}
+       WHERE id = $${idx}
+       RETURNING id, nom, prenom, email, pseudonyme, genre, formation, dateNaissance, score
+    `;
+    const { rows } = await pool.query(sql, values);
+    const updated = rows[0];
+    return res.json({
+      message: 'Profil mis à jour avec succès.',
+      user: {
+        ...updated,
+        role   // on renvoie le nom du rôle en clair si fourni
+      }
+    });
+  }
+
+  // Si rien à mettre à jour
+  res.status(400).json({ error: 'Aucune donnée à mettre à jour.' });
 }));
 
+
+app.get('/api/users/:id/password', asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { oldPassword } = req.query;
+
+  if (!oldPassword) {
+    return res.status(400).json({ error: 'oldPassword manquant en query.' });
+  }
+
+  // 1) Récupère le hash stocké
+  const { rows } = await pool.query(
+    'SELECT password FROM users WHERE id = $1',
+    [id]
+  );
+  if (rows.length === 0) {
+    return res.status(404).json({ error: 'Utilisateur non trouvé.' });
+  }
+  const storedHash = rows[0].password;
+
+  // 2) Compare l’ancien mot de passe
+  const match = await bcrypt.compare(oldPassword, storedHash);
+
+  // 3) Renvoyer le résultat
+  res.json({ match });
+}));
+
+
+/**
+ * PATCH /api/users/:id/password
+ * Permet de modifier le mot de passe SI et SEULEMENT SI oldPassword est correct.
+ * Body attendu : { oldPassword, newPassword, confirmNewPassword }
+ */
+app.patch('/api/users/:id/password', asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { oldPassword, newPassword, confirmNewPassword } = req.body;
+
+  // 1) Vérifications de base
+  if (!oldPassword || !newPassword || !confirmNewPassword) {
+    return res.status(400).json({ error: 'oldPassword, newPassword et confirmNewPassword sont obligatoires.' });
+  }
+  if (newPassword !== confirmNewPassword) {
+    return res.status(400).json({ error: 'Les nouveaux mots de passe ne correspondent pas.' });
+  }
+  if (newPassword.length < 8) {
+    return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 8 caractères.' });
+  }
+
+  // 2) Récupère le hash actuel
+  const { rows } = await pool.query(
+    'SELECT password FROM users WHERE id = $1',
+    [id]
+  );
+  if (rows.length === 0) {
+    return res.status(404).json({ error: 'Utilisateur non trouvé.' });
+  }
+  const currentHash = rows[0].password;
+
+  // 3) Vérifie l’ancien mot de passe
+  const valid = await bcrypt.compare(oldPassword, currentHash);
+  if (!valid) {
+    return res.status(400).json({ error: 'Ancien mot de passe incorrect.' });
+  }
+
+  // 4) Hash et mise à jour du nouveau mot de passe
+  const newHash = await bcrypt.hash(newPassword, 10);
+  await pool.query(
+    'UPDATE users SET password = $1 WHERE id = $2',
+    [newHash, id]
+  );
+
+  // 5) Répondre OK
+  res.json({ ok: true, message: 'Mot de passe mis à jour avec succès.' });
+}));
 
 app.get("/api/objets", asyncHandler(async (req, res) => {
   const query = `
