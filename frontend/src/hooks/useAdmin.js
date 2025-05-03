@@ -517,7 +517,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		  }));
 		  setUsers(formatted);
 		} catch (err) {
-		  alert('🚨 fetchUsers erreur : ' + (err.response?.data?.error || err.message));
+		  /* alert('🚨 fetchUsers erreur : ' + (err.response?.data?.error || err.message)); */
 		  const message = err.response?.data?.error || err.message;
 		  toast.error(`Erreur fetchUsers : ${message}`);
 		} finally {
@@ -766,10 +766,10 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 
 	// Ouvre la modal pour ajouter un utilisateur
 	const handleAddUser = () => {
-		alert('🔔 handleAddUser déclenché'); 
+		/* alert('🔔 handleAddUser déclenché');  */
 		setSelectedUser(null);
 		setUserFormData({ login: '', email: '', role: 'eleve', points: 0, password: '' });
-		alert('→ userFormData initialisé, showUserModal=true');
+		/* alert('→ userFormData initialisé, showUserModal=true'); */
 		setShowUserModal(true);
 	};
 
@@ -798,14 +798,14 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 	// Fonction pour gérer la soumission du formulaire utilisateur
 	const handleUserSubmit = useCallback(async e => {
 		e.preventDefault();
-		alert('🔔 handleUserSubmit start');
+		/* alert('🔔 handleUserSubmit start'); */
 		// Toujours afficher les données du formulaire  
-		alert('→ Données envoyées : ' + JSON.stringify(userFormData));
+		/* alert('→ Données envoyées : ' + JSON.stringify(userFormData)); */
 	  
 		try {
 		  if (selectedUser) {
 			// --- MODIFICATION D’UN UTILISATEUR EXISTANT ---
-			alert('ℹ️ Modification d’un utilisateur existant');
+			/* alert('ℹ️ Modification d’un utilisateur existant'); */
 			if (userFormData.role === selectedUser.role) {
 			  // mise à jour du score seul
 			  const increment = userFormData.points - selectedUser.points;
@@ -813,7 +813,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 				`/api/users/${selectedUser.id}/score`,
 				{ increment }
 			  );
-			  alert('✅ Utilisateur modifié avec succès (score)');        
+			  /* alert('✅ Utilisateur modifié avec succès (score)');    */     
 			  setUsers(users.map(u =>
 				u.id === selectedUser.id
 				  ? { ...u, points: data.score }
@@ -828,7 +828,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 				  score: userFormData.points
 				}
 			  );
-			  alert('✅ Utilisateur modifié avec succès (rôle+score)');
+			  /* alert('✅ Utilisateur modifié avec succès (rôle+score)'); */
 			  setUsers(users.map(u =>
 				u.id === selectedUser.id
 				  ? { ...u, role: data.user.role, points: data.user.score }
@@ -837,7 +837,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 			}
 		  } else {
 			// --- CRÉATION D’UN NOUVEL UTILISATEUR ---
-			alert('ℹ️ Création d’un nouvel utilisateur');
+			/* alert('ℹ️ Création d’un nouvel utilisateur'); */
 			const { data } = await axios.post('/api/users', {
 			  nom:         userFormData.login,
 			  prenom:      userFormData.login,   // ou champ prénom séparé si dispo
@@ -849,16 +849,16 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 			  formation:   'inconnue',           // ajustez  
 			  dateNaissance: '1970-01-01'        // ajustez  
 			});
-			alert('✅ Utilisateur créé, id=' + data.user.id);
+			/* alert('✅ Utilisateur créé, id=' + data.user.id); */
 			// on rafraîchit et on reload pour voir le nouveau
 			await fetchUsers();
-			alert('→ fetchUsers terminé');
+			/* alert('→ fetchUsers terminé'); */
 			window.location.reload();
 		  }
 	  
 		  setShowUserModal(false);
 		} catch (err) {
-		  alert('🚨 handleUserSubmit erreur : ' + (err.response?.data?.error || err.message));
+		  /* alert('🚨 handleUserSubmit erreur : ' + (err.response?.data?.error || err.message)); */
 		  toast.error(`Erreur : ${err.response?.data?.error || err.message}`);
 		}
 	  }, [selectedUser, userFormData, users, currentUser, navigate]);

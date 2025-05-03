@@ -112,7 +112,7 @@ function AdminPage() {
             <StatLabel>Utilisateurs Total</StatLabel>
           </StatCard>
           <StatCard>
-            <StatValue>{objects.filter(obj => obj.status === 'Actif' || obj.status === 'Allumé').length}</StatValue>
+            <StatValue>{objects.filter(obj =>['Automatique', 'allumé', 'Manuel'].includes(obj.status)).length}</StatValue>
             <StatLabel>Objets Actifs</StatLabel>
           </StatCard>
           <StatCard>
