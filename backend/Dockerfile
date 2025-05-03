@@ -5,13 +5,15 @@ FROM node:18
 WORKDIR /app
 
 # Copier les fichiers package.json et package-lock.json
-COPY package*.json ./
+#V1 : COPY package*.json ./
+COPY ./backend/package*.json ./
 
 # Installer les dépendances
 RUN npm install
 
 # Copier tout le reste du code
-COPY . .
+# V1 : COPY . .
+COPY ./backend ./
 
 # Exposer le port sur lequel l'application va écouter
 EXPOSE 5001
