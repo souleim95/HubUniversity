@@ -27,6 +27,9 @@ export const ObjectHeader = styled.div`
     justify-content: center;
     text-align: center;
     gap: 10px;
+    word-break: break-word;
+overflow-wrap: break-word;
+
   }
 `;
 
@@ -41,6 +44,9 @@ export const ObjectControls = styled.div`
   @media (max-width: 480px) {
     flex-direction: column;
     align-items: stretch;
+    word-break: break-word;
+overflow-wrap: break-word;
+
   }
 `;
 
@@ -63,6 +69,8 @@ export const ControlButton = styled.button`
     width: 100%;
     padding: 10px;
     font-size: 1rem;
+    margin: 0 0 10px 0;
+
   }
 `;
 

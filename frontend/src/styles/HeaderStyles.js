@@ -23,6 +23,7 @@ export const HeaderContainer = styled.header`
     flex-direction: column;
     padding: 6px 10px;
     gap: 6px;
+    top: ${props => props.isVisible ? '-165px' : '-300px'};
   }
 `;
 
