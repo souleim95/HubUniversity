@@ -1021,7 +1021,6 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		  setShowDeleteObjectModal(false);
 		  setSelectedItemToDelete(null);
 		}
-		Navigate
 	  }, [selectedItemToDelete, objects]);
 	  
 
