@@ -223,18 +223,6 @@ function GestionPage() {
 
   return (
     <AdminContainer>
-      <ToastContainer 
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
-
       <AdminHeader>
         <AdminTitle style={{ color: '#f8f9fa' }}>Gestion des Objets Connectés</AdminTitle>
         <AdminSubtitle style={{ color: '#f8f9fa' }}>Gestion des objets, des réservations de salles et des alertes</AdminSubtitle>

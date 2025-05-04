@@ -445,44 +445,62 @@ function AdminPage() {
             </SectionHeader>
 
             <Grid>
-              {/* Alertes en cours */}
-              <Card style={{ gridColumn: 'span 2' }}>
-                <CardTitle>Alertes Actives</CardTitle>
-                {alerts.filter(alert => alert.type === 'alert' && alert.status === 'pending').map(alert => (
-                  <AlertBanner key={alert.id} type={alert.priority === 'high' ? 'error' : 'warning'}>
-                    <FaExclamationTriangle />
-                    <div>
-                      <strong>{alert.title}</strong>
-                      <div style={{ fontSize: '0.875rem', opacity: 0.8 }}>{alert.message}</div>
-                      <div style={{ fontSize: '0.75rem', marginTop: '5px' }}>
-                        {new Date(alert.timestamp).toLocaleString()}
-                      </div>
-                    </div>
-                    <ButtonGroup>
-                      <SecondaryButton onClick={() => {
-                        setAlerts(alerts.map(a => 
-                          a.id === alert.id ? { ...a, status: 'resolved' } : a
-                        ));
-                        toast.success('Alerte marquée comme résolue');
-                      }}>
-                        Résoudre
-                      </SecondaryButton>
-                      <PrimaryButton onClick={() => handleViewObject(alert.objectId)}>
-                        Voir l'objet
-                      </PrimaryButton>
-                    </ButtonGroup>
-                  </AlertBanner>
-                ))}
-                {alerts.filter(alert => alert.type === 'alert' && alert.status === 'pending').length === 0 && (
-                  <AlertBanner type="success">
-                    <FaCheck />
-                    <div>
-                      <strong>Aucune alerte active</strong>
-                      <div style={{ fontSize: '0.875rem', opacity: 0.8 }}>Tous les systèmes fonctionnent normalement</div>
-                    </div>
-                  </AlertBanner>
-                )}
-              </Card>
+  {/* Alertes en cours */}
+  <Card style={{ gridColumn: 'span 2' }}>
+    <CardTitle>Alertes Actives</CardTitle>
+
+    {alerts.length > 0 ? (
+      alerts.map(alert => (
+        <AlertBanner
+          key={alert.idAlerte}
+          type="error" // ou selon une logique de priorité si tu en ajoutes plus tard
+        >
+          <FaExclamationTriangle />
+          <div>
+            {/* date de création */}
+            <div style={{ fontSize: '0.75rem', marginBottom: '4px', opacity: 0.7 }}>
+              {new Date(alert.created_at).toLocaleString()}
+            </div>
+            {/* message stocké en BDD */}
+            <div style={{ fontSize: '0.875rem' }}>
+              {alert.message}
+            </div>
+          </div>
+
+          <ButtonGroup>
+            <SecondaryButton
+              onClick={() => {
+                // Si tu veux marquer « résolu » en front uniquement :
+                setAlerts(alerts.map(a =>
+                  a.idAlerte === alert.idAlerte
+                    ? { ...a, resolved: true }
+                    : a
+                ));
+                toast.success('Alerte marquée comme résolue');
+              }}
+            >
+              Résoudre
+            </SecondaryButton>
+            {/* si tu as un objet lié, sinon tu peux enlever ce bouton */}
+            <PrimaryButton onClick={() => handleViewObject(alert.idSalle)}>
+              Voir la salle
+            </PrimaryButton>
+          </ButtonGroup>
+        </AlertBanner>
+      ))
+    ) : (
+      <AlertBanner type="success">
+        <FaCheck />
+        <div>
+          <strong>Aucune alerte active</strong>
+          <div style={{ fontSize: '0.875rem', opacity: 0.8 }}>
+            Tous les systèmes fonctionnent normalement
+          </div>
+        </div>
+      </AlertBanner>
+    )}
+  </Card>
+
 
               {/* Demandes des gestionnaires */}
               <Card style={{ gridColumn: 'span 2' }}>

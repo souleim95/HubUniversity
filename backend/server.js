@@ -1364,40 +1364,6 @@ app.patch("/api/:resource/:id", asyncHandler(async (req, res, next) => {
   }
 }));
 
-// POST générique (sauf "salle")
-app.post("/api/:resource", asyncHandler(async (req, res, next) => {
-  const { resource } = req.params;
-
-  const cfg = resources[resource];
-  if (!cfg) {
-    return res.status(400).json({ error: `Ressource inconnue : ${resource}` });
-  }
-
-  // On ne conserve que les champs autorisés pour l'insertion
-  const cols = Object.keys(req.body).filter(key => cfg.fields.includes(key));
-  if (cols.length === 0) {
-    return res.status(400).json({ error: 'Aucun champ à insérer' });
-  }
-
-  const colNames    = cols.join(", ");
-  const placeholders = cols.map((_, i) => `$${i+1}`).join(", ");
-  const values       = cols.map(col => req.body[col]);
-
-  const sql = `
-    INSERT INTO ${resource} (${colNames})
-    VALUES (${placeholders})
-    RETURNING *;
-  `;
-
-  console.log("→ POST  /api/:resource", { resource });
-  console.log("   SQL:", sql.trim());
-  console.log("   values:", values);
-
-  const result = await pool.query(sql, values);
-  res.status(201).json(result.rows[0]);
-}));
-
-
 // == Alertes ==
 // GET  /api/alertes          → liste toutes les alertes
 // POST /api/alerte           → créer une alerte
@@ -1413,15 +1379,23 @@ app.get("/api/alertes", asyncHandler(async (req, res) => {
 }));
 
 app.post("/api/alerte", asyncHandler(async (req, res) => {
-  const { message, idSalle } = req.body;
-  const result = await pool.query(
-    `INSERT INTO alerte (message, idSalle)
-     VALUES ($1, $2)
-     RETURNING idAlerte, message, idSalle, created_at`,
-    [message, idSalle]
-  );
-  res.status(201).json(result.rows[0]);
+  console.log("🔔 Reçu POST /api/alerte :", req.body);
+  try {
+    console.log("🔔 Reçu POST /api/alerte :", req.body);
+    const { message } = req.body;
+    const result = await pool.query(
+      `INSERT INTO alerte (message)
+       VALUES ($1)
+       RETURNING idAlerte, message, created_at`,
+      [message]
+    );
+    return res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error("🔥 Erreur POST /api/alerte →", err);  // <— ajoute bien err ici
+    return res.status(500).json({ error: err.message });
+  }
 }));
+
 
 app.delete("/api/alerte/:id", asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -1476,6 +1450,38 @@ app.delete("/api/reservation/:id", asyncHandler(async (req, res) => {
   res.json({ message: 'Réservation supprimée', reservation: result.rows[0] });
 }));
 
+
+app.post("/api/:resource", asyncHandler(async (req, res, next) => {
+  const { resource } = req.params;
+
+  const cfg = resources[resource];
+  if (!cfg) {
+    return res.status(400).json({ error: `Ressource inconnue : ${resource}` });
+  }
+
+  // On ne conserve que les champs autorisés pour l'insertion
+  const cols = Object.keys(req.body).filter(key => cfg.fields.includes(key));
+  if (cols.length === 0) {
+    return res.status(400).json({ error: 'Aucun champ à insérer' });
+  }
+
+  const colNames    = cols.join(", ");
+  const placeholders = cols.map((_, i) => `$${i+1}`).join(", ");
+  const values       = cols.map(col => req.body[col]);
+
+  const sql = `
+    INSERT INTO ${resource} (${colNames})
+    VALUES (${placeholders})
+    RETURNING *;
+  `;
+
+  console.log("→ POST  /api/:resource", { resource });
+  console.log("   SQL:", sql.trim());
+  console.log("   values:", values);
+
+  const result = await pool.query(sql, values);
+  res.status(201).json(result.rows[0]);
+}));
 
 
 

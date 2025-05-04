@@ -279,7 +279,7 @@ CREATE TABLE IF NOT EXISTS alarme(
 
 CREATE TABLE IF NOT EXISTS alerte(
   idAlerte SERIAL PRIMARY KEY, 
-  message VARCHAR(50), 
+  message VARCHAR(200), 
   idSalle INTEGER REFERENCES salle(idSalle) ON DELETE CASCADE, 
   created_at TIMESTAMP DEFAULT NOW()
 );

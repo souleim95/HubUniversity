@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 import Header from './components/Header';
+import { ToastContainer }             from 'react-toastify';
 import HeroSection from './components/HeroSection';
 import CampusMap from './components/CampusMap';
 import Faq from './components/Faq';
@@ -68,6 +69,17 @@ const ThemedApp = () => {
 export default function App() {
   return (
     <PlatformProvider>
+       <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
       <ThemedApp />
     </PlatformProvider>
   );

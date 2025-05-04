@@ -2,6 +2,7 @@
 import { useState, useEffect} from 'react';
 import { toast } from 'react-toastify';
 import { dataObjects, categories, equipments } from '../data/projectData';
+import axios from 'axios';
 
 // Configuration des types d'objets autorisés par catégorie
 export const categoryToTypeMap = {
@@ -66,6 +67,33 @@ export const useGestionState = () => {
         energyConsumption: [],
         objectUsage: [],
     });
+
+    useEffect(() => {
+      axios.get('/api/alertes')
+        .then(({ data }) => setAlerts(data))
+        .catch(console.error);
+    }, []);
+
+    // Ta fonction pour créer une nouvelle alerte
+ // useGestionState.js
+
+ const handleCreateAlert = async (object) => {
+  try {
+    const objetName = object.name;
+    const message   = `Une alerte a été déclenchée pour l'objet ${objetName}`;
+    
+    // Envoi uniquement le message
+    const { data: newAlert } = await axios.post('http://localhost:5001/api/alerte', { message });
+
+    // Met à jour la liste en front
+    setAlerts(prev => [newAlert, ...prev]);
+
+    toast.success(`Alerte créée pour ${objetName}`);
+  } catch (err) {
+    console.error('Erreur création alerte :', err);
+    toast.error(`Échec de la création de l'alerte pour ${object.name}`);
+  }
+};
 
     // Générateur de rapports et statistiques
     const generateReports = (objectsToAnalyze) => {
@@ -329,22 +357,22 @@ export const useGestionState = () => {
         });
     };
     
-    // --------- Gestion des alertes ---------
-    const handleCreateAlert = (object) => {
-        // Créer une nouvelle alerte pour l'objet
-        const newAlert = {
-            id: Date.now(), // Un identifiant unique pour l'alerte
-            message: `Problème détecté pour ${object.name}, veuillez contacter un administrateur.`, // Message de l'alerte
-            objectId: object.id,
-        };
+    // // --------- Gestion des alertes ---------
+    // const handleCreateAlert = (object) => {
+    //     // Créer une nouvelle alerte pour l'objet
+    //     const newAlert = {
+    //         id: Date.now(), // Un identifiant unique pour l'alerte
+    //         message: `Problème détecté pour ${object.name}, veuillez contacter un administrateur.`, // Message de l'alerte
+    //         objectId: object.id,
+    //     };
         
-        // Ajouter l'alerte à l'état des alertes
-        setAlerts(prevAlerts => [...prevAlerts, newAlert]);
+    //     // Ajouter l'alerte à l'état des alertes
+    //     setAlerts(prevAlerts => [...prevAlerts, newAlert]);
         
-        // Optionnel : afficher une alerte en pop-up
-        setAlertMessage(`L'alerte pour l'objet ${object.name} a été créée.`);
-        setShowAlert(true);
-    };
+    //     // Optionnel : afficher une alerte en pop-up
+    //     setAlertMessage(`L'alerte pour l'objet ${object.name} a été créée.`);
+    //     setShowAlert(true);
+    // };
     
     const handleAlertAction = (alert) => {
         setSelectedAlert(alert);

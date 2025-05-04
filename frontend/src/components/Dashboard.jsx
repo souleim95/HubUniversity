@@ -460,12 +460,6 @@ const Dashboard = () => {
     return () => clearInterval(autoModeInterval);
   }, [setRoomEquipments]);
 
-  
-  if (!isLoggedIn) {
-    //renvoie vers la page d'acceuil
-    return <Navigate to="/" replace />;
-  }
-  
   return (
     <div style={{ position: 'relative', minHeight: '100vh', width: '100%' }}>
       <bodyDashboard 

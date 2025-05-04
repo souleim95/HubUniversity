@@ -35,7 +35,7 @@ function CampusMap () {
     position, setPosition,
     isDragging, setIsDragging,
     dragStart, setDragStart,
-    navigate, isLoggedIn,
+    navigate,
     handleCardClick, handleCardDoubleClick, handleMapMouseDown, handleMapMouseMove, handleMapMouseUp,
     getObjectImage, getObjectPosition, getObjectsByBuilding, getObjectIcon
   } = useCampusMap();

@@ -425,29 +425,35 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		dateTo: ''
 	});
 	// Ajout des états pour les alertes
-	const [alerts, setAlerts] = useState([
-		{
-			id: 1,
-			type: 'alert',
-			title: 'Salle B101 en surchauffe',
-			message: 'La température dépasse le seuil critique',
-			objectId: 'obj_1',
-			priority: 'high',
-			timestamp: '2024-03-20T10:30:00',
-			status: 'pending'
-		},
-		{
-			id: 2,
-			type: 'request',
-			title: 'Demande de suppression',
-			message: 'Le gestionnaire demande la suppression de l\'objet PC-203',
-			objectId: 'obj_2',
-			priority: 'medium',
-			timestamp: '2024-03-20T09:15:00',
-			status: 'pending',
-			requester: 'gestionnaire1'
+	const [alerts, setAlerts] = useState([]);
+
+	useEffect(() => {
+		const fetchAlerts = async () => {
+		  try {
+			const { data } = await axios.get('/api/alertes');
+			console.log('🛎️ alertes reçues :', data);
+			setAlerts(data);
+		  } catch (err) {
+			console.error('Erreur chargement alertes :', err);
+			toast.error("Impossible de charger les alertes");
+		  }
+		};
+		fetchAlerts();
+	  }, []);
+
+	  const resolveAlert = async (alerte) => {
+		try {
+		await axios.delete(`http://localhost:5001/api/alerte/${alerte.idalerte}`);
+		// drop it from local state
+		setAlerts(current => current.filter(a => a.idalerte !== alerte.idalerte));
+		toast.success(`Alerte ${alerte.idalerte} supprimée`);
+		} catch (err) {
+		console.error('Erreur suppression alerte :', err);
+		toast.error("Impossible de supprimer l'alerte");
 		}
-	]);
+	};
+
+
 
 	// États pour les modaux de confirmation
 	const [showDeleteUserModal, setShowDeleteUserModal] = useState(false);
@@ -635,6 +641,8 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 			};
 		});
 
+
+		
 		// Activité utilisateurs basée sur les données réelles
 		const userActivityData = days.map(date => {
 			// Calculer le nombre d'utilisateurs actifs en fonction des connexions réelles
@@ -1347,6 +1355,6 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 	handlePasswordUpdate,handleViewObject,
 	applyValidationMode, applyTheme,
 	resetColors, OBJECT_STATUS,
-	getObjectStatus, countObjectsByStatus, handleRoomEquipment
+	getObjectStatus, countObjectsByStatus, handleRoomEquipment, resolveAlert
   };	
 };
