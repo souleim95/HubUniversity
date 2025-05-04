@@ -17,7 +17,7 @@
 
 // Import des dépendances et composants nécessaires
 import React, { useState } from 'react';
-import { dataObjects, categories } from '../data/projectData';
+import { categories } from '../data/projectData';
 import {
   ResponsiveContainer,
   LineChart,
@@ -329,7 +329,7 @@ function GestionPage() {
           <tbody>
             {alerts.map((alert) => (
               <TableRow key={alert.id}>
-                <TableCell>{dataObjects.find(object => object.id === alert.objectId)?.name}</TableCell>
+                <TableCell>{allObjects.find(o => o.id === alert.idSalle || o.id === alert.idObjet)?.name || '—'}</TableCell>
                 <TableCell>{alert.message}</TableCell>
               </TableRow>
             ))}
@@ -567,13 +567,13 @@ function GestionPage() {
                 </Select>
               </FormGroup>
               <FormGroup>
-                <Label>Type d’objet</Label>
+                <Label>Type d'objet</Label>
                 <Select
                   value={objectFormData.type}
                   onChange={(e) => setObjectFormData({ ...objectFormData, type: e.target.value })}
                 >
                   {(categoryToTypeMap[objectFormData.category] || []).map((type) => (
-                    <option key={type} value={type}>{type}</option>
+                    <option key={type} value={type}>{type.charAt(0).toUpperCase() + type.slice(1)}</option>
                   ))}
                 </Select>
               </FormGroup>
@@ -637,7 +637,7 @@ function GestionPage() {
                   value={reservationFormData.room}
                   onChange={(e) => setReservationFormData({ ...reservationFormData, room: e.target.value })}
                 >
-                  {allObjects.filter(obj => obj.type === 'Salle').map((object) => (
+                  {allObjects.filter(obj => obj.type.toLowerCase() === 'salle').map((object) => (
                     <option key={object.id} value={object.name}>{object.name}</option>
                   ))}
                 </Select>

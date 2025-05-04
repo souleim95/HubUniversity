@@ -1,14 +1,14 @@
 // Import des dépendances et composants nécessaires
 import { useState, useEffect} from 'react';
 import { toast } from 'react-toastify';
-import { dataObjects, categories, equipments } from '../data/projectData';
+import { categories, equipments } from '../data/projectData';
 import axios from 'axios';
 
 // Configuration des types d'objets autorisés par catégorie
 export const categoryToTypeMap = {
-  salles: ['Salle', 'Chauffage', 'Éclairage', 'Audio', 'Ventilation'],
-  ecole: ['Caméra', 'Porte', 'Éclairage', 'Panneau', 'Securite'],
-  parking: ['Caméra', 'Capteur', 'Éclairage', 'Panneau', 'Borne']
+  salles: ['salle', 'chauffage', 'eclairage', 'sysaudio', 'ventilation', 'store', 'projecteur'],
+  ecole: ['camera', 'porte', 'eclairage', 'panneau', 'capteur', 'grille', 'alarme'],
+  parking: ['camera', 'capteur', 'eclairage', 'panneau', 'borne', 'barriere']
 };
 
 export const useGestionState = () => {
@@ -67,6 +67,42 @@ export const useGestionState = () => {
         energyConsumption: [],
         objectUsage: [],
     });
+    
+    useEffect(() => {
+      const fetchAll = async () => {
+        try {
+          const { data } = await axios.get('/api/objets');
+          // renommer nom→name et etat→status
+          const mapped = data.map(o => ({
+            id:     o.id,
+            name:   o.nom,
+            type:   o.type,
+            status: o.etat,
+            // Ajouter tous les autres champs potentiellement utiles
+            settings: o.settings || {},
+            location: o.location || '',
+            description: o.description || ''
+          }));
+          setAllObjects(mapped);
+          
+          // Initialiser la liste filtrée pour la catégorie courante
+          const initial = mapped.filter(obj => 
+            categoryToTypeMap[selectedCategory] && 
+            categoryToTypeMap[selectedCategory].includes(obj.type.toLowerCase())
+          );
+          setObjects(initial);
+          
+          console.log("Objets récupérés:", mapped);
+          console.log("Objets filtrés pour", selectedCategory, ":", initial);
+          
+        } catch (err) {
+          console.error('Erreur chargement objets :', err);
+          toast.error("Impossible de charger les objets depuis la BDD");
+        }
+      };
+      fetchAll();
+    }, []); // une seule fois au montage
+    
 
     useEffect(() => {
       axios.get('/api/alertes')
@@ -82,8 +118,11 @@ export const useGestionState = () => {
     const objetName = object.name;
     const message   = `Une alerte a été déclenchée pour l'objet ${objetName}`;
     
-    // Envoi uniquement le message
-    const { data: newAlert } = await axios.post('http://localhost:5001/api/alerte', { message });
+    // Envoyer le message et l'ID de l'objet
+    const { data: newAlert } = await axios.post('http://localhost:5001/api/alerte', { 
+      message, 
+      idObjet: object.id // S'assurer que l'ID de l'objet est envoyé
+    });
 
     // Met à jour la liste en front
     setAlerts(prev => [newAlert, ...prev]);
@@ -126,16 +165,23 @@ export const useGestionState = () => {
           dates.map(date => ({
             date,
             value: Math.round(objs.reduce((sum, obj) => 
-              sum + (obj.status === 'active' ? 50 + Math.random() * 20 : 20)
+              sum + (obj.status === 'active' || obj.status === 'Actif' ? 50 + Math.random() * 20 : 20)
             , 0))
           }));
       
         const dates = getFilteredDates(timeFilter);
         
-        const salles = objectsToAnalyze.filter(obj => categories.salles.items.includes(obj.id));
-        const ecole = objectsToAnalyze.filter(obj => categories.ecole.items.includes(obj.id));
-        const parking = objectsToAnalyze.filter(obj => categories.parking.items.includes(obj.id));
-      
+        // Filtrer par type en tenant compte de la casse
+        const salles = objectsToAnalyze.filter(obj => 
+            categoryToTypeMap.salles.some(type => obj.type.toLowerCase() === type)
+        );
+        const ecole = objectsToAnalyze.filter(obj => 
+            categoryToTypeMap.ecole.some(type => obj.type.toLowerCase() === type)
+        );
+        const parking = objectsToAnalyze.filter(obj => 
+            categoryToTypeMap.parking.some(type => obj.type.toLowerCase() === type)
+        );
+
         setReports({
           total: generateEnergyData(objectsToAnalyze, dates),
           salles: generateEnergyData(salles, dates),
@@ -153,7 +199,7 @@ export const useGestionState = () => {
               }
               updatedHistories[obj.id].push({
                 date: new Date().toISOString().split('T')[0],
-                value: obj.status === 'active' ? 50 : 20
+                value: obj.status === 'active' || obj.status === 'Actif' ? 50 : 20
               });
             });
           
@@ -192,13 +238,23 @@ export const useGestionState = () => {
     };
 
     const handleEditObject = (object) => {
+        // Extraire le numéro de l'ID (qui peut être un nombre ou une chaîne)
+        let numero = '';
+        if (object.id) {
+            // Convertir l'ID en chaîne si c'est un nombre
+            const idStr = String(object.id);
+            // Extraire uniquement les chiffres si possible
+            const match = idStr.match(/\d+/);
+            numero = match ? match[0] : idStr;
+        }
+        
         setObjectFormData({
             name: object.name,
             description: object.description || '',
             status: object.status,
             type: object.type,
             category: selectedCategory,
-            numero: object.id.replace(/^\D+/g, ''), // enlève le préfixe type "salle"
+            numero: numero,
             targetTemp: object.settings?.temperature || '',
             brightnessSchedule: object.settings?.startTime && object.settings?.endTime
             ? `${object.settings.startTime}-${object.settings.endTime}`
@@ -217,7 +273,7 @@ export const useGestionState = () => {
     };
 
     // Gestionnaire pour la soumission du formulaire d'objet
-    const handleObjectSubmit = (e) => {
+    const handleObjectSubmit = async (e) => {
         e.preventDefault();
         
         if (!isNameUnique(objectFormData.name, allObjects, editingObject?.id)) {
@@ -230,86 +286,99 @@ export const useGestionState = () => {
             parking: 'parking'
         };
         
-        const prefix = prefixMap[objectFormData.category] || 'obj';
-        const fullId = `${prefix}${objectFormData.numero}`;
-        
-        if (!editingObject) {
-            const idExists =
-            dataObjects.some((obj) => obj.id === fullId) ||
-            allObjects.some((obj) => obj.id === fullId);
-        
-            if (idExists) {
-            setAlertMessage("Cet identifiant existe déjà ! Choisissez un autre numéro.");
-            setShowAlert(true);
-            return;
+        try {
+            // Générer un ID en fonction du formulaire
+            let newId;
+            let updatedAllObjects = [...allObjects]; // Créer une copie pour travailler dessus
+            
+            if (editingObject) {
+                // Pour la modification, conserver l'ID numérique existant si c'est un nombre
+                newId = typeof editingObject.id === 'number' ? editingObject.id : `${prefixMap[objectFormData.category] || 'obj'}${objectFormData.numero}`;
+                
+                // TODO: Implémenter l'édition via l'API
+                // Pour l'instant, nous utilisons la mise à jour locale
+                const newObject = {
+                    id: newId,
+                    name: objectFormData.name,
+                    description: objectFormData.description || '',
+                    type: objectFormData.type.toLowerCase(),
+                    status: objectFormData.status,
+                    location: objectFormData.location || '',
+                    settings: {
+                        temperature: objectFormData.targetTemp || null,
+                        startTime: objectFormData.brightnessSchedule?.split('-')[0] || '',
+                        endTime: objectFormData.brightnessSchedule?.split('-')[1] || ''
+                    }
+                };
+                
+                updatedAllObjects = allObjects.filter(obj => obj.id !== editingObject.id);
+                updatedAllObjects.push(newObject);
+                
+            } else {
+                // Pour un nouvel objet, envoyer la requête à l'API
+                const { data } = await axios.post('/api/objets', {
+                    type: objectFormData.type.toLowerCase(),
+                    nom: objectFormData.name
+                });
+                
+                console.log("Objet créé dans la base de données:", data);
+                
+                // Créer un objet complet avec les données de la réponse et le reste des informations du formulaire
+                const newObject = {
+                    id: data.id,
+                    name: data.nom,
+                    type: objectFormData.type.toLowerCase(),
+                    status: 'Actif', // Statut par défaut pour un nouvel objet
+                    description: objectFormData.description || '',
+                    location: objectFormData.location || '',
+                    settings: {
+                        temperature: objectFormData.targetTemp || null,
+                        startTime: objectFormData.brightnessSchedule?.split('-')[0] || '',
+                        endTime: objectFormData.brightnessSchedule?.split('-')[1] || ''
+                    }
+                };
+                
+                // Ajouter le nouvel objet à la liste des objets
+                updatedAllObjects = [...allObjects, newObject];
+                toast.success(`Objet ${newObject.name} créé avec succès`);
             }
-        }
-        
-        const newObject = {
-            id: fullId,
-            name: objectFormData.name,
-            description: objectFormData.description || '',
-            type: objectFormData.type,
-            status: objectFormData.status,
-            location: fullId,
-            ...(objectFormData.type === 'Chauffage' && {
-            targetTemp: parseInt(objectFormData.targetTemp) || 0
-            }),
-            ...(objectFormData.type === 'Éclairage' && {
-            schedule: objectFormData.brightnessSchedule || ''
-            }),
-            settings: {
-            temperature: objectFormData.targetTemp || null,
-            startTime: objectFormData.brightnessSchedule?.split('-')[0] || '',
-            endTime: objectFormData.brightnessSchedule?.split('-')[1] || ''
-            }
-        };
-        
-        let updatedAllObjects;
-        if (editingObject) {
-            updatedAllObjects = allObjects.filter(obj => obj.id !== editingObject.id);
-            updatedAllObjects.push(newObject);
-        } else {
-            updatedAllObjects = [...allObjects, newObject];
-        }
-        
-        
-        setAllObjects(updatedAllObjects);
-        
-        const categoryItems = categories[selectedCategory]?.items || [];
-        const updatedFilteredObjects = updatedAllObjects.filter(obj => categoryItems.includes(obj.id));
-        setObjects(updatedFilteredObjects);
+            
+            // Mettre à jour la liste complète des objets
+            setAllObjects(updatedAllObjects);
+            
+            // Filtrer les objets en fonction du type pour la catégorie actuelle
+            const filteredObjects = updatedAllObjects.filter(obj => 
+                categoryToTypeMap[objectFormData.category] && 
+                categoryToTypeMap[objectFormData.category].includes(obj.type.toLowerCase())
+            );
+            setObjects(filteredObjects);
 
-        // 🔁 Mise à jour de la catégorie active si nécessaire
-        const updatedCategory = objectFormData.category;
-        setSelectedCategory(updatedCategory); // <- forcer le passage à cette catégorie
-        
-        setSelectedCategory(updatedCategory); // C’est le useEffect qui fera le reste
+            // Mise à jour de la catégorie active
+            setSelectedCategory(objectFormData.category);
 
-        setShowObjectModal(false);
-        setEditingObject(null);
-        return true; // Indique le succès
+            setShowObjectModal(false);
+            setEditingObject(null);
+            return true; // Indique le succès
+        } catch (error) {
+            console.error("Erreur lors de l'ajout de l'objet:", error);
+            toast.error(`Erreur lors de l'ajout de l'objet: ${error.message}`);
+            return false;
+        }
     };
     
     // Gestionnaire pour les actions sur les alertes
     const handleCategoryChange = (categoryKey) => {
-        const prefixMap = {
-          salles: 'salle',
-          ecole: 'ecole',
-          parking: 'parking'
-        };
+      setSelectedCategory(categoryKey);
+      const types = categoryToTypeMap[categoryKey]; // ex ['salle','chauffage',…]
       
-        setSelectedCategory(categoryKey);
-      
-        const prefix = prefixMap[categoryKey] || '';
-        const categoryItems = categories[categoryKey]?.items || [];
-      
-        const filteredObjects = allObjects.filter(obj =>
-          categoryItems.includes(obj.id) || obj.id.startsWith(prefix)
+      if (types && allObjects.length > 0) {
+        const filtered = allObjects.filter(obj => 
+          types.includes(obj.type.toLowerCase())
         );
-      
-        setObjects(filteredObjects);
-      };
+        setObjects(filtered);
+        console.log(`Changement catégorie vers ${categoryKey}:`, filtered);
+      }
+    };
       
       
       
@@ -394,10 +463,13 @@ export const useGestionState = () => {
     };
       
     const isInefficient = (obj) => {
-        if (obj.type === 'Chauffage') {
+        // Convertir le type en minuscule pour la comparaison
+        const type = obj.type.toLowerCase();
+        
+        if (type === 'chauffage') {
             return parseInt(obj.settings?.temperature) > 24;
         }
-        if (obj.type === 'Éclairage') {
+        if (type === 'eclairage') {
             const [start, end] = [obj.settings?.startTime, obj.settings?.endTime];
             return start === '00:00' && end === '23:59';
         }
@@ -474,54 +546,25 @@ export const useGestionState = () => {
         const count = allObjects.filter(obj => obj.status === 'inactive').length;
         setInactiveCount(count);
       }, [allObjects]);
-
       
-    // Effet pour charger les données initiales
-    useEffect(() => {
-        if (allObjects.length === 0) {
-          // Fusionner dataObjects + équipements
-          const baseObjects = [...dataObjects];
-      
-          Object.entries(equipments).forEach(([roomId, roomEquipments]) => {
-            roomEquipments.forEach(equipment => {
-              baseObjects.push({
-                ...equipment,
-                roomId,
-                settings: {
-                  temperature: equipment.targetTemp || null,
-                  startTime: equipment.schedule?.split('-')[0] || '',
-                  endTime: equipment.schedule?.split('-')[1] || ''
-                }
-              });
-            });
-          });
-      
-          setAllObjects(baseObjects); // Stockage final
-        }
-      }, [allObjects.length]);
        // 👈 ce useEffect ne tourne qu'une fois au montage
     
-       useEffect(() => {
-        const prefixMap = {
-          salles: 'salle',
-          ecole: 'ecole',
-          parking: 'parking'
-        };
-      
-        const prefix = prefixMap[selectedCategory] || '';
-      
-        const categoryItems = categories[selectedCategory]?.items || [];
-      
+    useEffect(() => {
+      // Filtrage basé uniquement sur les types d'objets définis dans categoryToTypeMap
+      // et non plus sur les items prédéfinis dans les catégories
+      if (allObjects.length > 0) {
         const filteredObjects = allObjects.filter(object =>
-          categoryItems.includes(object.id) || object.id.startsWith(prefix)
+          categoryToTypeMap[selectedCategory] && 
+          categoryToTypeMap[selectedCategory].includes(object.type.toLowerCase())
         );
-      
+        
+        console.log("Objets filtrés après changement de catégorie:", filteredObjects);
         setObjects(filteredObjects);
-      }, [selectedCategory, allObjects]);
+      }
+    }, [selectedCategory, allObjects]);
       
      // 👈 nouvelle dépendance ici
 
-    // 🔥 Nouveau useEffect pour générer la conso globale de tous les objets
     useEffect(() => {
         if (allObjects.length > 0) {
           generateReports(allObjects);
