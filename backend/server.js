@@ -46,6 +46,14 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: false, // Désactive le SSL
 });
+
+app.use((req, res, next) => {
+  console.log(`\n[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
+  console.log('  Params :', req.params);
+  console.log('  Body   :', req.body);
+  next();
+});
+
 pool.connect()
   .then(() => console.log("✅ Connexion PostgreSQL réussie"))
   .catch(err => console.error("❌ Erreur de connexion à PostgreSQL :", err));
@@ -153,7 +161,7 @@ app.post("/api/users", async (req, res) => {
   try {
     // 1. Vérification du rôle
     const roleResult = await pool.query(
-      "SELECT idRole FROM role WHERE nomRole = $1",
+      "SELECT idRole FROM role WHERE nomRole ILIKE $1",
       [role]
     );
     if (roleResult.rows.length === 0) {
@@ -402,7 +410,7 @@ app.patch("/api/users/:id/score", async (req, res) => {
       // Mettre à jour le rôle dans la base de données
       await pool.query(`
         UPDATE users 
-        SET idrole = (SELECT idrole FROM role WHERE nomrole = $1) 
+        SET idrole = (SELECT idRole FROM role WHERE nomRole ILIKE $1) 
         WHERE id = $2
       `, [newRole, id]);
     }
@@ -490,18 +498,22 @@ app.patch('/api/users/:id', asyncHandler(async (req, res) => {
   const sets = [];
   const values = [];
   let idx = 1;
-
+  console.log('→ Role  0  :', role);
   // Si un rôle a été fourni, on le valide et on l'ajoute
   if (role !== undefined) {
     const { rows: roleRows } = await pool.query(
-      'SELECT idRole FROM role WHERE nomRole = $1',
+      'SELECT idRole FROM role WHERE LOWER(nomRole) = LOWER($1)',
       [role]
     );
+    console.log('→ roleRows :', roleRows);
     if (!roleRows.length) {
       return res.status(400).json({ error: `Rôle invalide : ${role}` });
     }
     sets.push(`idRole = $${idx++}`);
-    values.push(roleRows[0].idRole);
+    values.push(roleRows[0].idrole);
+    console.log('→ Role  4 :', role);
+    console.log('→ Valeurs initiale  :', values);
+
   }
 
   // Si un score a été fourni
@@ -518,7 +530,6 @@ app.patch('/api/users/:id', asyncHandler(async (req, res) => {
   if (genre !== undefined)        { sets.push(`genre = $${idx++}`); values.push(genre); }
   if (formation !== undefined)    { sets.push(`formation = $${idx++}`); values.push(formation); }
   if (dateNaissance !== undefined){ sets.push(`dateNaissance = $${idx++}`); values.push(dateNaissance); }
-
   // Si au moins un champ à mettre à jour
   if (sets.length > 0) {
     // On ajoute l'id en dernier paramètre
@@ -527,9 +538,13 @@ app.patch('/api/users/:id', asyncHandler(async (req, res) => {
       UPDATE users
          SET ${sets.join(', ')}
        WHERE id = $${idx}
-       RETURNING id, nom, prenom, email, pseudonyme, genre, formation, dateNaissance, score
+       RETURNING id, nom, prenom, email, idRole, pseudonyme, genre, formation, dateNaissance, score
     `;
+    console.log('→ SQL Update :', sql);
+    console.log('→ Valeurs finale   :', values);
+    console.log('→ Role  finale :', role);
     const { rows } = await pool.query(sql, values);
+    console.log('← Résultat   :', rows);
     const updated = rows[0];
     return res.json({
       message: 'Profil mis à jour avec succès.',

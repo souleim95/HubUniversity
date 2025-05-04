@@ -11,7 +11,7 @@ COPY package*.json ./
 RUN npm install
 
 # Copier tout le reste du code
-COPY . .
+COPY . . 
 
 # Exposer le port sur lequel l'application va écouter
 EXPOSE 5001
