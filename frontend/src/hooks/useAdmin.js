@@ -1001,26 +1001,29 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		}
 	};
 
-	const confirmDeleteObject = () => {
-		// Supprimer l'objet
-		setObjects(objects.filter(obj => obj.id !== selectedItemToDelete));
-		
-		// Afficher le toast de succès
-		toast.success('Objet supprimé avec succès');
-
-		// Mettre à jour le statut de l'alerte si elle existe
-		if (selectedAlertToApprove) {
-			setAlerts(alerts.map(a => 
-				a.id === selectedAlertToApprove.id ? { ...a, status: 'approved' } : a
-				));
-			toast.success('Demande de suppression approuvée');
+	const confirmDeleteObject = useCallback(async () => {
+		try {
+		  // 1) On récupère l'objet à supprimer (pour connaître son type)
+		  const obj = objects.find(o => o.id === selectedItemToDelete);
+		  if (!obj) throw new Error("Objet introuvable");
+	  
+		  // 2) On appelle l'API DELETE sur /api/{type}/{id}
+		  await axios.delete(`/api/${obj.type}/${obj.id}`);
+	  
+		  // 3) On met à jour le state pour retirer l'objet
+		  setObjects(prev => prev.filter(o => o.id !== obj.id));
+		  toast.success('Objet supprimé avec succès');
+		} catch (err) {
+		  console.error(err);
+		  toast.error('Échec de la suppression : ' + (err.response?.data?.error || err.message));
+		} finally {
+		  // 4) On ferme la modal et on réinitialise la sélection
+		  setShowDeleteObjectModal(false);
+		  setSelectedItemToDelete(null);
 		}
-
-		// Réinitialiser les états
-		setShowDeleteObjectModal(false);
-		setSelectedItemToDelete(null);
-		setSelectedAlertToApprove(null);
-	};
+		Navigate
+	  }, [selectedItemToDelete, objects]);
+	  
 
 	// Enregistre un nouvel objet ou modifie un objet existant
 	const handleObjectSubmit = async (e) => {
