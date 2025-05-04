@@ -826,6 +826,9 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 				  ? { ...u, points: data.score }
 				  : u
 			  ));
+			  sessionStorage.setItem('points',  data.score);
+			  window.location.reload() 
+			  navigate('/admin');
 			} else {
 			  // mise à jour rôle + score
 			  const { data } = await axios.patch(
@@ -841,6 +844,14 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 				  ? { ...u, role: data.user.role, points: data.user.score }
 				  : u
 			  ));
+			  sessionStorage.setItem('prenom', data.user.prenom);
+			  sessionStorage.setItem('pseudo',  data.user.pseudonyme);
+			  sessionStorage.setItem('role',    data.user.role);
+			  sessionStorage.setItem('points',  data.user.score);
+			  window.location.reload()
+			  navigate('/');
+			  await fetchUsers();      // recharge la liste depuis l’API
+			  setShowUserModal(false);
 			}
 		  } else {
 			// --- CRÉATION D’UN NOUVEL UTILISATEUR ---
