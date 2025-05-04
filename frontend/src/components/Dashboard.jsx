@@ -61,6 +61,8 @@ import { renderControls } from '../hooks/useDashboard_renderControls';
  */
 
 const Dashboard = () => {
+  const role = sessionStorage.getItem('role');
+  const isStudent = role === 'eleve';
   const {
     objects, 
     selectedCategory, setSelectedCategory,
@@ -112,7 +114,7 @@ const Dashboard = () => {
                 {room.capacity && <p>Capacité: {room.capacity} places</p>}
               </div>
             </ObjectHeader>
-            {renderControls(room, false, handlers)}
+            {!isStudent && renderControls(room, false, handlers)}
           </ObjectItem>
           <SubItemContainer>
             {currentEquipments.map(equip => (
@@ -130,7 +132,7 @@ const Dashboard = () => {
                     )}
                   </div>
                 </ObjectHeader>
-                {!isOccupied && renderControls(equip, true, handlers)}
+                {!isOccupied && !isStudent && renderControls(equip, true, handlers)}
               </ObjectItem>
             ))}
           </SubItemContainer>
@@ -147,7 +149,7 @@ const Dashboard = () => {
             <ObjectItem 
               key={obj.id} 
               id={`equipment-${obj.id}`}
-              onClick={() => obj.type === 'Salle' ? setSelectedRoom(obj.id) : null}
+              onClick={() => obj.type === 'Salle' && setSelectedRoom(obj.id)}
               style={{ cursor: obj.type === 'Salle' ? 'pointer' : 'default' }}
             >
               <ObjectHeader>
@@ -157,7 +159,7 @@ const Dashboard = () => {
                   <p>État: {obj.status}</p>
                 </div>
               </ObjectHeader>
-              {renderControls(obj, false, handlers)}
+              {!isStudent && renderControls(obj, false, handlers)}
             </ObjectItem>
           ))}
       </ObjectGrid>

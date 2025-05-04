@@ -236,7 +236,6 @@ app.post("/api/users", async (req, res) => {
 
 
 
-// Connexion : Route pour se connecter
 app.post("/api/login", async (req, res) => {
   const { email, password } = req.body;
 
@@ -245,63 +244,94 @@ app.post("/api/login", async (req, res) => {
   }
 
   try {
-    // Requête jointe pour récupérer le nom du rôle (r.nomRole as role)
+    // 1) Récupérer l'utilisateur (avec son rôle actuel)
     const query = `
-      SELECT u.id, u.nom, u.prenom, u.email, u.password, u.pseudonyme, COALESCE(u.score, 0) as score, r.nomRole as role
-      FROM users u 
+      SELECT 
+        u.id,
+        u.nom,
+        u.prenom,
+        u.email,
+        u.password,
+        u.pseudonyme,
+        COALESCE(u.score, 0) AS score,
+        r.nomRole AS role
+      FROM users u
       JOIN role r ON u.idRole = r.idRole
       WHERE u.email = $1
     `;
     const { rows } = await pool.query(query, [email]);
     const user = rows[0];
-    console.log("Utilisateur trouvé :", rows);
 
     if (!user) {
       return res.status(401).json({ error: "Email ou mot de passe incorrect." });
     }
 
+    // 2) Vérifier le mot de passe
     const match = await bcrypt.compare(password, user.password);
+    if (!match) {
+      return res.status(401).json({ error: "Email ou mot de passe incorrect." });
+    }
 
-    // 3. Incrémentation automatique du score (+1)
+    // 3) Incrémenter son score de 100 points
     const updateScoreResult = await pool.query(
       `UPDATE users
-        SET score = COALESCE(score, 0) + 100
-        WHERE id = $1
-        RETURNING score`,
+         SET score = COALESCE(score, 0) + 100
+       WHERE id = $1
+       RETURNING score`,
       [user.id]
     );
     const newScore = updateScoreResult.rows[0].score;
-    
 
-    if (match) {
-      await pool.query(
-            `UPDATE users
-               SET last_login = NOW()
-             WHERE id = $1`,
-            [user.id]
-          );
-      await logAction(user.id, "Connexion", `Connexion de ${user.email}`); 
-      // On renvoie l'objet utilisateur sans le mot de passe.
-      res.json({ 
-        message: "Connexion réussie", 
-        user: { 
-          id: user.id, 
-          nom: user.nom, 
-          prenom : user.prenom,
-          pseudonyme : user.pseudonyme,
-          email: user.email, 
-          role: user.role, 
-          score: newScore
-        }
-      });
-    } else {
-      res.status(401).json({ error: "Email ou mot de passe incorrect." });
+    // 4) Déterminer le nouveau rôle selon les mêmes seuils
+    let finalRoleName = user.role;
+    if (newScore >= 500) {
+      finalRoleName = 'directeur';
+    } else if (newScore >= 200) {
+      finalRoleName = 'professeur';
     }
+
+    // 5) Si rôle changé, mettre à jour idRole en base
+    if (finalRoleName !== user.role) {
+      const { rows: roleRows } = await pool.query(
+        `SELECT idRole FROM role WHERE nomRole ILIKE $1`,
+        [finalRoleName]
+      );
+      if (roleRows.length) {
+        await pool.query(
+          `UPDATE users 
+             SET idRole = $1 
+           WHERE id = $2`,
+          [roleRows[0].idrole, user.id]
+        );
+      }
+    }
+
+    // 6) Mettre à jour last_login et journaliser
+    await pool.query(
+      `UPDATE users SET last_login = NOW() WHERE id = $1`,
+      [user.id]
+    );
+    await logAction(user.id, "Connexion", `Connexion de ${user.email}`);
+
+    // 7) Répondre avec l'objet user mis à jour
+    res.json({
+      message: "Connexion réussie",
+      user: {
+        id:         user.id,
+        nom:        user.nom,
+        prenom:     user.prenom,
+        pseudonyme: user.pseudonyme,
+        email:      user.email,
+        role:       finalRoleName,
+        score:      newScore
+      }
+    });
   } catch (err) {
     console.error("Erreur lors de la connexion :", err);
     res.status(500).json({ error: "Erreur interne du serveur." });
   }
 });
+
 
 app.get("/api/rer-schedule", async (req, res) => {
   try {

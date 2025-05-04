@@ -448,7 +448,7 @@ export const ExportButton = styled.button`
   }
 `;
 
-export const BodyAdmin = styled.div`
+export const bodyAdmin = styled.div`
   position: relative;
   top: 20px;
   padding-top: 120px;
