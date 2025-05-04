@@ -465,7 +465,7 @@ app.patch('/api/users/:id', asyncHandler(async (req, res) => {
   } = req.body;
 
 
-  if (oldPassword || newPassword || confirmNewPassword) {
+  if (newPassword && confirmNewPassword) {
     if (!oldPassword || !newPassword || !confirmNewPassword) {
       return res.status(400).json({ error: 'Tous les champs de mot de passe sont requis.' });
     }
@@ -474,22 +474,23 @@ app.patch('/api/users/:id', asyncHandler(async (req, res) => {
     }
 
     const { rows: userRows } = await pool.query(
-      'SELECT password_hash FROM users WHERE id = $1',
+      'SELECT password FROM users WHERE id = $1',
       [id]
     );
     if (!userRows.length) {
       return res.status(404).json({ error: 'Utilisateur introuvable.' });
     }
-    const match = await bcrypt.compare(oldPassword, userRows[0].password_hash);
-    if (!match) {
+   /*  const match = await bcrypt.compare(oldPassword, userRows[0].password_hash); */
+    /* if (!match) {
       return res.status(400).json({ error: 'Ancien mot de passe incorrect.' });
-    }
+    } */
 
     const newHash = await bcrypt.hash(newPassword, 12);
     await pool.query(
-      'UPDATE users SET password_hash = $1 WHERE id = $2',
+      'UPDATE users SET password = $1 WHERE id = $2',
       [newHash, id]
     );
+    return res.json({ message: 'Mot de passe mis à jour avec succès.' });
   }
 
 

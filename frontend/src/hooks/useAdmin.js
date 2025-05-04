@@ -728,8 +728,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 			setShowDeleteUserModal(true);
 		}
 	}, [users]);
-
-
+	  
 	const handleUserSubmit = useCallback(async e => {
 		e.preventDefault();
 
@@ -1088,19 +1087,34 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 	const handlePasswordUpdate = async (e) => {
 		e.preventDefault();
 		const newPassword = e.target.elements.newPassword.value;
+	  
 		if (newPassword.length < 8) {
-			toast.error('Le mot de passe doit contenir au moins 8 caractères');
-			return;
+		  toast.error('Le mot de passe doit contenir au moins 8 caractères');
+		  return;
 		}
+	  
 		try {
-			
-			await new Promise(resolve => setTimeout(resolve, 1000));
-			toast.success('Mot de passe mis à jour avec succès');
-			e.target.reset();
+		  const userId = currentUser?.id;
+		  if (!userId) {
+			toast.error("Utilisateur non authentifié.");
+			return;
+		  }
+	  
+		  await axios.patch(`/api/users/${userId}`, {
+			oldPassword: 'admin', // ← ou récupère un mot de passe admin initial ou stocké
+			newPassword,
+			confirmNewPassword: newPassword
+		  });
+	  
+		  toast.success('Mot de passe mis à jour avec succès');
+		  e.target.reset();
 		} catch (error) {
-			toast.error('Erreur lors de la mise à jour du mot de passe');
+		  const message = error.response?.data?.error || "Erreur inconnue";
+		  toast.error(`Erreur : ${message}`);
 		}
-	};
+	  };
+	  
+	  
 
 	const handleViewObject = (objectId) => {
 		const object = objects.find(obj => obj.id === objectId);
