@@ -1,168 +1,142 @@
 import { useState, useEffect, useCallback  } from 'react';
 import { useHeaderState } from '../hooks/useHeader';
 import axios from 'axios';
-// Importer les données depuis fakeData.js
 import { dataObjects, equipments } from '../data/projectData';
 import { toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
-// Constantes pour les statuts
 export const OBJECT_STATUS = {
-    // Statuts pour les salles
     ROOM: {
         AVAILABLE: 'Disponible',
         OCCUPIED: 'Occupée'
     },
-    // Statuts pour les équipements
     EQUIPMENT: {
         ACTIVE: 'Actif',
         INACTIVE: 'Inactif',
         MAINTENANCE: 'Maintenance'
     },
-    // Statuts pour les services
     SERVICE: {
         RUNNING: 'En cours',
         STOPPED: 'Arrêté',
         MAINTENANCE: 'En maintenance'
     },
-    // Statuts pour les outils
     TOOL: {
         AVAILABLE: 'Disponible',
         IN_USE: 'En utilisation',
         MAINTENANCE: 'En maintenance'
     },
-    // Statuts pour les caméras
     CAMERA: {
         ACTIVE: 'Actif',
         INACTIVE: 'Inactif',
         DISCONNECTED: 'Déconnecté',
         MAINTENANCE: 'Maintenance'
     },
-    // Statuts pour les projecteurs
     PROJECTOR: {
         ON: 'Allumé',
         OFF: 'Éteint',
         MAINTENANCE: 'Maintenance'
     },
-    // Statuts pour le chauffage
     HEATING: {
         ACTIVE: 'Actif',
         INACTIVE: 'Inactif',
         AUTO: 'Mode Auto',
         MAINTENANCE: 'Maintenance'
     },
-    // Statuts pour l'éclairage
     LIGHTING: {
         ON: 'Allumé',
         OFF: 'Éteint',
         AUTO: 'Mode Auto',
         MAINTENANCE: 'Maintenance'
     },
-    // Statuts pour les stores
     BLIND: {
         OPEN: 'Ouvert',
         CLOSED: 'Fermé',
         PARTIAL: 'Partiellement ouvert',
         MAINTENANCE: 'Maintenance'
     },
-    // Statuts pour l'audio
     AUDIO: {
         ON: 'Allumé',
         OFF: 'Éteint',
         MUTE: 'Mute',
         MAINTENANCE: 'Maintenance'
     },
-    // Statuts pour la ventilation
     VENTILATION: {
         ACTIVE: 'Actif',
         INACTIVE: 'Inactif',
         AUTO: 'Mode Auto',
         MAINTENANCE: 'Maintenance'
     },
-    // Statuts pour les distributeurs
     DISTRIBUTOR: {
         AVAILABLE: 'Disponible',
         OUT_OF_STOCK: 'Rupture de stock',
         MAINTENANCE: 'Maintenance'
     },
-    // Statuts pour la cafetière
     COFFEE_MAKER: {
         AVAILABLE: 'Disponible',
         BREWING: 'Préparation en cours',
         CLEANING: 'Nettoyage en cours',
         MAINTENANCE: 'Maintenance'
     },
-    // Statuts pour le micro-ondes
     MICROWAVE: {
         AVAILABLE: 'Disponible',
         IN_USE: 'En cours',
         FINISHED: 'Terminé',
         MAINTENANCE: 'Maintenance'
     },
-    // Statuts pour les capteurs d'air
     AIR_SENSOR: {
         ACTIVE: 'Actif',
         INACTIVE: 'Inactif',
         ALERT: 'Alerte',
         MAINTENANCE: 'Maintenance'
     },
-    // Statuts pour le lave-vaisselle
     DISHWASHER: {
         AVAILABLE: 'Disponible',
         RUNNING: 'En cours',
         FINISHED: 'Terminé',
         MAINTENANCE: 'Maintenance'
     },
-    // Statuts pour le scanner
     SCANNER: {
         AVAILABLE: 'Disponible',
         SCANNING: 'Scan en cours',
         ERROR: 'Erreur',
         MAINTENANCE: 'Maintenance'
     },
-    // Statuts pour les bornes
     TERMINAL: {
         AVAILABLE: 'Disponible',
         IN_USE: 'En cours',
         OUT_OF_SERVICE: 'Hors service',
         MAINTENANCE: 'Maintenance'
     },
-    // Statuts pour les capteurs
     SENSOR: {
         ACTIVE: 'Actif',
         INACTIVE: 'Inactif',
         ALERT: 'Alerte',
         MAINTENANCE: 'Maintenance'
     },
-    // Statuts pour les détecteurs
     DETECTOR: {
         ACTIVE: 'Actif',
         INACTIVE: 'Inactif',
         ALERT: 'Alerte',
         MAINTENANCE: 'Maintenance'
     },
-    // Statuts pour les panneaux
     DISPLAY: {
         ACTIVE: 'Actif',
         INACTIVE: 'Inactif',
         ERROR: 'Erreur',
         MAINTENANCE: 'Maintenance'
     },
-    // Statuts pour les barrières
     BARRIER: {
         OPEN: 'Ouverte',
         CLOSED: 'Fermée',
         ERROR: 'Erreur',
         MAINTENANCE: 'Maintenance'
     },
-    // Statuts pour les grilles
     GATE: {
         OPEN: 'Ouverte',
         CLOSED: 'Fermée',
         ERROR: 'Erreur',
         MAINTENANCE: 'Maintenance'
     },
-    // Statuts pour la sécurité
     SECURITY: {
         ACTIVE: 'Actif',
         INACTIVE: 'Inactif',
@@ -171,7 +145,6 @@ export const OBJECT_STATUS = {
     }
 };
 
-// Fonction utilitaire pour vérifier le statut
 export const getObjectStatus = (status, type) => {
     switch (type) {
         case 'Salle':
@@ -292,7 +265,6 @@ export const getObjectStatus = (status, type) => {
     }
 };
 
-// Fonction pour compter les objets par statut
 export const countObjectsByStatus = (objects) => {
 	return {
 		active: objects.filter(obj => {
@@ -338,7 +310,6 @@ export const countObjectsByStatus = (objects) => {
 	};
 };
 
-// Fonction pour gérer les équipements d'une salle
 export const handleRoomEquipment = (roomId) => {
 	const room = dataObjects.find(obj => obj.id === roomId);
 	if (!room) return null;
@@ -359,7 +330,6 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
   	const currentUser = raw ? JSON.parse(raw) : null;
 	
 
-	// États pour la gestion des utilisateurs
 	const [users, setUsers] = useState([]);
 	const [loadingUsers, setLoadingUsers] = useState(true);
 	const [showUserModal, setShowUserModal] = useState(false);
@@ -374,14 +344,13 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 	});
 	const { handleLogout } = useHeaderState();
 
-	// États pour la gestion des objets connectés
-	const [objects, setObjects] = useState([]); // Sera rempli avec dataObjects
-	const [categoryList, setCategoryList] = useState([]); // Liste des catégories
+	const [objects, setObjects] = useState([]); 
+	const [categoryList, setCategoryList] = useState([]);
 	const [showObjectModal, setShowObjectModal] = useState(false);
 	const [objectFormData, setObjectFormData] = useState({
 		name: '',
 		type: categoryList[0] || 'Salle',
-		status: OBJECT_STATUS.ROOM.AVAILABLE, // Valeur par défaut pour les salles
+		status: OBJECT_STATUS.ROOM.AVAILABLE, 
 		priority: 'normal'
 	});
 	const [newCategory, setNewCategory] = useState('');
@@ -402,7 +371,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		}
 	});
 	
-	// États pour les rapports et statistiques
+
 	const [reports, setReports] = useState({
 		energyConsumption: [],
 		userActivity: [],
@@ -410,12 +379,12 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 	});
 	const [selectedReport, setSelectedReport] = useState(null);
 
-	// Navigation par onglets et gestion des alertes
+
 	const [activeTab, setActiveTab] = useState('users');
 	const [showAlertModal, setShowAlertModal] = useState(false);
 	const [selectedObject, setSelectedObject] = useState(null);
 	const [selectedAlert, setSelectedAlert] = useState(null);
-	// Ajout des états pour l'historique
+
 	const [userHistory, setUserHistory] = useState([]);
 	const [selectedUserHistory, setSelectedUserHistory] = useState(null);
 	const [historyFilter, setHistoryFilter] = useState({
@@ -423,7 +392,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		dateFrom: '',
 		dateTo: ''
 	});
-	// Ajout des états pour les alertes
+
 	const [alerts, setAlerts] = useState([]);
 
 	useEffect(() => {
@@ -443,7 +412,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 	  const resolveAlert = async (alerte) => {
 		try {
 		await axios.delete(`http://localhost:5001/api/alerte/${alerte.idalerte}`);
-		// drop it from local state
+
 		setAlerts(current => current.filter(a => a.idalerte !== alerte.idalerte));
 		toast.success(`Alerte ${alerte.idalerte} supprimée`);
 		} catch (err) {
@@ -454,7 +423,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 
 
 
-	// États pour les modaux de confirmation
+
 	const [showDeleteUserModal, setShowDeleteUserModal] = useState(false);
 	const [showDeleteCategoryModal, setShowDeleteCategoryModal] = useState(false);
 	const [showDeleteObjectModal, setShowDeleteObjectModal] = useState(false);
@@ -463,15 +432,12 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 	const [selectedItemToDelete, setSelectedItemToDelete] = useState(null);
 	const [selectedEquipmentInfo, setSelectedEquipmentInfo] = useState(null);
 	const [selectedAlertToApprove, setSelectedAlertToApprove] = useState(null);
-
-	// États pour la gestion des sauvegardes et vérifications
 	const [lastBackup, setLastBackup] = useState('2024-03-20 00:00');
 	const [lastIntegrityCheck, setLastIntegrityCheck] = useState('2024-03-20 00:00');
 	const [isBackupInProgress, setIsBackupInProgress] = useState(false);
 	const [isIntegrityCheckInProgress, setIsIntegrityCheckInProgress] = useState(false);
 	const [showPassword, setShowPassword] = useState(false);
 
-	// Fonction pour réinitialiser le formulaire d'objet
 	const resetObjectForm = (type = 'Salle') => {
 		let defaultStatus;
 		switch (type) {
@@ -499,12 +465,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		});
 	};
 
-	// --------- Chargement initial des données ---------
-	
 
-
-	// Récupère la liste des utilisateurs depuis l'API
-	// À remplacer par une vraie implémentation d'API plus tard
 	const fetchUsers = useCallback(async () => {
 		setLoadingUsers(true);
 		try {
@@ -522,7 +483,6 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		  }));
 		  setUsers(formatted);
 		} catch (err) {
-		  /* alert('🚨 fetchUsers erreur : ' + (err.response?.data?.error || err.message)); */
 		  const message = err.response?.data?.error || err.message;
 		  toast.error(`Erreur fetchUsers : ${message}`);
 		} finally {
@@ -531,7 +491,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 	  }, []);
 	
 
-	// Récupère la liste des objets et catégories depuis fakeData.js
+
 	const fetchObjects = async () => {
 		    try {
 		      const { data } = await axios.get('http://localhost:5001/api/objets');
@@ -551,34 +511,28 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		    }
 		  };
 		
-		  // On charge utilisateurs + objets une fois au montage
+
 		  useEffect(() => {
 		    fetchUsers();
 		    fetchObjects();
 		    fetchReports();
 		  }, []);
 
-	// Récupère les données pour les rapports
 	const fetchReports = useCallback(async () => {
-		// Générer des données sur 30 jours
 		const days = Array.from({length: 30}, (_, i) => {
 			const date = new Date();
 			date.setDate(date.getDate() - i);
 			return date;
 		});
 
-		// Consommation énergétique basée sur les objets réels
 		const energyData = days.map(date => {
-			// Calculer la consommation en fonction des objets actifs
 			const activeObjects = objects.filter(obj => 
 				obj.status === 'Actif' || obj.status === 'Allumé' || obj.status === 'Disponible'
 			);
 
-			// Calculer la consommation par type d'objet en fonction de leurs propriétés réelles
 			const totalConsumption = activeObjects.reduce((total, obj) => {
 				let consumption = 0;
 				
-				// Calculer la consommation en fonction des propriétés spécifiques de chaque objet
 				switch(obj.type) {
 					case 'Éclairage':
 						consumption = obj.brightness ? (obj.brightness * 0.5) : 50;
@@ -614,20 +568,16 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 				return total + consumption;
 			}, 0);
 
-			// Ajouter une variation journalière réaliste basée sur l'heure
 			const hour = date.getHours();
 			let hourlyMultiplier = 1;
 			
-			// Heures de pointe (8h-18h)
 			if (hour >= 8 && hour <= 18) {
 				hourlyMultiplier = 1.2;
 			}
-			// Heures creuses (22h-6h)
 			else if (hour >= 22 || hour <= 6) {
 				hourlyMultiplier = 0.5;
 			}
 
-			// Réduction le weekend
 			const weekendMultiplier = [0, 6].includes(date.getDay()) ? 0.7 : 1;
 
 			return {
@@ -642,22 +592,17 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 
 
 		
-		// Activité utilisateurs basée sur les données réelles
 		const userActivityData = days.map(date => {
-			// Calculer le nombre d'utilisateurs actifs en fonction des connexions réelles
 			const activeUsers = users.filter(user => {
 				const lastLogin = new Date(user.lastLogin);
 				return lastLogin.toDateString() === date.toDateString();
 			}).length;
 
-			// Calculer le taux de connexion
 			const connectionRate = users.length > 0 ? 
 				Math.round((activeUsers / users.length) * 100) : 0;
 
-			// Déterminer les heures de pointe en fonction des connexions
 			const peakHours = activeUsers > 0 ? '10:00-16:00' : '—';
 
-			// Calculer la durée moyenne de session (en minutes)
 			const avgSessionDuration = Math.round(30 + Math.random() * 90);
 
 			return {
@@ -671,22 +616,18 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 			};
 		});
 
-		// Usage des services basé sur les équipements réels
 		const serviceUsageData = Object.entries(equipments).map(([roomId, equipmentList]) => {
 			const room = objects.find(obj => obj.id === roomId);
 			const activeEquipment = equipmentList.filter(eq => 
 				eq.status === 'Actif' || eq.status === 'Allumé' || eq.status === 'Disponible'
 			);
 
-			// Calculer le taux d'utilisation par type d'équipement
 			const equipmentTypes = {};
 			const usageByType = {};
 			
 			equipmentList.forEach(eq => {
-				// Compter le nombre d'équipements par type
 				equipmentTypes[eq.type] = (equipmentTypes[eq.type] || 0) + 1;
 
-				// Calculer l'utilisation en fonction des propriétés spécifiques
 				let usage = 0;
 				switch(eq.type) {
 					case 'Éclairage':
@@ -710,11 +651,9 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 				usageByType[eq.type] = usage;
 			});
 
-			// Calculer la moyenne d'utilisation
 			const avgDailyUsage = Object.values(usageByType).reduce((a, b) => a + b, 0) / 
 				Object.keys(usageByType).length;
 
-			// Trouver la dernière maintenance
 			const lastMaintenance = equipmentList.reduce((latest, eq) => {
 				if (eq.lastMaintenance) {
 					const maintenanceDate = new Date(eq.lastMaintenance);
@@ -743,22 +682,16 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		});
 	}, [users, objects, equipments]);
 
-	// Ajout de la fonction pour récupérer l'historique
 	const fetchUserHistory = async () => {
-		/* alert('👉 fetchUserHistory : début de la requête'); */
 		try {
-		  // Si vous avez configuré un proxy dans package.json, vous pouvez juste faire '/api/...'
 		  const response = await axios.get('http://localhost:5001/api/action-history');
 		  const res = await axios.get('http://localhost:5001/api/action-history');
-		  /* alert(`✅ fetchUserHistory : reçu ${response.data.length} enregistrements`); */
 		  setUserHistory(res.data);
 		} catch (error) {
-		  /* alert('🚨 fetchUserHistory erreur : ' + error.message); */
 		  console.error("Erreur lors de la récupération de l'historique :", error);
 		}
 	  };
 
-	// Ajout de la fonction pour filtrer l'historique
 	const filterHistory = (history) => {
 		return history.filter(entry => {
 			const matchesType = historyFilter.type === 'all' || entry.action === historyFilter.type;
@@ -769,18 +702,13 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		});
 	};
 
-	// --------- Gestion des utilisateurs ---------
 
-	// Ouvre la modal pour ajouter un utilisateur
 	const handleAddUser = () => {
-		/* alert('🔔 handleAddUser déclenché');  */
 		setSelectedUser(null);
 		setUserFormData({ login: '', email: '', role: 'eleve', points: 0, password: '' });
-		/* alert('→ userFormData initialisé, showUserModal=true'); */
 		setShowUserModal(true);
 	};
 
-	// Fonction pour gérer la modification d'un utilisateur
 	const handleEditUser = useCallback((user) => {
 		setSelectedUser(user);
 		setUserFormData({
@@ -793,7 +721,6 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		setShowUserModal(true);
 	}, []);
 
-	// Fonction pour gérer la suppression d'un utilisateur
 	const handleDeleteUser = useCallback((userId) => {
 		const userToDelete = users.find(user => user.id === userId);
 		if (userToDelete) {
@@ -802,25 +729,22 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		}
 	}, [users]);
 
-	// Fonction pour gérer la soumission du formulaire utilisateur
+
 	const handleUserSubmit = useCallback(async e => {
 		e.preventDefault();
-		/* alert('🔔 handleUserSubmit start'); */
-		// Toujours afficher les données du formulaire  
-		/* alert('→ Données envoyées : ' + JSON.stringify(userFormData)); */
+
 	  
 		try {
 		  if (selectedUser) {
-			// --- MODIFICATION D’UN UTILISATEUR EXISTANT ---
-			/* alert('ℹ️ Modification d’un utilisateur existant'); */
+
 			if (userFormData.role === selectedUser.role) {
-			  // mise à jour du score seul
+
 			  const increment = userFormData.points - selectedUser.points;
 			  const { data } = await axios.patch(
 				`/api/users/${selectedUser.id}/score`,
 				{ increment }
 			  );
-			  /* alert('✅ Utilisateur modifié avec succès (score)');    */     
+    
 			  setUsers(users.map(u =>
 				u.id === selectedUser.id
 				  ? { ...u, points: data.score }
@@ -830,7 +754,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 			  window.location.reload() 
 			  navigate('/admin');
 			} else {
-			  // mise à jour rôle + score
+
 			  const { data } = await axios.patch(
 				`/api/users/${selectedUser.id}`,
 				{
@@ -838,7 +762,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 				  score: userFormData.points
 				}
 			  );
-			  /* alert('✅ Utilisateur modifié avec succès (rôle+score)'); */
+
 			  setUsers(users.map(u =>
 				u.id === selectedUser.id
 				  ? { ...u, role: data.user.role, points: data.user.score }
@@ -850,33 +774,31 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 			  sessionStorage.setItem('points',  data.user.score);
 			  window.location.reload()
 			  navigate('/');
-			  await fetchUsers();      // recharge la liste depuis l’API
+			  await fetchUsers();     
 			  setShowUserModal(false);
 			}
 		  } else {
-			// --- CRÉATION D’UN NOUVEL UTILISATEUR ---
-			/* alert('ℹ️ Création d’un nouvel utilisateur'); */
+
 			const { data } = await axios.post('/api/users', {
 			  nom:         userFormData.login,
-			  prenom:      userFormData.login,   // ou champ prénom séparé si dispo
+			  prenom:      userFormData.login,   
 			  email:       userFormData.email,
 			  role:        userFormData.role,
 			  password:    userFormData.password,
 			  pseudonyme:  userFormData.login,
 			  score:       userFormData.points,
-			  formation:   'inconnue',           // ajustez  
-			  dateNaissance: '1970-01-01'        // ajustez  
+			  formation:   'inconnue',          
+			  dateNaissance: '1970-01-01'        
 			});
-			/* alert('✅ Utilisateur créé, id=' + data.user.id); */
-			// on rafraîchit et on reload pour voir le nouveau
+
 			await fetchUsers();
-			/* alert('→ fetchUsers terminé'); */
+
 			window.location.reload();
 		  }
 	  
 		  setShowUserModal(false);
 		} catch (err) {
-		  /* alert('🚨 handleUserSubmit erreur : ' + (err.response?.data?.error || err.message)); */
+
 		  toast.error(`Erreur : ${err.response?.data?.error || err.message}`);
 		}
 	  }, [selectedUser, userFormData, users, currentUser, navigate]);
@@ -884,10 +806,10 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 	  
 	
 	  useEffect(() => {
-		//alert('⚡ useEffect(useAdmin) : montage ou filtre modifié, on relance fetchUserHistory');
+
 		const handleLogoutEvent = () => {
-	      /* lert('🔔 événement app:logout reçu, refetch history'); */
-		  fetchUserHistory();  // remonte le tableau avec la nouvelle entrée "Déconnexion"
+
+		  fetchUserHistory();  
 		};
 		window.addEventListener('app:logout', handleLogoutEvent);
 		return () => window.removeEventListener('app:logout', handleLogoutEvent);
@@ -895,35 +817,33 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 
 	const confirmDeleteUser = useCallback(async () => {
 		try {
-		  // envoie la requête DELETE au back
+	
 		  await axios.delete(`http://localhost:5001/api/users/${selectedUser.id}`);
-		  /* alert('✅ DELETE /api/users/' + selectedUser.id + ' réussi'); */
-		  // retire de l'état local
+
+
 		  setUsers(prev => prev.filter(u => u.id !== selectedUser.id));
-		  /* alert('✅ State users mis à jour'); */
+		
 		  toast.success('Utilisateur supprimé avec succès');
-		  /* alert('▶️ Appel à fetchUserHistory pour rafraîchir l’historique'); */
+		  
 		  setShowDeleteUserModal(false);
 		  setSelectedUser(null);
 	  
-		  // si c'était l'utilisateur courant, redirige vers l'accueil visiteur
+		 
 		  if (currentUser && selectedUser.id === currentUser.id) {
 			handleLogout();
 		  }
 		  await fetchUserHistory();
-		  /* alert('✅ Historique rafraîchi'); */
+		 
 		} catch (err) {
 			console.error('Erreur suppression utilisateur', err.response || err);
 			const status  = err.response?.status;
 			const serverMessage = err.response?.data?.error || err.message;
-			/* alert(`❌ Échec suppression (HTTP ${status}) : ${serverMessage}`); */
+			
 			toast.error(`Échec suppression : ${serverMessage}`);
 		}
 	}, [selectedUser, currentUser, navigate]);
 
-	// --------- Gestion des objets connectés ---------
 
-	// Ouvre la modal pour ajouter un nouvel objet
 	const handleAddObject = () => {
 		resetObjectForm();
 		setShowObjectModal(true);
@@ -953,9 +873,9 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 	};
 
 	const confirmDeleteCategory = () => {
-		// Supprimer la catégorie
+		
 		setCategoryList(categoryList.filter(category => category !== selectedItemToDelete));
-		// Supprimer tous les objets de cette catégorie
+		
 		setObjects(objects.filter(obj => obj.type !== selectedItemToDelete));
 		setShowDeleteCategoryModal(false);
 		setSelectedItemToDelete(null);
@@ -966,7 +886,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		setGlobalRules({ ...globalRules, [e.target.name]: e.target.value });
 	};
 
-	// Ouvre la modal pour modifier un objet existant
+	
 	const handleEditObject = (object) => {
 		setSelectedObject(object);
 		setObjectFormData({
@@ -978,7 +898,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		setShowObjectModal(true);
 	};
 
-	// Supprime un objet après confirmation
+	
 	const handleDeleteObject = (objectId) => {
 		const objectToDelete = objects.find(obj => obj.id === objectId);
 		if (objectToDelete && objectToDelete.type === 'Salle') {
@@ -992,11 +912,11 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 	const handleApproveRequest = (alert) => {
 		setSelectedAlertToApprove(alert);
 		if (alert.title.includes('suppression')) {
-			// Si c'est une demande de suppression, on ouvre la modal de suppression
+			
 			setSelectedItemToDelete(alert.objectId);
 			setShowDeleteObjectModal(true);
 		} else {
-			// Sinon, on ouvre la modal d'approbation simple
+			
 			setShowApproveModal(true);
 		}
 	};
@@ -1014,41 +934,41 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 
 	const confirmDeleteObject = useCallback(async () => {
 		try {
-		  // 1) On récupère l'objet à supprimer (pour connaître son type)
+		 
 		  const obj = objects.find(o => o.id === selectedItemToDelete);
 		  if (!obj) throw new Error("Objet introuvable");
 	  
-		  // 2) On appelle l'API DELETE sur /api/{type}/{id}
+		 
 		  await axios.delete(`/api/${obj.type}/${obj.id}`);
 	  
-		  // 3) On met à jour le state pour retirer l'objet
+		 
 		  setObjects(prev => prev.filter(o => o.id !== obj.id));
 		  toast.success('Objet supprimé avec succès');
 		} catch (err) {
 		  console.error(err);
 		  toast.error('Échec de la suppression : ' + (err.response?.data?.error || err.message));
 		} finally {
-		  // 4) On ferme la modal et on réinitialise la sélection
+	
 		  setShowDeleteObjectModal(false);
 		  setSelectedItemToDelete(null);
 		}
 	  }, [selectedItemToDelete, objects]);
 	  
 
-	// Enregistre un nouvel objet ou modifie un objet existant
+	
 	const handleObjectSubmit = async (e) => {
 		e.preventDefault();
 		try {
 		  if (selectedObject) {
-			// … votre code de modification existant
+			
 		  } else {
-			// Création réelle en base
+			
 			const payload = {
 			  type: objectFormData.type,
 			  nom:  objectFormData.name
 			};
 			const { data } = await axios.post('/api/objets', payload);
-			// On ajoute l’objet retourné à l’état
+			
 			setObjects(prev => [
 			  ...prev,
 			  {
@@ -1067,23 +987,21 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		  toast.error("Erreur lors de l'ajout : " + (err.response?.data?.error || err.message));
 		}
 	  };
-	// --------- Gestion des rapports ---------
 
-	// Exporte les données d'un rapport en CSV
 	const handleExportReport = (type) => {
 		const data = reports[type];
 		const csv = convertToCSV(data);
 		downloadCSV(csv, `${type}_report.csv`);
 	};
 
-	// Convertit un tableau d'objets en format CSV
+
 	const convertToCSV = (data) => {
 		const headers = Object.keys(data[0]);
 		const rows = data.map(item => headers.map(header => item[header]));
 		return [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
 	};
 
-	// Déclenche le téléchargement du fichier CSV généré
+
 	const downloadCSV = (csv, filename) => {
 		const blob = new Blob([csv], { type: 'text/csv' });
 		const url = window.URL.createObjectURL(blob);
@@ -1094,14 +1012,14 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		window.URL.revokeObjectURL(url);
 	};
 
-	// Ouvre la modal pour gérer une alerte
+
 	const handleAlertAction = (alert) => {
 		setSelectedAlert(alert);
 		setShowAlertModal(true);
 	};
 
 
-	// Modifier la fonction handleShowEquipment
+
 	const handleShowEquipment = (room) => {
 		const roomInfo = handleRoomEquipment(room.id);
 		if (!roomInfo) return;
@@ -1114,7 +1032,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		setShowEquipmentModal(true);
 	};
 
-	// Fonction pour appliquer le thème
+	
 	const applyTheme = (theme) => {
 		document.documentElement.setAttribute('data-theme', theme);
 		setPlatformSettings(prev => ({
@@ -1124,7 +1042,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		toast.success(`Theme appliqué`);
 	};
 
-	// Fonction pour appliquer le mode de validation
+	
 	const applyValidationMode = (mode) => {
 		setPlatformSettings(prev => ({
 			...prev,
@@ -1136,11 +1054,11 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		toast.success(`Mode de validation ${mode} appliqué`);
 	};
 
-	// Fonctions pour gérer les actions de sécurité
+	
 	const handleBackup = async () => {
 		setIsBackupInProgress(true);
 		try {
-			// Simulation d'une sauvegarde
+			
 			await new Promise(resolve => setTimeout(resolve, 2000));
 			const now = new Date();
 			setLastBackup(now.toLocaleString());
@@ -1155,7 +1073,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 	const handleIntegrityCheck = async () => {
 		setIsIntegrityCheckInProgress(true);
 		try {
-			// Simulation d'une vérification d'intégrité
+			
 			await new Promise(resolve => setTimeout(resolve, 2000));
 			const now = new Date();
 			setLastIntegrityCheck(now.toLocaleString());
@@ -1175,7 +1093,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 			return;
 		}
 		try {
-			// Simulation de la mise à jour du mot de passe
+			
 			await new Promise(resolve => setTimeout(resolve, 1000));
 			toast.success('Mot de passe mis à jour avec succès');
 			e.target.reset();
@@ -1195,13 +1113,12 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		}
 	};
 
-	// Fonction pour appliquer les règles globales
+
 	const applyGlobalRules = useCallback(() => {
-		// Appliquer les priorités énergétiques
+		
 		const updatedObjects = objects.map(obj => {
 			let newStatus = obj.status;
-			
-			// Gestion de l'auto-shutdown selon l'horaire
+
 			const currentTime = new Date();
 			const [shutdownHour, shutdownMinute] = globalRules.shutdownTime.split(':').map(Number);
 			const [startupHour, startupMinute] = globalRules.startupTime.split(':').map(Number);
@@ -1222,7 +1139,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 				}
 			}
 
-			// Appliquer les priorités énergétiques
+			
 			if (globalRules.energyPriority === 'economy') {
 				if (obj.priority === 'low') {
 					newStatus = 'Éteint';
@@ -1236,7 +1153,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 			return { ...obj, status: newStatus };
 		});
 
-		// Vérifier si des changements ont été effectués
+	
 		const hasChanges = updatedObjects.some((updatedObj, index) => 
 			updatedObj.status !== objects[index].status
 		);
@@ -1245,7 +1162,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 			setObjects(updatedObjects);
 			toast.info("Les règles globales ont été appliquées");
 
-			// Vérifier les seuils d'alerte uniquement si des changements ont eu lieu
+		
 			const activeObjects = updatedObjects.filter(obj => 
 				obj.status === 'Actif' || obj.status === 'Allumé'
 			).length;
@@ -1276,7 +1193,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		}
 	}, [objects, globalRules, alerts, setAlerts]);
 
-	// Ajouter la fonction de réinitialisation des couleurs
+	
 	const resetColors = () => {
 		setPlatformSettings(prev => ({
 		  ...prev,
@@ -1285,7 +1202,7 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 			secondary: '#1f2937'
 		  }
 		}));
-		// Forcer un rafraîchissement des styles
+		
 		document.documentElement.style.setProperty('--primary-color', '#3b82f6');
 		document.documentElement.style.setProperty('--secondary-color', '#1f2937');
 	  };
@@ -1293,13 +1210,13 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 	  useEffect(() => {
 		const initializeData = async () => {
 		  try {
-			// On charge utilisateurs, objets et historique en parallèle
+		
 			await Promise.all([
 			  fetchUsers(),
 			  fetchObjects(),
-			  fetchUserHistory()    // appelle setUserHistory(data)
+			  fetchUserHistory()    
 			]);
-			// Puis les rapports (qui dépendent de users & objects)
+			
 			await fetchReports();
 		  } catch (err) {
 			console.error("Erreur d'initialisation :", err);
@@ -1307,17 +1224,17 @@ export const useAdminState = (platformSettings, setPlatformSettings) => {
 		};
 		initializeData();
 	  }, []);
-	// Appliquer les règles globales périodiquement
+
 	useEffect(() => {
 		const interval = setInterval(() => {
 			applyGlobalRules();
-		}, 60000); // Vérifier toutes les minutes
+		}, 60000); 
 
 		return () => clearInterval(interval);
 	}, [applyGlobalRules, globalRules, objects]);
 
   return {
-    // Return all the state variables and functions needed by AdminPage
+  
     navigate, applyGlobalRules, 
 	users, setUsers, alerts, setAlerts,
     loadingUsers, setLoadingUsers,

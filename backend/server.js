@@ -2,13 +2,13 @@ require('dotenv').config({ path: './Database-URL.env' });
 console.log("🔍 DATABASE_URL (avant connexion):", process.env.DATABASE_URL);
 
 if (!process.env.DATABASE_URL) {
-  console.error("❌ ERREUR: DATABASE_URL est undefined. Vérifiez votre fichier .env !");
-  process.exit(1); // Arrête le serveur immédiatement
+  console.error(" ERREUR: DATABASE_URL est undefined. Vérifiez votre fichier .env !");
+  process.exit(1); 
 }
 
 const express = require('express');
 const cors = require('cors');
-const path = require('path'); // Pour gérer les chemins vers les fichiers statiques
+const path = require('path'); 
 const { Server } = require("socket.io");
 const http = require("http");
 const { Pool } = require("pg");
@@ -17,7 +17,7 @@ const bcrypt = require('bcrypt');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
-// Helper to handle async errors
+
 const asyncHandler = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
 async function logAction(userId, action, details) {
@@ -28,7 +28,6 @@ async function logAction(userId, action, details) {
       [userId, action, details]
     );
   } catch (err) {
-    // Si err.code === '23503' (viol. FK), on l’ignore
     console.warn('logAction échoué (FK):', err.message);
   }
 }
@@ -36,15 +35,15 @@ async function logAction(userId, action, details) {
 
 
 app.use(cors({
-  origin: 'http://localhost:3000', // ou l'URL de votre frontend
+  origin: 'http://localhost:3000', 
   credentials: true
 }));
 app.use(express.json());
 
-// Connexion à PostgreSQL
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: false, // Désactive le SSL
+  ssl: false, 
 });
 
 app.use((req, res, next) => {
@@ -55,15 +54,11 @@ app.use((req, res, next) => {
 });
 
 pool.connect()
-  .then(() => console.log("✅ Connexion PostgreSQL réussie"))
-  .catch(err => console.error("❌ Erreur de connexion à PostgreSQL :", err));
+  .then(() => console.log(" Connexion PostgreSQL réussie"))
+  .catch(err => console.error(" Erreur de connexion à PostgreSQL :", err));
 
-// -------------------------
-// Routes API (backend)
-// -------------------------
 
-// Route de test de l'API
-app.get("/api", (req, res) => res.send("Backend API is running 🚀"));
+app.get("/api", (req, res) => res.send("Backend API is running "));
 
 
 app.get('/api/users', async (req, res) => {
@@ -102,29 +97,7 @@ app.get("/api/users/:id", asyncHandler(async (req, res) => {
   res.json(rows[0]);
 }));
 
-// Route pour récupérer les utilisateurs avec leur rôle
-// app.get("/api/users", async (req, res) => {
-//   try {
-//     const query = `
-//         SELECT 
-//           u.id,
-//           u.name,
-//           u.email,
-//           COALESCE(u.score, 0) AS score,
-//           r.nomRole AS role,
-//           u.created_at,
-//           u.last_login
-//         FROM users u
-//         JOIN role r ON u.idRole = r.idRole
-//         ORDER BY u.id
-//       `;
-//     const { rows } = await pool.query(query);
-//     res.json(rows);
-//   } catch (err) {
-//     console.error("Erreur de récupération des utilisateurs :", err);
-//     res.status(500).send("Erreur serveur");
-//   }
-// });
+
 
 app.post("/api/users", async (req, res) => {
   const {
@@ -141,7 +114,7 @@ app.post("/api/users", async (req, res) => {
     dateNaissance
   } = req.body;
 
-  // Vérification précise des champs obligatoires
+
   const missingFields = [];
   if (!nom) missingFields.push("nom");
   if (!prenom) missingFields.push("prenom");
@@ -159,7 +132,7 @@ app.post("/api/users", async (req, res) => {
   }
 
   try {
-    // 1. Vérification du rôle
+
     const roleResult = await pool.query(
       "SELECT idRole FROM role WHERE nomRole ILIKE $1",
       [role]
@@ -170,11 +143,11 @@ app.post("/api/users", async (req, res) => {
 
     const idRole = roleResult.rows[0].idrole || roleResult.rows[0].idRole;
 
-    // 2. Hachage du mot de passe
+
     const saltRounds = 10;
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
-    // 3. Insertion utilisateur
+
     const insertQuery = `
       INSERT INTO users (
         nom, prenom, email, idRole, password,
@@ -205,7 +178,7 @@ app.post("/api/users", async (req, res) => {
     const insertResult = await pool.query(insertQuery, insertValues);
     const newUser = insertResult.rows[0];
 
-    // 4. Réponse sans mot de passe
+
     res.status(201).json({
       message: "Utilisateur créé avec succès.",
       user: {
@@ -244,7 +217,7 @@ app.post("/api/login", async (req, res) => {
   }
 
   try {
-    // 1) Récupérer l'utilisateur (avec son rôle actuel)
+
     const query = `
       SELECT 
         u.id,
@@ -266,13 +239,13 @@ app.post("/api/login", async (req, res) => {
       return res.status(401).json({ error: "Email ou mot de passe incorrect." });
     }
 
-    // 2) Vérifier le mot de passe
+
     const match = await bcrypt.compare(password, user.password);
     if (!match) {
       return res.status(401).json({ error: "Email ou mot de passe incorrect." });
     }
 
-    // 3) Incrémenter son score de 100 points
+
     const updateScoreResult = await pool.query(
       `UPDATE users
          SET score = COALESCE(score, 0) + 100
@@ -282,7 +255,7 @@ app.post("/api/login", async (req, res) => {
     );
     const newScore = updateScoreResult.rows[0].score;
 
-    // 4) Déterminer le nouveau rôle selon les mêmes seuils
+
     let finalRoleName = user.role;
     if (newScore >= 500) {
       finalRoleName = 'directeur';
@@ -290,7 +263,7 @@ app.post("/api/login", async (req, res) => {
       finalRoleName = 'professeur';
     }
 
-    // 5) Si rôle changé, mettre à jour idRole en base
+
     if (finalRoleName !== user.role) {
       const { rows: roleRows } = await pool.query(
         `SELECT idRole FROM role WHERE nomRole ILIKE $1`,
@@ -306,14 +279,14 @@ app.post("/api/login", async (req, res) => {
       }
     }
 
-    // 6) Mettre à jour last_login et journaliser
+
     await pool.query(
       `UPDATE users SET last_login = NOW() WHERE id = $1`,
       [user.id]
     );
     await logAction(user.id, "Connexion", `Connexion de ${user.email}`);
 
-    // 7) Répondre avec l'objet user mis à jour
+
     res.json({
       message: "Connexion réussie",
       user: {
@@ -339,13 +312,13 @@ app.get("/api/rer-schedule", async (req, res) => {
     if (!apiKey) {
       return res.status(500).json({ error: "Clé API SNCF non configurée" });
     }
-    // Utilisation du code UIC de Cergy Préfecture : 87381905
+
     const stopAreaId = "stop_area:OCE:SA:87381905";
     const count = 10;
-    // Construction de l'URL pour récupérer les 10 prochains départs du RER A
+
     const url = `https://api.sncf.com/v1/coverage/sncf/stop_areas/${stopAreaId}/departures?count=${count}&filter[]=line.name=RER A`;
     
-    // Authentification Basic : username = API key, password vide
+
     const auth = Buffer.from(apiKey + ":").toString("base64");
 
     const response = await fetch(url, {
@@ -394,14 +367,12 @@ app.patch('/users/:id/email', async (req, res) => {
   }
 });
 
-// Route pour augmenter le score d'un utilisateur
+
 app.patch("/api/users/:id/score", async (req, res) => {
-// Récupération de l'id de l'utilisateur depuis l'URL
+
   const { id } = req.params;
 
-  // Dans le corps de la requête, on attend une propriété "increment"
-  // qui indique combien le score doit être augmenté.
-  // Par exemple, { "increment": 1 } pour ajouter 1 point.
+
   const { increment } = req.body;
   
   if (increment === undefined) {
@@ -409,8 +380,7 @@ app.patch("/api/users/:id/score", async (req, res) => {
   }
   
   try {
-    // La requête SQL met à jour le score en s'assurant que
-    // s'il est NULL (non défini), on le considère comme 0 avec COALESCE.
+
     const updateQuery = `
       UPDATE users 
       SET score = COALESCE(score, 0) + $1 
@@ -420,16 +390,16 @@ app.patch("/api/users/:id/score", async (req, res) => {
     
     const { rows } = await pool.query(updateQuery, [increment, id]);
     
-// Si aucun utilisateur n'est trouvé, retourner une erreur 404.
+
     if (rows.length === 0) {
       return res.status(404).json({ error: "Utilisateur non trouvé." });
     }
     
-    // Mettre à jour le rôle si nécessaire
+
     const score = rows[0].score;
     let newRole = null;
     
-    // Définir le nouveau rôle en fonction du score
+
     if (score >= 500) {
       newRole = 'directeur';
     } else if (score >= 200) {
@@ -437,7 +407,7 @@ app.patch("/api/users/:id/score", async (req, res) => {
     }
     
     if (newRole) {
-      // Mettre à jour le rôle dans la base de données
+
       await pool.query(`
         UPDATE users 
         SET idrole = (SELECT idRole FROM role WHERE nomRole ILIKE $1) 
@@ -448,7 +418,7 @@ app.patch("/api/users/:id/score", async (req, res) => {
     res.json({
       message: "Score mis à jour avec succès.",
       score: rows[0].score,
-      role: newRole // Inclure le nouveau rôle dans la réponse si changé
+      role: newRole 
     });
     
   } catch (err) {
@@ -459,7 +429,7 @@ app.patch("/api/users/:id/score", async (req, res) => {
 
 app.delete('/api/users/:id', asyncHandler(async (req, res) => {
   const { id } = req.params;
-  // 1) Récupérer l’utilisateur
+
   const { rows: [user] } = await pool.query(
     'SELECT id, email FROM users WHERE id = $1',
     [id]
@@ -467,8 +437,7 @@ app.delete('/api/users/:id', asyncHandler(async (req, res) => {
   if (!user) {
     return res.status(404).json({ error: 'Utilisateur non trouvé.' });
   }
-  // 2) Journaliser la suppression
-  // 3) Supprimer réellement
+
   const { rows: [deletedUser] } = await pool.query(
     'DELETE FROM users WHERE id = $1 RETURNING *',
     [id]
@@ -477,8 +446,7 @@ app.delete('/api/users/:id', asyncHandler(async (req, res) => {
 }));
 
 
-// server.js, après app.post("/api/users")…
-// server.js (ou dans ton router users.js)
+
 app.patch('/api/users/:id', asyncHandler(async (req, res) => {
   const { id } = req.params;
   const {
@@ -496,7 +464,7 @@ app.patch('/api/users/:id', asyncHandler(async (req, res) => {
     confirmNewPassword
   } = req.body;
 
-  // 1) Gestion du changement de mot de passe (si présent)
+
   if (oldPassword || newPassword || confirmNewPassword) {
     if (!oldPassword || !newPassword || !confirmNewPassword) {
       return res.status(400).json({ error: 'Tous les champs de mot de passe sont requis.' });
@@ -504,7 +472,7 @@ app.patch('/api/users/:id', asyncHandler(async (req, res) => {
     if (newPassword !== confirmNewPassword) {
       return res.status(400).json({ error: 'Les nouveaux mots de passe ne correspondent pas.' });
     }
-    // Récupère le hash existant
+
     const { rows: userRows } = await pool.query(
       'SELECT password_hash FROM users WHERE id = $1',
       [id]
@@ -516,7 +484,7 @@ app.patch('/api/users/:id', asyncHandler(async (req, res) => {
     if (!match) {
       return res.status(400).json({ error: 'Ancien mot de passe incorrect.' });
     }
-    // Hashe et met à jour
+
     const newHash = await bcrypt.hash(newPassword, 12);
     await pool.query(
       'UPDATE users SET password_hash = $1 WHERE id = $2',
@@ -524,12 +492,12 @@ app.patch('/api/users/:id', asyncHandler(async (req, res) => {
     );
   }
 
-  // 2) Construction dynamique des autres champs à mettre à jour
+
   const sets = [];
   const values = [];
   let idx = 1;
   console.log('→ Role  0  :', role);
-  // Si un rôle a été fourni, on le valide et on l'ajoute
+
   if (role !== undefined) {
     const { rows: roleRows } = await pool.query(
       'SELECT idRole FROM role WHERE LOWER(nomRole) = LOWER($1)',
@@ -546,13 +514,13 @@ app.patch('/api/users/:id', asyncHandler(async (req, res) => {
 
   }
 
-  // Si un score a été fourni
+
   if (score !== undefined) {
     sets.push(`score = $${idx++}`);
     values.push(score);
   }
 
-  // Pour tous les autres champs de profil
+
   if (nom !== undefined)          { sets.push(`nom = $${idx++}`); values.push(nom); }
   if (prenom !== undefined)       { sets.push(`prenom = $${idx++}`); values.push(prenom); }
   if (email !== undefined)        { sets.push(`email = $${idx++}`); values.push(email); }
@@ -560,9 +528,9 @@ app.patch('/api/users/:id', asyncHandler(async (req, res) => {
   if (genre !== undefined)        { sets.push(`genre = $${idx++}`); values.push(genre); }
   if (formation !== undefined)    { sets.push(`formation = $${idx++}`); values.push(formation); }
   if (dateNaissance !== undefined){ sets.push(`dateNaissance = $${idx++}`); values.push(dateNaissance); }
-  // Si au moins un champ à mettre à jour
+
   if (sets.length > 0) {
-    // On ajoute l'id en dernier paramètre
+
     values.push(id);
     const sql = `
       UPDATE users
@@ -580,12 +548,12 @@ app.patch('/api/users/:id', asyncHandler(async (req, res) => {
       message: 'Profil mis à jour avec succès.',
       user: {
         ...updated,
-        role   // on renvoie le nom du rôle en clair si fourni
+        role   
       }
     });
   }
 
-  // Si rien à mettre à jour
+
   res.status(400).json({ error: 'Aucune donnée à mettre à jour.' });
 }));
 
@@ -598,7 +566,7 @@ app.get('/api/users/:id/password', asyncHandler(async (req, res) => {
     return res.status(400).json({ error: 'oldPassword manquant en query.' });
   }
 
-  // 1) Récupère le hash stocké
+
   const { rows } = await pool.query(
     'SELECT password FROM users WHERE id = $1',
     [id]
@@ -608,24 +576,20 @@ app.get('/api/users/:id/password', asyncHandler(async (req, res) => {
   }
   const storedHash = rows[0].password;
 
-  // 2) Compare l’ancien mot de passe
+
   const match = await bcrypt.compare(oldPassword, storedHash);
 
-  // 3) Renvoyer le résultat
+
   res.json({ match });
 }));
 
 
-/**
- * PATCH /api/users/:id/password
- * Permet de modifier le mot de passe SI et SEULEMENT SI oldPassword est correct.
- * Body attendu : { oldPassword, newPassword, confirmNewPassword }
- */
+
 app.patch('/api/users/:id/password', asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { oldPassword, newPassword, confirmNewPassword } = req.body;
 
-  // 1) Vérifications de base
+
   if (!oldPassword || !newPassword || !confirmNewPassword) {
     return res.status(400).json({ error: 'oldPassword, newPassword et confirmNewPassword sont obligatoires.' });
   }
@@ -636,7 +600,7 @@ app.patch('/api/users/:id/password', asyncHandler(async (req, res) => {
     return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 8 caractères.' });
   }
 
-  // 2) Récupère le hash actuel
+
   const { rows } = await pool.query(
     'SELECT password FROM users WHERE id = $1',
     [id]
@@ -646,20 +610,18 @@ app.patch('/api/users/:id/password', asyncHandler(async (req, res) => {
   }
   const currentHash = rows[0].password;
 
-  // 3) Vérifie l’ancien mot de passe
+
   const valid = await bcrypt.compare(oldPassword, currentHash);
   if (!valid) {
     return res.status(400).json({ error: 'Ancien mot de passe incorrect.' });
   }
 
-  // 4) Hash et mise à jour du nouveau mot de passe
   const newHash = await bcrypt.hash(newPassword, 10);
   await pool.query(
     'UPDATE users SET password = $1 WHERE id = $2',
     [newHash, id]
   );
 
-  // 5) Répondre OK
   res.json({ ok: true, message: 'Mot de passe mis à jour avec succès.' });
 }));
 
@@ -912,7 +874,7 @@ app.get("/api/objets", asyncHandler(async (req, res) => {
   }
 }));
 
-// server.js, après app.get("/api/objets")…
+
 app.post("/api/objets", asyncHandler(async (req, res) => {
   const { type, nom } = req.body;
   const t = type.toLowerCase();
@@ -1021,7 +983,7 @@ res.status(201).json({ type, id: rows[0].id, nom: rows[0].nom, etat: null });
 app.get("/api/salles/:id/objets", asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  // Requête SQL qui fait l'union de tous les objets possédant une colonne idSalle
+
   const query = `
     -- Projecteurs
     SELECT
@@ -1246,7 +1208,7 @@ app.get("/api/salles/:id/objets", asyncHandler(async (req, res) => {
   res.json(rows);
 }));
 
-// Récupérer l'historique des actions depuis la BDD
+
 app.get('/api/action-history', asyncHandler(async (req, res) => {
   const query = `
     SELECT 
@@ -1290,9 +1252,7 @@ const resources = {
   borne:        { pk : 'idBorne',      fields: ["nomBorne", "idSalle" ,"idEtatBorne"]},
   alarme:       { pk: 'idAlarme',      fields: ['nomAlarme',   "idSalle",   'idEtat'] },
 };
-//reste bornes et un autre truc aussi 
 
-// Journaliser la déconnexion
 app.post('/api/logout', asyncHandler(async (req, res) => {
   console.log('🛎️ POST /api/logout — req.body =', req.body);
   
@@ -1313,7 +1273,7 @@ app.get("/api/:resource/:id", asyncHandler(async (req, res, next) => {
     return res.status(400).json({ error: `Ressource inconnue : ${resource}` });
   }
 
-  // Construction dynamique de la liste de colonnes à sélectionner
+
   const cols = cfg.fields.join(", ");
   const sql = `
     SELECT ${cols}
@@ -1333,7 +1293,7 @@ app.get("/api/:resource/:id", asyncHandler(async (req, res, next) => {
   res.json(result.rows[0]);
 }));
 
-// DELETE générique (sauf "salle")
+
 app.delete("/api/:resource/:id", asyncHandler(async (req, res, next) => {
   const { resource, id } = req.params;
 
@@ -1370,7 +1330,6 @@ app.patch("/api/:resource/:id", asyncHandler(async (req, res, next) => {
     console.log("   body:", req.body);
     console.log("   cfg.fields:", cfg && cfg.fields);
 
-    // ne conserve que les clés autorisées
     const updates = Object.keys(req.body).filter(key => cfg.fields.includes(key));
     console.log("   updates retenues:", updates);
 
@@ -1381,9 +1340,9 @@ app.patch("/api/:resource/:id", asyncHandler(async (req, res, next) => {
       return res.status(400).json({ error: 'Aucun champ à mettre à jour' });
     }
 
-   // au lieu de `"${col}"` et `"${resource}"`
+
     const setClause = updates
-    .map((col, i) => `${col} = $${i+1}`)     // col reste 'nomProjecteur' ou 'idEtat'
+    .map((col, i) => `${col} = $${i+1}`)     
     .join(", ");
     const values = updates.map(col => req.body[col]);
     values.push(id);
@@ -1409,10 +1368,7 @@ app.patch("/api/:resource/:id", asyncHandler(async (req, res, next) => {
   }
 }));
 
-// == Alertes ==
-// GET  /api/alertes          → liste toutes les alertes
-// POST /api/alerte           → créer une alerte
-// DELETE /api/alerte/:id     → supprimer une alerte
+
 
 app.get("/api/alertes", asyncHandler(async (req, res) => {
   const { rows } = await pool.query(`
@@ -1456,10 +1412,7 @@ app.delete("/api/alerte/:id", asyncHandler(async (req, res) => {
   res.json({ message: 'Alerte supprimée', alerte: result.rows[0] });
 }));
 
-// == Réservations ==
-// GET  /api/reservations             → liste toutes les réservations
-// POST /api/reservation              → créer une réservation
-// DELETE /api/reservation/:id        → supprimer une réservation
+
 
 app.get("/api/reservations", asyncHandler(async (req, res) => {
   const { rows } = await pool.query(`
@@ -1504,7 +1457,7 @@ app.post("/api/:resource", asyncHandler(async (req, res, next) => {
     return res.status(400).json({ error: `Ressource inconnue : ${resource}` });
   }
 
-  // On ne conserve que les champs autorisés pour l'insertion
+
   const cols = Object.keys(req.body).filter(key => cfg.fields.includes(key));
   if (cols.length === 0) {
     return res.status(400).json({ error: 'Aucun champ à insérer' });
@@ -1532,27 +1485,17 @@ app.post("/api/:resource", asyncHandler(async (req, res, next) => {
 
 
 
-// -------------------------
-// WebSockets
-// -------------------------
 io.on("connection", (socket) => {
   console.log("Nouvel utilisateur connecté 🔗");
   socket.on("disconnect", () => console.log("Utilisateur déconnecté ❌"));
 });
 
-// -------------------------
-// Servir le frontend
-// -------------------------
-// On sert les fichiers statiques du dossier "build" généré par votre application frontend.
+
 app.use(express.static(path.join(__dirname, 'build')));
 
-// Pour toute route non gérée par les routes API, renvoie le fichier index.html du build.
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
 
-// -------------------------
-// Démarrage du serveur
-// -------------------------
 const PORT = process.env.PORT || 5001;
 server.listen(PORT, () => console.log(`✅ Serveur sur http://localhost:${PORT}`));

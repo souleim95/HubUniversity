@@ -8,7 +8,6 @@ services:
       POSTGRES_HOST_AUTH_METHOD: trust
     ports:
       - "5432:5432"
-    # 1) On attache un volume nommé (db-data) à /var/lib/postgresql/data
     volumes:
       - db-data:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -49,6 +48,6 @@ services:
     command: sh -c "npm install && npm install axios --save && npm start"
 
 
-# 2) On déclare le volume nommé (db-data) en bas du fichier
+
 volumes:
   db-data:

@@ -34,8 +34,6 @@ import {
   ExportButton, DateBadge
 } from '../styles/AdminStyles';
 import { FaUsers, FaTools, FaShieldAlt, FaPalette, FaChartBar, FaPlus, FaEdit, FaTrash, FaDownload, FaExclamationTriangle, FaCheck, FaHistory, FaCog, FaUser, FaEye, FaEyeSlash } from 'react-icons/fa';
-// Importer les données depuis fakeData.js
-//import { dataObjects, equipments, categories, objectTypes } from '../data/projectData';
 import { PlatformContext } from '../context/PlatformContext';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -93,7 +91,6 @@ function AdminPage() {
     OBJECT_STATUS, ROOM_STATUS,
     getObjectStatus, countObjectsByStatus, handleRoomEquipment
   } = useAdminState(platformSettings, setPlatformSettings);
-    // --------- Rendu de l'interface ---------
   return (
     <bodyAdmin>
       <AdminContainer>
@@ -453,7 +450,7 @@ function AdminPage() {
       alerts.map(alert => (
         <AlertBanner
           key={alert.idAlerte}
-          type="error" // ou selon une logique de priorité si tu en ajoutes plus tard
+          type="error" 
         >
           <FaExclamationTriangle />
           <div>
@@ -470,7 +467,6 @@ function AdminPage() {
           <ButtonGroup>
             <SecondaryButton
               onClick={() => {
-                // Si tu veux marquer « résolu » en front uniquement :
                 setAlerts(alerts.map(a =>
                   a.idAlerte === alert.idAlerte
                     ? { ...a, resolved: true }
@@ -1211,7 +1207,6 @@ function AdminPage() {
               <ButtonGroup>
                 <SecondaryButton onClick={() => setShowAlertModal(false)}>Annuler</SecondaryButton>
                 <PrimaryButton onClick={() => {
-                  // Simuler la résolution de l'alerte
                   setObjects(objects.map(obj => 
                     obj.id === selectedAlert?.id ? { ...obj, status: 'Actif' } : obj
                   ));

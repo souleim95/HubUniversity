@@ -185,7 +185,6 @@ CREATE TABLE IF NOT EXISTS distributeur (
   FOREIGN KEY (idSalle) REFERENCES salle(idSalle) ON DELETE CASCADE
 );
 
--- Cafetières
 CREATE TABLE IF NOT EXISTS cafetiere (
   idCafetiere SERIAL PRIMARY KEY,
   nomCafetiere VARCHAR(50) ,
@@ -194,7 +193,6 @@ CREATE TABLE IF NOT EXISTS cafetiere (
   idEtat INTEGER  REFERENCES etat(idEtat)
 );
 
--- Microwaves
 CREATE TABLE IF NOT EXISTS microwave (
   idMicrowave SERIAL PRIMARY KEY,
   nomMicrowave VARCHAR(50) ,
@@ -203,7 +201,6 @@ CREATE TABLE IF NOT EXISTS microwave (
   idEtat INTEGER  REFERENCES etat(idEtat)
 );
 
--- AirSensors
 CREATE TABLE IF NOT EXISTS airSensor (
   idAirSensor SERIAL PRIMARY KEY,
   nomAirSensor VARCHAR(50) ,
@@ -212,7 +209,6 @@ CREATE TABLE IF NOT EXISTS airSensor (
   idEtat INTEGER  REFERENCES etat(idEtat)
 );
 
--- Dishwashers
 CREATE TABLE IF NOT EXISTS dishwasher (
   idDishwasher SERIAL PRIMARY KEY,
   nomDishwasher VARCHAR(50) ,
@@ -221,7 +217,7 @@ CREATE TABLE IF NOT EXISTS dishwasher (
   idEtat INTEGER  REFERENCES etat(idEtat)
 );
 
--- Ventilations
+ 
 CREATE TABLE IF NOT EXISTS ventilation (
   idVentilation SERIAL PRIMARY KEY,
   nomVentilation VARCHAR(50) ,
@@ -231,7 +227,6 @@ CREATE TABLE IF NOT EXISTS ventilation (
   idModes INTEGER  REFERENCES modes(idModes)
 );
 
--- Scanners
 CREATE TABLE IF NOT EXISTS scanner (
   idScanner SERIAL PRIMARY KEY,
   nomScanner VARCHAR(50) ,
@@ -241,7 +236,6 @@ CREATE TABLE IF NOT EXISTS scanner (
   
 );
 
--- Affichages
 CREATE TABLE IF NOT EXISTS affichage (
   idAffichage SERIAL PRIMARY KEY,
   nomAffichage VARCHAR(50) ,
@@ -287,9 +281,9 @@ CREATE TABLE IF NOT EXISTS alerte(
 CREATE TABLE IF NOT EXISTS reservation (
   idReservation SERIAL PRIMARY KEY,
   idSalle       INTEGER NOT NULL REFERENCES salle(idSalle) ON DELETE CASCADE,
-  start_datetime TIMESTAMP NOT NULL,  -- date+heure de début
-  end_datetime   TIMESTAMP NOT NULL,  -- date+heure de fin
-  idValidationReservation INTEGER NOT NULL REFERENCES validationReservation(idVal) DEFAULT 1,         -- « non validé » par défaut
+  start_datetime TIMESTAMP NOT NULL, 
+  end_datetime   TIMESTAMP NOT NULL,  
+  idValidationReservation INTEGER NOT NULL REFERENCES validationReservation(idVal) DEFAULT 1,   
   created_at     TIMESTAMP DEFAULT NOW()
 );
 
@@ -321,14 +315,14 @@ VALUES
   ('Projecteur - Amphithéâtre GIA1', 2, 1);
   
 
--- 2) Chauffage allumé en mode auto à 19°C
+
 INSERT INTO chauffage (nomChauffage, idSalle, idEtat, idModes)
 VALUES
   ('Chauffage - Salle Informatique', 1, 2, 1),
   ('Chauffage - Amphithéâtre GIA1', 2, 1, 1),
   ('Chauffage - Refectoire ', 3, 1, 2);
 
--- 3) Éclairage éteint à 0% de luminosité
+
 INSERT INTO eclairage (nomEclairage, idSalle, idEtat)
 VALUES
   ('Éclairage - Salle Informatique', 1, 1),
@@ -341,7 +335,7 @@ VALUES
   ('Éclairage Secours ', 1),
   ('Éclairage Parking' , 1);
 
--- 4) Store fermé à 0% d’ouverture
+
 INSERT INTO store (nomStore, idSalle, idEtat)
 VALUES
   ('Store - Salle Informatique', 1, 1),
