@@ -21,6 +21,7 @@ export const DashboardContainer = styled.div`
   max-width: 1400px;
   margin: 40px auto;
   padding: 40px;
+  padding-top: 120px;
   background-color: rgba(255, 255, 255, 0.94);
   border-radius: 15px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.1);

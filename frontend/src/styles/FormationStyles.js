@@ -2,6 +2,7 @@ import styled from 'styled-components';
 export const FormationContainer = styled.div`
   padding: 2rem;
   max-width: 1200px;
+    padding-top: 120px;
   margin: 0 auto;
   min-height: 100vh;
   background-color: #f8f9fa;

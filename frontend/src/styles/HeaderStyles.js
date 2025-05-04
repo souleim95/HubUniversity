@@ -5,7 +5,7 @@ export const HeaderContainer = styled.header`
   background-color: whitesmoke;
   width: 100%;
   position: fixed;
-  top: ${props => props.isVisible ? '0' : '-100px'};
+  top: ${props => props.isVisible ? '0' : '-123px'};
   left: 0;
   z-index: 1000;
   border-bottom: solid rgb(15, 110, 173) 3px;

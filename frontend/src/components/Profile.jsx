@@ -422,12 +422,36 @@ const Profile = () => {
                 value={formData.email}
                 onChange={handleInputChange}
               />
-              <InputField
-                name="formation"
-                placeholder="Formation"
-                value={formData.formation}
-                onChange={handleInputChange}
-              />
+<select
+  name="formation"
+  value={formData.formation}
+  onChange={handleInputChange}
+  style={{
+    padding: '18px',
+    margin: '20px 0',
+    width: '100%',
+    borderRadius: '10px',
+    border: '1px solid #e1e1e1',
+    backgroundColor: '#1d124e',
+    color: 'white',
+    fontSize: '1.2rem',
+  }}
+>
+  <option value="">Sélectionnez votre formation</option>
+  <option value="INFORMATIQUE">INFORMATIQUE</option>
+  <option value="GÉNIE CIVIL">GÉNIE CIVIL</option>
+  <option value="BIOTECHNOLOGIES">BIOTECHNOLOGIES</option>
+  <option value="MÉCANIQUE">MÉCANIQUE</option>
+  <option value="MATHÉMATIQUES APPLIQUÉES">MATHÉMATIQUES APPLIQUÉES</option>
+  <option value="BIOTECHNOLOGIES & CHIMIE (Chimie voie Recherche)">BIOTECHNOLOGIES & CHIMIE (Chimie voie Recherche)</option>
+  <option value="BIOTECHNOLOGIES & CHIMIE (Biologie voie Recherche)">BIOTECHNOLOGIES & CHIMIE (Biologie voie Recherche)</option>
+  <option value="GÉNIE CIVIL - ARCHITECTE (ENSA-V)">GÉNIE CIVIL - ARCHITECTE (ENSA-V)</option>
+  <option value="DATA - HUMANITÉS DIGITALES (Sciences Po Saint-Germain-en-Laye)">DATA - HUMANITÉS DIGITALES (Sciences Po Saint-Germain-en-Laye)</option>
+  <option value="INFORMATIQUE - DESIGNER (CY École de Design)">INFORMATIQUE - DESIGNER (CY École de Design)</option>
+  <option value="Mathématique">Master Mathématiques</option>
+  <option value="Informatique">Master Informatique</option>
+</select>
+              
 
               <select
                 name="genre"
