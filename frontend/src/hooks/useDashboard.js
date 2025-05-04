@@ -21,7 +21,7 @@ export const useDashboardState = () => {
     const [tempInputValues, setTempInputValues] = useState({});
     const location = useLocation();
     const navigate = useNavigate();
-    const isLoggedIn = !!sessionStorage.getItem('user');
+    const isLoggedIn = !!sessionStorage.getItem('pseudo');
     const [userPoints, setUserPoints] = useState(parseInt(sessionStorage.getItem('points') || '0'));
 
     // Fonction utilitaire pour mettre à jour les points en communiquant avec le backend

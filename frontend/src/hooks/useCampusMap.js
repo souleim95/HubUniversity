@@ -58,7 +58,7 @@ export const useCampusMap = () => {
     const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
     
     const navigate = useNavigate();
-    const isLoggedIn = !!sessionStorage.getItem('user'); // Vérification connexion
+    const isLoggedIn = !!sessionStorage.getItem('pseudo'); // Vérification connexion
 
     const handleCardDoubleClick = (obj) => {
         if (!isLoggedIn) {
